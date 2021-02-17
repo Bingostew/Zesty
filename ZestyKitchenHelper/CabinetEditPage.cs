@@ -43,7 +43,7 @@ namespace ZestyKitchenHelper
         protected const string outlineTag = "outline";
         protected const string movedTag = "move";
         protected abstract string cellImageSource { get; }
-        public EditPage(bool newShelf, Action finishEditEvent, string storageName = "")
+        public EditPage(bool newShelf, string storageName = "")
         {
             name = storageName;
             nameLegacy = storageName;
@@ -70,8 +70,8 @@ namespace ZestyKitchenHelper
 
             var saveButton = new Button() { Text = "Save", BackgroundColor = Color.Blue };
             var cancelButton = new Button() { Text = "Exit", BackgroundColor = Color.Red };
-            saveButton.Clicked += (obj, args) => ConfirmationSaveEvent(finishEditEvent);
-            cancelButton.Clicked += (obj, args) => ConfirmationCancelEvent(finishEditEvent);
+            saveButton.Clicked += (obj, args) => ConfirmationSaveEvent(ContentManager.pageController.ToSingleSelectionPage);
+            cancelButton.Clicked += (obj, args) => ConfirmationCancelEvent(ContentManager.pageController.ToSingleSelectionPage);
 
             saveGrid.Children.Add(saveButton, 0, 0);
             saveGrid.Children.Add(cancelButton, 2, 0);
@@ -402,8 +402,8 @@ namespace ZestyKitchenHelper
     {
         public const int cabinet_height = 50;
         protected override string cellImageSource => ContentManager.cabinetIcon;
-        public CabinetEditPage(bool newShelf, Action finishEditEvent, Action<string, string, string> saveCabinetLocalEvent, Action<string, string, string> saveCabinetBaseEvent, string storageName = "") 
-            : base(newShelf, finishEditEvent, storageName)
+        public CabinetEditPage(bool newShelf, Action<string, string, string> saveCabinetLocalEvent, Action<string, string, string> saveCabinetBaseEvent, string storageName = "") 
+            : base(newShelf, storageName)
         {
             storageSaveLocalEvent = saveCabinetLocalEvent;
             storageSaveBaseEvent = saveCabinetBaseEvent;
@@ -676,13 +676,13 @@ namespace ZestyKitchenHelper
 
         protected override async void ConfirmationCancelEvent(Action finishEvent)
         {
-            bool cancelConfirmed = await DisplayAlert("Confirmation", "Do you want to discard all current changes?", "Discard", "Cancel");
+            bool cancelConfirmed = await ContentManager.pageController.DisplayAlert("Confirmation", "Do you want to discard all current changes?", "Discard", "Cancel");
             if (cancelConfirmed) { ContentManager.cabinetInfo[nameLegacy] = preSaveState; finishEvent.Invoke(); }
         }
 
-        protected override async void ConfirmationSaveEvent(Action finishEvent)
+        protected async override void ConfirmationSaveEvent(Action finishEvent)
         {
-            bool saveConfirmed = await DisplayAlert("Confirmation", "Do you want to save all changes?", "Save", "Cancel");
+            bool saveConfirmed = await ContentManager.pageController.DisplayAlert("Confirmation", "Do you want to save all changes?", "Save", "Cancel");
             if (saveConfirmed)
             {
                 foreach (var layout in ContentManager.cabinetInfo[nameLegacy].Values)
@@ -694,6 +694,7 @@ namespace ZestyKitchenHelper
                 StoreCabinetInfo();
                 finishEvent.Invoke();
             }
+
         }
 
         protected override void StoreCabinetInfo()
@@ -730,8 +731,8 @@ namespace ZestyKitchenHelper
         public const double Side_Cell_Width_Div = 5;
         public const double fridge_height = 50;
         protected override string cellImageSource => ContentManager.fridgeIcon; 
-        public FridgeEditPage(bool newShelf, Action finishEvent, Action<string, string, string> _saveFridgeLocalEvent, Action<string, string, string> _saveFridgeBaseEvent, string storageName = "") 
-            : base(newShelf, finishEvent, storageName)
+        public FridgeEditPage(bool newShelf, Action<string, string, string> _saveFridgeLocalEvent, Action<string, string, string> _saveFridgeBaseEvent, string storageName = "") 
+            : base(newShelf, storageName)
         {
             storageSaveBaseEvent = _saveFridgeBaseEvent;
             storageSaveLocalEvent = _saveFridgeLocalEvent;
@@ -1085,7 +1086,7 @@ namespace ZestyKitchenHelper
 
         protected override async void ConfirmationCancelEvent(Action finishEvent)
         {
-            bool cancelConfirmed = await DisplayAlert("Confirmation", "Do you want to discard all current changes?", "Discard", "Cancel");
+            bool cancelConfirmed = await ContentManager.pageController.DisplayAlert("Confirmation", "Do you want to discard all current changes?", "Discard", "Cancel");
             if (cancelConfirmed) 
             {
                 if(ContentManager.fridgeInfo[nameLegacy].Count == 0) { ContentManager.fridgeInfo.Remove(nameLegacy); }
@@ -1095,7 +1096,7 @@ namespace ZestyKitchenHelper
 
         protected override async void ConfirmationSaveEvent(Action finishEvent)
         {
-            bool saveConfirmed = await DisplayAlert("Confirmation", "Do you want to save all changes?", "Save", "Cancel");
+            bool saveConfirmed = await ContentManager.pageController.DisplayAlert("Confirmation", "Do you want to save all changes?", "Save", "Cancel");
             if (saveConfirmed)
             {
                 foreach (var layout in ContentManager.fridgeInfo[nameLegacy].Values)
@@ -1107,7 +1108,7 @@ namespace ZestyKitchenHelper
                 finishEvent?.Invoke();
             }
         }
-
+        
         protected override void StoreCabinetInfo()
         {
             var content = ContentManager.fridgeInfo[nameLegacy];

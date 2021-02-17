@@ -18,10 +18,10 @@ namespace ZestyKitchenHelper
         private static Grid unplacedGrid;
         const string expIndicatorString = "Expiration Date";
         const string alphaIndicatorString = "A-Z";
-        public UnplacedPage(EventHandler navigateToMainEvent, Action<Item> localUnplacedEvent, Action<Item> baseUnplaceEvent, Action<Item> deleteItemLocal, Action<Item> deleteItemBase)
+        public UnplacedPage(Action<Item> localUnplacedEvent, Action<Item> baseUnplaceEvent, Action<Item> deleteItemLocal, Action<Item> deleteItemBase)
         {
             var returnButton = new ImageButton() { Source = ContentManager.backButton };
-            returnButton.Clicked += navigateToMainEvent;
+            returnButton.Clicked += (o,a) => ContentManager.pageController.ToMainSelectionPage();
             var addNewButton = new ImageButton() { Source = ContentManager.addIcon };
             unplacedGrid = AddView.InitializeNewGrid(4, -1);
             var addForm = AddView.GetAddForm(unplacedGrid, localUnplacedEvent, baseUnplaceEvent, "", false);

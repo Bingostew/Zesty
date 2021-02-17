@@ -19,10 +19,9 @@ namespace ZestyKitchenHelper
 
         private List<List<View>> gridList = new List<List<View>>();
 
-        private Action<string> viewEvent, addEvent, editEvent, deleteStorageLocal, deleteStorageBase;
+        private Action<string> deleteStorageLocal, deleteStorageBase;
 
-        public SingleSelectionPage(Action<string> _addEvent, Action<string> _viewEvent, Action<string> _editEvent, Action addNewEvent, EventHandler navigateToSelectionEvent, 
-            Action<string> _deleteStorageLocal, Action<string> _deleteStorageBase)
+        public SingleSelectionPage(Action<string> _deleteStorageLocal, Action<string> _deleteStorageBase)
         {
             deleteStorageLocal = _deleteStorageLocal;
             deleteStorageBase = _deleteStorageBase;
@@ -39,16 +38,12 @@ namespace ZestyKitchenHelper
                     new ColumnDefinition()
                 }
             };
-             
-            addEvent = _addEvent;
-            viewEvent = _viewEvent;
-            editEvent = _editEvent;
 
             var newButton = new ImageButton() { Source = ContentManager.addIcon, Aspect = Aspect.Fill };
-            newButton.Clicked += (obj, args) => addNewEvent();
+            newButton.Clicked += (obj, args) => ContentManager.pageController.ToStorageCreationPage(true);
             newSelectionButton.Add(newButton);
             returnButton = new ImageButton() { Source = ContentManager.backButton, WidthRequest = 80, HorizontalOptions = LayoutOptions.StartAndExpand };
-            returnButton.Clicked += navigateToSelectionEvent;
+            returnButton.Clicked += (o, a) => ContentManager.pageController.ToMainSelectionPage();
 
             scrollView = new ScrollView()
             {
@@ -193,8 +188,8 @@ namespace ZestyKitchenHelper
                 }
                 changeNameField.Completed += (obj, args) => onNameChanged();
                 changeNameField.Unfocused += (obj, args) => onNameChanged();
-                addButton.Clicked += (obj, args) => addEvent(metaName);
-                viewButton.Clicked += (obj, args) => viewEvent(metaName);
+                addButton.Clicked += (obj, args) => ContentManager.pageController.ToAddItemPage(metaName);
+                viewButton.Clicked += (obj, args) => ContentManager.pageController.ToViewItemPage(metaName);
                 button.Clicked += (object obj, EventArgs args) =>
                     button.ToggleEffects(new ImageTint() { tint = Color.FromHsla(1, .1, .5, .5) }, new List<VisualElement>() { addButton, viewButton, deleteButton, changeNameButton});
                 List<View> views = new List<View>() { preview, button, addButton, viewButton, deleteButton, changeNameButton, changeNameField };

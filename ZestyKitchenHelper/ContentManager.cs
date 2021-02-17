@@ -8,6 +8,7 @@ using Xamarin.Forms.PlatformConfiguration;
 using Utility;
 using System.Globalization;
 using Xamarin.Essentials;
+using Firebase.Database;
 
 namespace ZestyKitchenHelper
 {
@@ -35,6 +36,7 @@ namespace ZestyKitchenHelper
 
         public const string defaultSearchAllBarText = "Search item...";
 
+        public static PageController pageController = new PageController();
         public static MainPage mainPage;
         public static SelectionPage selectionPage;
         public static SingleSelectionPage singleSelectionPage;

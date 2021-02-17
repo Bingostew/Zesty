@@ -5,20 +5,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Android.App;
-using Android.Content;
-using Android.OS;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
 using SQLite;
 using SQLitePCL;
 using System.Threading.Tasks;
 using Utility;
 
-namespace ZestyKitchenHelper.Droid
+namespace ZestyKitchenHelper
 {
-    public class LocalStorage
+    public class LocalStorageController
     {
         public static string DatabasePath
         {
@@ -36,7 +30,7 @@ namespace ZestyKitchenHelper.Droid
         static SQLiteAsyncConnection SQLDatabase => sqlStorageInitializer.Value;
         bool isInitialized = false;
 
-        public LocalStorage()
+        public LocalStorageController()
         {
             SafeFireAndForget(InitializeAsync(), false);
         }
@@ -53,64 +47,89 @@ namespace ZestyKitchenHelper.Droid
             }
         }
 
-        public async void DeleteTableAsync<T>()
+        public static async void DeleteTableAsync<T>()
         {
             await SQLDatabase.DeleteAllAsync<T>();
         }
-        public async void SaveItemAsync<T>(T item)
+        public static async void SaveItemAsync<T>(T item)
         {
             await SQLDatabase.InsertAsync(item);
 
         }
-        public async void UpdateItemsAsync<T>(T item)
+        public static async void UpdateItemsAsync<T>(T item)
         {
             await SQLDatabase.UpdateAsync(item);
         }
-        public async void DeleteItemAsync<T>(T item)
+        public static async void DeleteItemAsync<T>(T item)
         {
             await SQLDatabase.DeleteAsync(item);
         }
-        public async void DeleteFridgeAsync(string name)
+        public static async void DeleteFridgeAsync(string name)
         {
             await SQLDatabase.Table<Fridge>().DeleteAsync(f => f.Name == name);
         }
-        public async void DeleteCabinetAsync(string name)
+        public static async void DeleteCabinetAsync(string name)
         {
             await SQLDatabase.Table<Cabinet>().DeleteAsync(f => f.Name == name);
         }
-        public async void UpdateItemAsync(Item item)
+        public static async void SaveFridgeLocal(string name, string fridgeRows, string rowItems)
+        {
+            var tryFridge = await GetFridgeAsync(name);
+            if (tryFridge != null)
+            {
+                UpdateItemsAsync(new Fridge().SetFridge(fridgeRows, rowItems, name));
+            }
+            else
+            {
+                Fridge fridge = new Fridge().SetFridge(fridgeRows, rowItems, name);
+                SaveItemAsync(fridge);
+            }
+        }
+        public static async void SaveCabinetLocal(string name, string cabinetRows, string rowItems)
+        {
+            var tryCabinet = await GetCabinetAsync(name);
+            if (tryCabinet != null)
+            {
+                UpdateItemsAsync(new Cabinet().SetCabinet(cabinetRows, rowItems, name));
+            }
+            else
+            {
+                Cabinet cabinet = new Cabinet().SetCabinet(cabinetRows, rowItems, name);
+                SaveItemAsync(cabinet);
+            }
+        }
+        public static async void UpdateItemAsync(Item item)
         {
             var toUpdate = GetItemAsync(item);
             await SQLDatabase.Table<Item>().DeleteAsync((i) => i.ID == item.ID);
             SaveItemAsync(item);
         }
-        public Task<Item> GetItemAsync(Item item)
+        public static Task<Item> GetItemAsync(Item item)
         {
             return SQLDatabase.Table<Item>().Where(i => i.name == item.name).FirstOrDefaultAsync();
         }
-        public Task<Cabinet> GetCabinetAsync(string name)
+        public static Task<Cabinet> GetCabinetAsync(string name)
         {
             return SQLDatabase.Table<Cabinet>().Where(c => c.Name == name).FirstOrDefaultAsync();
         }
-        public Task<Fridge> GetFridgeAsync(string name)
+        public static Task<Fridge> GetFridgeAsync(string name)
         {
             return SQLDatabase.Table<Fridge>().Where(f => f.Name == name).FirstOrDefaultAsync();
         }
-        public Task<List<Cabinet>> GetCabinetListAsync()
+        public static Task<List<Cabinet>> GetCabinetListAsync()
         {
             return SQLDatabase.Table<Cabinet>().ToListAsync();
         }
-        public Task<List<Fridge>> GetFridgeListAsync()
+        public static Task<List<Fridge>> GetFridgeListAsync()
         {
             return SQLDatabase.Table<Fridge>().ToListAsync();
         }
-        public Task<List<Item>> GetItemListAsync()
+        public static Task<List<Item>> GetItemListAsync()
         {
             return SQLDatabase.Table<Item>().ToListAsync();
         }
         private async void SafeFireAndForget(Task task, bool returnToContext, Action<Exception> onException = null)
         {
-
             await task.ConfigureAwait(returnToContext);
         }
     }

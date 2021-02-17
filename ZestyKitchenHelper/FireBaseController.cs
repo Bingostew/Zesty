@@ -4,22 +4,14 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
-using Android.App;
-using Android.Content;
-using Android.OS;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
 using Firebase.Database;
 using Firebase.Database.Query;
 using Newtonsoft.Json;
 using Utility;
 
-namespace ZestyKitchenHelper.Droid
+namespace ZestyKitchenHelper
 {
-    [Activity(Label ="FirebaseActivity")]
-    public class FireBaseActivity
+    public class FireBaseController
     {
         FirebaseClient client = new FirebaseClient("https://istorage-1f60f.firebaseio.com/");
         private const string baseChild = "Persons";
@@ -141,11 +133,12 @@ namespace ZestyKitchenHelper.Droid
 
     public class FireBaseMediator 
     {
+        public static FireBaseController fireBaseController = new FireBaseController();
         public static async void PutItem(Utility.Item item) 
         {
             if (ContentManager.sessionUserName != null)
             {
-                await MainActivity.dataBase.UpdateUser(ContentManager.sessionUserName, "ItemList", item);
+                await fireBaseController.UpdateUser(ContentManager.sessionUserName, "ItemList", item);
             }
         }
 
@@ -153,7 +146,7 @@ namespace ZestyKitchenHelper.Droid
         {
             if (ContentManager.sessionUserName != null)
             {
-                await MainActivity.dataBase.DeleteUserItem(ContentManager.sessionUserName, item);
+                await fireBaseController.DeleteUserItem(ContentManager.sessionUserName, item);
             }
         }
 
@@ -161,14 +154,14 @@ namespace ZestyKitchenHelper.Droid
         {
             if (ContentManager.sessionUserName != null)
             {
-                var tryCabinet = await MainActivity.dataBase.GetUserCabinet(ContentManager.sessionUserName, cabinet.Name);
+                var tryCabinet = await fireBaseController.GetUserCabinet(ContentManager.sessionUserName, cabinet.Name);
                 if (tryCabinet != null)
                 {
-                    await MainActivity.dataBase.UpdateCabinet(ContentManager.sessionUserName, tryCabinet);
+                    await fireBaseController.UpdateCabinet(ContentManager.sessionUserName, tryCabinet);
                 }
                 else
                 {
-                    await MainActivity.dataBase.UpdateUser(ContentManager.sessionUserName, "CabinetList", cabinet);
+                    await fireBaseController.UpdateUser(ContentManager.sessionUserName, "CabinetList", cabinet);
                 }
             }
         }
@@ -177,14 +170,14 @@ namespace ZestyKitchenHelper.Droid
         {
             if (ContentManager.sessionUserName != null)
             {
-                var tryFridge = await MainActivity.dataBase.GetUserFridge(ContentManager.sessionUserName, fridge.Name);
+                var tryFridge = await fireBaseController.GetUserFridge(ContentManager.sessionUserName, fridge.Name);
                 if (tryFridge != null)
                 {
-                    await MainActivity.dataBase.UpdateFridge(ContentManager.sessionUserName, tryFridge);
+                    await fireBaseController.UpdateFridge(ContentManager.sessionUserName, tryFridge);
                 }
                 else
                 {
-                    await MainActivity.dataBase.UpdateUser(ContentManager.sessionUserName, "FridgeList", fridge);
+                    await fireBaseController.UpdateUser(ContentManager.sessionUserName, "FridgeList", fridge);
                 }
             }
         }
@@ -192,21 +185,35 @@ namespace ZestyKitchenHelper.Droid
         {
             if (ContentManager.sessionUserName != null)
             {
-                await MainActivity.dataBase.DeleteUserStorage(ContentManager.sessionUserName, (await MainActivity.dataBase.GetUserCabinet(ContentManager.sessionUserName, name)).Object);
+                await fireBaseController.DeleteUserStorage(ContentManager.sessionUserName, (await fireBaseController.GetUserCabinet(ContentManager.sessionUserName, name)).Object);
             }
         }
         public static async void DeleteFridge(string name)
         {
             if (ContentManager.sessionUserName != null)
             {
-                await MainActivity.dataBase.DeleteUserStorage(ContentManager.sessionUserName, (await MainActivity.dataBase.GetUserFridge(ContentManager.sessionUserName, name)).Object);
+                await fireBaseController.DeleteUserStorage(ContentManager.sessionUserName, (await fireBaseController.GetUserFridge(ContentManager.sessionUserName, name)).Object);
             }
         }
         public static async void UpdateItem(Item item)
         {
             if (ContentManager.sessionUserName != null)
             {
-                await MainActivity.dataBase.UpdateItem(ContentManager.sessionUserName, item);
+                await fireBaseController.UpdateItem(ContentManager.sessionUserName, item);
+            }
+        }
+        public static void SaveCabinet(string name, string cabinetRows, string rowItems)
+        {
+            if (ContentManager.sessionUserName != null)
+            {
+                PutCabinet(new Cabinet().SetCabinet(cabinetRows, rowItems, name));
+            }
+        }
+        public static void SaveFridge(string name, string fridgeRows, string rowItems)
+        {
+            if (ContentManager.sessionUserName != null)
+            {
+                FireBaseMediator.PutFridge(new Fridge().SetFridge(fridgeRows, rowItems, name));
             }
         }
     }

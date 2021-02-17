@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
   <item>
-    <color android:color="@color/abc_secondary_text_material_light"/>
+    <color android:color="@color/splash"/>
   </item>
   <item>
     <bitmap

@@ -29,7 +29,7 @@ namespace ZestyKitchenHelper
         };
         
 
-        public SelectionPage(EventHandler navigateUnplaceEvent)
+        public SelectionPage()
         {
             Grid grid = new Grid()
             {
@@ -55,9 +55,11 @@ namespace ZestyKitchenHelper
                 ContentManager.storageSelection = selection;
             }
 
-            cabinetButton.Clicked += (obj, args) => SetSelection(ContentManager.StorageSelection.cabinet); 
+            cabinetButton.Clicked += (obj, args) => SetSelection(ContentManager.StorageSelection.cabinet);
+            cabinetButton.Clicked += (obj, args) => ContentManager.pageController.InitializeSingleSelectionPage(ContentManager.StorageSelection.cabinet);
             fridgeButton.Clicked += (obj, args) => SetSelection(ContentManager.StorageSelection.fridge);
-            addUnplaceButton.Clicked += navigateUnplaceEvent;
+            fridgeButton.Clicked += (obj, args) => ContentManager.pageController.InitializeSingleSelectionPage(ContentManager.StorageSelection.fridge);
+            addUnplaceButton.Clicked += (o,a) => ContentManager.pageController.ToUnplacedPage();
             Content = grid;
         }
     }

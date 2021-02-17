@@ -87,10 +87,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Effect\BackgroundChangeEffect.cs" />
-    <Compile Include="EditActivity.cs" />
-    <Compile Include="FireBaseActivity.cs" />
     <Compile Include="Effect\ImageTintEffect.cs" />
-    <Compile Include="LocalStorage.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="NotificationWorker.cs" />
     <Compile Include="Resources\Resource.designer.cs" />

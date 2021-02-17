@@ -18,7 +18,7 @@ namespace ZestyKitchenHelper
         private int dictIter;
         Action<Item> deleteItemLocalEvent, deleteItemBaseEvent, updateItemLocalEvent, updateItemBaseEvent;
         Action<string, string, string> saveStorageLocalEvent, saveStorageBaseEvent;
-        public CabinetViewPage(string name, EventHandler navigateToSelectionEvent, Action<Item> deleteItemLocal, Action<Item> deleteItemBase, Action<Item> updateItemLocal, Action<Item> updateItemBase,
+        public CabinetViewPage(string name, Action<Item> deleteItemLocal, Action<Item> deleteItemBase, Action<Item> updateItemLocal, Action<Item> updateItemBase,
             Action<string, string, string> _saveStorageLocalEvent, Action<string, string, string> _saveStorageBaseEvent)
         {
             saveStorageBaseEvent = _saveStorageBaseEvent;
@@ -105,7 +105,7 @@ namespace ZestyKitchenHelper
 
             var storageLabel = new Label() { Text = name, FontSize = 40, TextColor = Color.Black, HorizontalTextAlignment = TextAlignment.Center };
             var returnButton = new ImageButton() { Source = ContentManager.backButton, WidthRequest = 100, HeightRequest = 100 };
-            returnButton.Clicked += navigateToSelectionEvent;
+            returnButton.Clicked += (o,a) => ContentManager.pageController.ToSingleSelectionPage();
             var storage = ContentManager.GetStorageView(name);
             storage.HorizontalOptions = LayoutOptions.CenterAndExpand;
             storage.WidthRequest = Application.Current.MainPage.Width * .8;

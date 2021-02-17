@@ -28,8 +28,6 @@ namespace ZestyKitchenHelper.Droid
     public class MainActivity : Auth0ClientActivity
     {
         public static Auth0Client client;
-        public static FireBaseActivity dataBase = new FireBaseActivity();
-        public static LocalStorage localBase = new LocalStorage();
         protected Android.Widget.Button loginButton;
         protected TextView skipLoginField;
         protected TextView loadingOverlay;
@@ -59,9 +57,9 @@ namespace ZestyKitchenHelper.Droid
             loadingText = FindViewById<TextView>(Resource.Id.loadingText);
             loginButton = FindViewById<Android.Widget.Button>(Resource.Id.loginButton);
             
-           //localBase.DeleteTableAsync<Cabinet>();
-           //localBase.DeleteTableAsync<Fridge>();
-           // localBase.DeleteTableAsync<Item>();
+          // LocalStorageController.DeleteTableAsync<Cabinet>();
+          // LocalStorageController.DeleteTableAsync<Fridge>();
+          // LocalStorageController.DeleteTableAsync<Item>();
 
             RemoveLoadingPage();
             loginButton.Click += (obj, args) => { Login(); loginButton.Enabled = false; };
@@ -81,14 +79,16 @@ namespace ZestyKitchenHelper.Droid
         {
             if (ContentManager.sessionUserName != null && ContentManager.sessionUserName.Length > 0)
             {
-                ContentManager.ParseLocalCabinets(await dataBase.GetUserCabinetList(ContentManager.sessionUserName), await localBase.GetItemListAsync());
-                ContentManager.ParseLocalFridge(await dataBase.GetUserFridgeList(ContentManager.sessionUserName), await localBase.GetItemListAsync());
-                ContentManager.ParseLocalItems(await dataBase.GetUserItemList(ContentManager.sessionUserName));
+                ContentManager.ParseLocalCabinets(await FireBaseMediator.fireBaseController.GetUserCabinetList(ContentManager.sessionUserName),
+                    await LocalStorageController.GetItemListAsync());
+                ContentManager.ParseLocalFridge(await FireBaseMediator.fireBaseController.GetUserFridgeList(ContentManager.sessionUserName), 
+                    await LocalStorageController.GetItemListAsync());
+                ContentManager.ParseLocalItems(await FireBaseMediator.fireBaseController.GetUserItemList(ContentManager.sessionUserName));
             }
 
-            ContentManager.ParseLocalCabinets(await localBase.GetCabinetListAsync(), await localBase.GetItemListAsync());
-            ContentManager.ParseLocalFridge(await localBase.GetFridgeListAsync(), await localBase.GetItemListAsync());
-            ContentManager.ParseLocalItems(await localBase.GetItemListAsync());
+           // ContentManager.ParseLocalCabinets(await LocalStorageController.GetCabinetListAsync(), await LocalStorageController.GetItemListAsync());
+           // ContentManager.ParseLocalFridge(await LocalStorageController.GetFridgeListAsync(), await LocalStorageController.GetItemListAsync());
+           // ContentManager.ParseLocalItems(await LocalStorageController.GetItemListAsync());
 
         }
         private void StartBackgroundCheck()
@@ -117,15 +117,15 @@ namespace ZestyKitchenHelper.Droid
                 };
                 
                 
-                if (!await dataBase.HasUser("gmail"))
+                if (!await FireBaseMediator.fireBaseController.HasUser("gmail"))
                 {
-                    await dataBase.AddUser(name, "gmail");
+                    await FireBaseMediator.fireBaseController.AddUser(name, "gmail");
                 }
                 
                 var intent = new Intent(this, typeof(SelectionActivity));
                 var serializedLoginResponse = JsonConvert.SerializeObject(userProfile);
                 ContentManager.sessionUserName = userProfile.Email;
-                FireBaseActivity.sessionUserProfile = await dataBase.GetUserObject(userProfile.Email);
+                FireBaseController.sessionUserProfile = await FireBaseMediator.fireBaseController.GetUserObject(userProfile.Email);
                 intent.PutExtra("LoginResult", serializedLoginResponse);
                 StartActivity(intent); 
                 Console.WriteLine("REEEEE");
@@ -156,9 +156,9 @@ namespace ZestyKitchenHelper.Droid
         private async void Login()
         {
             await LoginAsync();
-            if (!await dataBase.HasUser(userProfile.Email))
+            if (!await FireBaseMediator.fireBaseController.HasUser(userProfile.Email))
             {
-                await dataBase.AddUser(userProfile.Name, userProfile.Email);
+                await FireBaseMediator.fireBaseController.AddUser(userProfile.Name, userProfile.Email);
             }
             ToSelectionActivity();
         }

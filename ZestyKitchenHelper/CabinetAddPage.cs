@@ -16,27 +16,24 @@ namespace ZestyKitchenHelper
         static AbsoluteLayout storage;
         private static string storageName;
         static Action<string, string, string> saveLocalItemToShelfEvent, saveBaseItemToShelfEvent;
-        static Action<InfoPage> navigateToInfoPageEvent;
-        static Action navigateToPreviousPageEvent;
         const int unplacedGridRows = 2;
         const int unplacedGridColumns = 4;
         private static int gridFootIndex;
         private static Grid unplacedGrid;
-        public CabinetAddPage(string _storageName, EventHandler navigateToSelectionEvent, Action<Item> saveLocalItemEvent, Action<Item> saveBaseItemEvent, Action<InfoPage> navigateToInfoEvent, 
-            Action navigateToPreviousEvent, Action<string, string, string> _saveLocalItemToShelfEvent, Action<string, string, string> _saveBaseItemToShelfEvent)
+        public CabinetAddPage(string _storageName, Action<Item> saveLocalItemEvent, Action<Item> saveBaseItemEvent,
+            Action<string, string, string> _saveLocalItemToShelfEvent, Action<string, string, string> _saveBaseItemToShelfEvent)
         {
             storageName = _storageName;
             saveLocalItemToShelfEvent = _saveLocalItemToShelfEvent;
             saveBaseItemToShelfEvent = _saveBaseItemToShelfEvent;
-            navigateToInfoPageEvent = navigateToInfoEvent;
-            navigateToPreviousPageEvent = navigateToPreviousEvent;
+
             var name = new Label() { Text = _storageName, FontSize = 30, TextColor = Color.Black };
             storage = ContentManager.GetStorageView(storageName) as AbsoluteLayout;
             storage.WidthRequest = Application.Current.MainPage.Width * .8;
             storage.HeightRequest = 5 * Application.Current.MainPage.Height / 8;
             storage.VerticalOptions = LayoutOptions.EndAndExpand;
             var backButton = new ImageButton(){ Source = ContentManager.backButton, Aspect = Aspect.Fill};
-            backButton.Clicked += navigateToSelectionEvent;
+            backButton.Clicked += (o, a) => ContentManager.pageController.ToSingleSelectionPage();
 
             unplacedGrid = AddView.InitializeNewGrid(unplacedGridColumns, unplacedGridRows, storageName);
             unplacedGrid.HeightRequest = 200;
