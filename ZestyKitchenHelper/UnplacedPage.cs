@@ -23,12 +23,14 @@ namespace ZestyKitchenHelper
             var returnButton = new ImageButton() { Source = ContentManager.backButton };
             returnButton.Clicked += (o,a) => ContentManager.pageController.ToMainSelectionPage();
             var addNewButton = new ImageButton() { Source = ContentManager.addIcon };
-            unplacedGrid = AddView.InitializeNewGrid(4, -1);
-            var addForm = AddView.GetAddForm(unplacedGrid, localUnplacedEvent, baseUnplaceEvent, "", false);
+            unplacedGrid = GridManager.GetGrid(ContentManager.unplacedGridName); 
+            var addForm = AddView.GetAddForm(localUnplacedEvent, baseUnplaceEvent, "", false);
             searchAllBar.Text = ContentManager.defaultSearchAllBarText;
             searchAllBar.Focused += (obj, args) => searchAllBar.Text = "";
             searchAllBar.Unfocused += (obj, args) => { if (searchAllBar.Text.Length == 0) searchAllBar.Text = ContentManager.defaultSearchAllBarText; };
             searchAllBar.Unfocused += (obj, args) => ListSorter.OnSearchUnplacedGrid(unplacedGrid, searchAllBar.Text);
+            addNewButton.Clicked += (obj, args) => { addForm.IsVisible = true; };
+
             var sortSelector = new Picker()
             {
                 ItemsSource = new List<string>() { expIndicatorString, alphaIndicatorString },
@@ -46,19 +48,17 @@ namespace ZestyKitchenHelper
             };
 
 
-            addNewButton.Clicked += (obj, args) => { addForm.IsVisible = true; };
             gridScroll = new ScrollView()
             {
                 VerticalScrollBarVisibility = ScrollBarVisibility.Always,
                 Content = unplacedGrid
             };
 
-            foreach(var placed in ContentManager.MetaItemBase.Values)
-            {
-                placed.SetMarkingVisibility(true);
-                if (!ContentManager.UnplacedItems.Contains(placed.ItemData))
-                    AddView.AddUnplacedGrid(unplacedGrid, null, null, placed, false);
-            }
+            UpdateUnplacedChildren(unplacedGrid);
+
+            GridManager.GetGrid(ContentManager.unplacedGridName).ChildRemoved += (o, e) => Console.WriteLine("Unplaced Grid Child Removed!");
+            GridManager.GetGrid(ContentManager.unplacedGridName).ChildAdded += (o, e) => Console.WriteLine("Unplaced Grid Child Added!");
+
             var pageWidth = Application.Current.MainPage.Width;
             AbsoluteLayout.SetLayoutBounds(returnButton, new Rectangle(0, 0, 70, 70));
             AbsoluteLayout.SetLayoutFlags(returnButton, AbsoluteLayoutFlags.PositionProportional);
@@ -85,10 +85,20 @@ namespace ZestyKitchenHelper
             };
         }
 
+        private void UpdateUnplacedChildren(Grid grid)
+        {
+            List<ItemLayout> unplacedGridChildren = new List<ItemLayout>();
+            foreach (var item in ContentManager.MetaItemBase.Values)
+            {
+                if (!grid.Children.Contains(item))
+                    unplacedGridChildren.Add(item);
+            }
+            GridManager.AddGridItem(grid, unplacedGridChildren, false);
+        }
         public static void UpdateGrid(Item removed)
         {
             ItemLayout removedLayout = unplacedGrid.Children.Where(i => (i as ItemLayout).ItemData.ID == removed.ID).FirstOrDefault() as ItemLayout;
-            AddView.RemoveUnplacedGrid(unplacedGrid, removedLayout);
+            GridManager.RemoveGridItem(unplacedGrid, removedLayout);
             /*
             if(removed != null)
             {

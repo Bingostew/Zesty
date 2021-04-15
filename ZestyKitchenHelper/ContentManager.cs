@@ -36,24 +36,29 @@ namespace ZestyKitchenHelper
 
         public const string defaultSearchAllBarText = "Search item...";
 
+        public static string unplacedGridName = "Unplaced Grid";
+        public static string pUnplacedGridName = "Partial Unplaced Grid";
+
+        public static string itemStorageIdGenerator = "ItemId";
+
         public static PageController pageController = new PageController();
-        public static MainPage mainPage;
         public static SelectionPage selectionPage;
-        public static SingleSelectionPage singleSelectionPage;
-        public static CabinetEditPage cabinetEditPage;
-        public static FridgeEditPage fridgeEditPage;
-
-        public static Action navigateToUnplacedPageEvent;
-        public static Action<InfoPage> navigateToInfoPageEvent;
-
         public static Dictionary<string, Dictionary<int, AbsoluteLayout>> cabinetInfo = new Dictionary<string, Dictionary<int, AbsoluteLayout>>();
         public static Dictionary<string, Dictionary<int, AbsoluteLayout>> fridgeInfo = new Dictionary<string, Dictionary<int, AbsoluteLayout>>();
+
+        public static void InitializeApp()
+        {
+            IDGenerator.InitializeIDGroup(itemStorageIdGenerator);
+            LocalStorageController.InitializeLocalDataBase();
+
+            GridManager.InitializeGrid(unplacedGridName, 10, 4);
+        }
+
         public static Layout<View> GetStorageView(string name)
         {
             var itemBase = storageSelection == StorageSelection.cabinet ? cabinetInfo : fridgeInfo;
             AbsoluteLayout setLayout (){
                 var layout = new AbsoluteLayout() {  };
-                Console.WriteLine("stack storage ree " + itemBase[name].Values.Count);
                 foreach (var row in itemBase[name].Values)
                 {
                     layout.Children.Add(row);

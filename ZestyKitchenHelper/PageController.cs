@@ -40,8 +40,15 @@ namespace ZestyKitchenHelper
 
         public void ToSingleSelectionPage()
         {
-            ContentManager.singleSelectionPage.SetView();
-            SetContent(ContentManager.singleSelectionPage.Content);
+            //ContentManager.singleSelectionPage.SetView();
+            if (ContentManager.storageSelection == ContentManager.StorageSelection.cabinet)
+            {
+                SetContent(new SingleSelectionPage(LocalStorageController.DeleteCabinetAsync, FireBaseMediator.DeleteCabinet).Content);
+            }
+            else
+            {
+                SetContent(new SingleSelectionPage(LocalStorageController.DeleteFridgeAsync, FireBaseMediator.DeleteFridge).Content);
+            }
         }
         public void ToUnplacedPage()
         {
@@ -87,6 +94,11 @@ namespace ZestyKitchenHelper
             {
                 SetContent(new FridgeEditPage(newShelf, LocalStorageController.SaveFridgeLocal, FireBaseMediator.SaveFridge, name).Content);
             }
+        }
+
+        public void ToInfoPage(InfoPage infoPage)
+        {
+            SetContent(infoPage.Content);
         }
     }
 }

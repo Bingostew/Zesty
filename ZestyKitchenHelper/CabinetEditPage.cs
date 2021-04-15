@@ -690,7 +690,6 @@ namespace ZestyKitchenHelper
                     layout.Children.RemoveEffects(typeof(ImageTint));
                 }
                 cellContainer.Children.Remove(addRowButton);
-                Console.WriteLine("name cabinet " + name);
                 StoreCabinetInfo();
                 finishEvent.Invoke();
             }
@@ -959,7 +958,6 @@ namespace ZestyKitchenHelper
             var itemBase = left ? ContentManager.fridgeItemBase[nameLegacy][0] : ContentManager.fridgeItemBase[nameLegacy][1];
             var tag = left ? Left_Cell_Tag : Right_Cell_Tag;
             var childList = container.Children;
-            Console.WriteLine("count " + childList.Count / 2);
             int preCount = childList.Count / 2;
             var count = add ? preCount + 1 : preCount - 1;
             var parentHeight = container.Height;
@@ -977,7 +975,6 @@ namespace ZestyKitchenHelper
                 buttonList.Add(button);
                 button.Clicked += (obj, args) =>
                 {
-                    Console.WriteLine("button glock clokus ree");
                     foreach (View element in container.Children)
                     {
                         if (element.GetType() == typeof(ImageButton) && element != button) element.RemoveEffect(typeof(ImageTint));
@@ -1103,7 +1100,6 @@ namespace ZestyKitchenHelper
                 {
                     layout.Children.RemoveEffects(typeof(ImageTint));
                 }
-                Console.WriteLine("name cabinet " + name);
                 StoreCabinetInfo();
                 finishEvent?.Invoke();
             }

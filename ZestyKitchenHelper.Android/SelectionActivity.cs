@@ -64,6 +64,7 @@ namespace ZestyKitchenHelper.Droid
            // UpdateUserEvent();
            // GetUserEvent();
         }
+
         protected override void OnStart()
         {
             base.OnStart();
@@ -71,7 +72,7 @@ namespace ZestyKitchenHelper.Droid
         protected override void OnResume()
         {
             base.OnResume();
-            if(ContentManager.singleSelectionPage != null) ContentManager.singleSelectionPage.SetView();
+           // if(ContentManager.singleSelectionPage != null) ContentManager.singleSelectionPage.SetView();
         }
         protected override void OnStop()
         {

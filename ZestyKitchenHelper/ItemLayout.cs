@@ -144,7 +144,6 @@ namespace ZestyKitchenHelper
             iconImage = new ImageButton { Source = source, Aspect = Aspect.Fill };
             iconImage.BorderColor = Color.Black;
             iconImage.BorderWidth = 2;
-            iconImage.Clicked += (obj, args) => Console.WriteLine("clickitydoo wee");
             AbsoluteLayout.SetLayoutBounds(iconImage, new Rectangle(0, 0, 1, 1));
             AbsoluteLayout.SetLayoutFlags(iconImage, AbsoluteLayoutFlags.All);
 
@@ -181,7 +180,7 @@ namespace ZestyKitchenHelper
             infoIcon.Clicked += (obj, args) => 
             {
                 InfoPage infoPage = new InfoPage(ItemData);
-                ContentManager.navigateToInfoPageEvent(infoPage);
+                ContentManager.pageController.ToInfoPage(infoPage);
                 if(StorageName != null) { infoPage.BindCabinetInfo(ParentButton, storageEvent, StorageName); }
                 infoPage.SetCabinetView(); 
             };

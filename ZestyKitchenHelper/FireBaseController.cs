@@ -202,6 +202,7 @@ namespace ZestyKitchenHelper
                 await fireBaseController.UpdateItem(ContentManager.sessionUserName, item);
             }
         }
+
         public static void SaveCabinet(string name, string cabinetRows, string rowItems)
         {
             if (ContentManager.sessionUserName != null)

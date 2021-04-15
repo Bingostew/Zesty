@@ -21,18 +21,36 @@ namespace Utility
 
         void ReceiveNotification(string title, string message);
     }
-
-    public interface INavigatablePage
+    public struct Vector2D<T> where T : IComparable
     {
-        void SetView();
-    }
-
-    public struct Vector2D
-    {
-        public double X, Y;
-        public Vector2D(double x, double y)
+        public T X, Y;
+        public Vector2D(T x, T y)
         {
             X = x; Y = y;
+        }
+    }
+
+    public class IDGenerator
+    {
+        private static Dictionary<string, List<int>> idBase = new Dictionary<string, List<int>>();
+
+        public static void InitializeIDGroup(string groupName)
+        {
+            idBase.Add(groupName, new List<int>());
+        }
+        public static int GetID(string groupName)
+        {
+            if (!idBase.ContainsKey(groupName))
+                return -1;
+
+            int newId = 0;
+            while(idBase[groupName].Contains(newId))
+            {
+                newId++;
+            }
+
+            idBase[groupName].Add(newId);
+            return newId;
         }
     }
 
@@ -60,8 +78,7 @@ namespace Utility
         public bool stored { get; set; }
         public Item SetItem(int expYr, int expMth, int expD, int quantity, string productName, string image)
         {
-            while (ContentManager.MetaItemBase.ContainsKey(IDIterator)) { IDIterator++; }
-            ID = IDIterator;
+            ID = IDGenerator.GetID(ContentManager.itemStorageIdGenerator);
             expDay = expD; expMonth = expMth; expYear = expYr; amount = quantity; name = productName;
             daysUntilExp = 0;
             icon = image;
@@ -87,9 +104,9 @@ namespace Utility
     public class Cabinet
     {
         [PrimaryKey]
-        [Column("name")]
+        [Column("Name")]
         public string Name { get; set; }
-        [Column("row")]
+        [Column("Row")]
         //Format: button proportional position each row, separated in comma, ex- (.25+.5),(.5),
         public string RowInfo { get; set; }
         //Format: button index and items surrounede by parenthesis, separated in comma: ex- 1(Item1+ITem2),2(Item1)
@@ -107,9 +124,9 @@ namespace Utility
     public class Fridge
     {
         [PrimaryKey]
-        [Column("name")]
+        [Column("Name")]
         public string Name { get; set; }
-        [Column("row")]
+        [Column("Row")]
         //Format: button proportional position each row, separated in comma, ex- (.25+.5),(.5),
         public string RowInfo { get; set; }
         //Format: button index and items surrouneded by parenthesis, separated in comma: ex- 1(Item1+ITem2),2(Item1)
@@ -124,7 +141,7 @@ namespace Utility
     }
     public static class PositionExtention
     {
-        public static Vector2D GetAbsolutePosition(this VisualElement element, int parentConstraint = 100)
+        public static Vector2D<double> GetAbsolutePosition(this VisualElement element, int parentConstraint = 100)
         {
             var y = element.Y + element.TranslationY;
             var x = element.X + element.TranslationX;
@@ -135,7 +152,7 @@ namespace Utility
                 y += parent.Y + parent.TranslationY; x += parent.X + parent.TranslationX;  parent = (VisualElement)parent.Parent;
                 iterator++;
             }
-            return new Vector2D(x, y);
+            return new Vector2D<double>(x, y);
         }
     }
 
@@ -360,7 +377,7 @@ namespace Utility
     }
     public static class GridOrganizer
     {
-        private static Vector2D gridPair;
+        private static Vector2D<int> gridPair;
         private static int rowCount;
         private static int columnCount;
         private static List<View> singularList = new List<View>();
@@ -385,7 +402,6 @@ namespace Utility
         public static void SortItemGrid(Grid grid, SortingType sortingType)
         {
             var list = grid.GetGridChilrenList().Cast<ItemLayout>().ToList();
-            Console.WriteLine("casty cast " + list.Count);
             switch (sortingType)
             {
                 case SortingType.Expiration_Close:
@@ -401,7 +417,6 @@ namespace Utility
                     for (int i = 0; i < list.Count; i++)
                     {
                         name.Add(list[i].ItemData.name);
-                        Console.WriteLine("premin " + name[i]);
                     }
                     ListSorter.SortToListAscending(name, list);
                     break;
@@ -410,41 +425,43 @@ namespace Utility
             grid.SetGridChildrenList(list);
         }
 
-        public static void OrganizeGrid<T>(this Grid grid, List<T> items, OrganizeMode mode)
+
+        public static void OrganizeGrid<T>(this Grid grid, IEnumerable<T> items, OrganizeMode mode)
         {
             rowCount = grid.RowDefinitions.Count;
             columnCount = grid.ColumnDefinitions.Count;
 
-
             if (!typeof(View).IsAssignableFrom(typeof(T))) { throw new ArgumentException(); }
-            if(items.Count == 0) { return; }
-
+            if(items.Count() == 0) { return; }
+           
             if (mode == OrganizeMode.HorizontalRight )
             {
-                gridPair = new Vector2D() { X = columnCount - 1, Y = 0 };
+                gridPair = new Vector2D<int>() { X = columnCount - 1, Y = 0 };
 
-                grid.Children.Add(items[0] as View, columnCount - 1, 0);
+                grid.Children.Add(items.ElementAt(0) as View, columnCount - 1, 0);
             }
             else
             {
-                gridPair = new Vector2D() { X = 0, Y = 0 };
+                gridPair = new Vector2D<int>() { X = 0, Y = 0 };
 
-                grid.Children.Add(items[0] as View, 0, 0);
+                grid.Children.Add(items.ElementAt(0) as View, 0, 0);
             }
-            for (int i = 1; i < items.Count; i++)
+
+            
+            for (int i = 1; i < items.Count(); i++)
             {
                 SetGridPairs(mode);
                 if (gridPair.Y > rowCount - 1)
                 {
-                    var height = grid.RowDefinitions.Count > 0 ? grid.RowDefinitions[0].Height : grid.Height;
-                    grid.RowDefinitions.Add(new RowDefinition() { Height = height });
+                    //var height = grid.RowDefinitions.Count > 0 ? grid.RowDefinitions[0].Height : grid.Height;
+                    grid.RowDefinitions.Add(new RowDefinition() {  });
                 }
                 if (gridPair.X > columnCount - 1)
                 {
                     grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Star });
                 }
 
-                grid.Children.Add(items[i] as View, (int)gridPair.X, (int)gridPair.Y);
+                grid.Children.Add(items.ElementAt(i) as View, gridPair.X, gridPair.Y);
             }
         }
 
@@ -456,7 +473,7 @@ namespace Utility
 
             if (mode == OrganizeMode.HorizontalRight)
             {
-                gridPair = new Vector2D() { X = columnCount - 1, Y = 0 };
+                gridPair = new Vector2D<int>() { X = columnCount - 1, Y = 0 };
 
                 foreach (View view in items[0])
                 {
@@ -466,7 +483,7 @@ namespace Utility
             }
             else
             {
-                gridPair = new Vector2D() { X = 0, Y = 0 };
+                gridPair = new Vector2D<int>() { X = 0, Y = 0 };
                 foreach (View view in items[0])
                 {
                     grid.Children.Add(view, 0, 0);
@@ -490,7 +507,7 @@ namespace Utility
             }
         }
 
-        private static Vector2D SetGridPairs(OrganizeMode mode)
+        private static Vector2D<int> SetGridPairs(OrganizeMode mode)
         {
             if (mode == OrganizeMode.HorizontalLeft)
             {

@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 
 namespace ZestyKitchenHelper
 {
-    public class CabinetAddPage : ContentPage, INavigatablePage
+    public class CabinetAddPage : ContentPage
     {
         AbsoluteLayout pageContainer;
         AbsoluteLayout addForm;
@@ -19,10 +19,11 @@ namespace ZestyKitchenHelper
         const int unplacedGridRows = 2;
         const int unplacedGridColumns = 4;
         private static int gridFootIndex;
-        private static Grid unplacedGrid;
+        private static Grid unplacedGrid, partialUnplacedGrid;
         public CabinetAddPage(string _storageName, Action<Item> saveLocalItemEvent, Action<Item> saveBaseItemEvent,
             Action<string, string, string> _saveLocalItemToShelfEvent, Action<string, string, string> _saveBaseItemToShelfEvent)
         {
+           
             storageName = _storageName;
             saveLocalItemToShelfEvent = _saveLocalItemToShelfEvent;
             saveBaseItemToShelfEvent = _saveBaseItemToShelfEvent;
@@ -35,10 +36,18 @@ namespace ZestyKitchenHelper
             var backButton = new ImageButton(){ Source = ContentManager.backButton, Aspect = Aspect.Fill};
             backButton.Clicked += (o, a) => ContentManager.pageController.ToSingleSelectionPage();
 
-            unplacedGrid = AddView.InitializeNewGrid(unplacedGridColumns, unplacedGridRows, storageName);
-            unplacedGrid.HeightRequest = 200;
-            addForm = AddView.GetAddForm(unplacedGrid, saveLocalItemEvent, saveBaseItemEvent, storageName);
-            AddView.UpdateDragDropBounds(unplacedGrid, storageName);
+
+            unplacedGrid = GridManager.GetGrid(ContentManager.unplacedGridName);
+            partialUnplacedGrid = GridManager.ConstrainGrid(unplacedGrid, 0, 8, true,
+                (View v) =>  new ItemLayout(50, 50, (v as ItemLayout).ItemData)
+                                .AddMainImage()
+                                .AddAmountMark()
+                                .AddExpirationMark()
+                                .AddTitle()
+                                .AddInfoIcon(), 2, 4,  "Partial Unplaced Grid");
+            partialUnplacedGrid.HeightRequest = 300;
+            partialUnplacedGrid.ChildAdded += (o, v) => AddView.UpdateDragDropBounds(partialUnplacedGrid, storageName);
+            addForm = AddView.GetAddForm(saveLocalItemEvent, saveBaseItemEvent, storageName, true, partialUnplacedGrid);
 
             gridFootIndex = 0;
             var gridPageSelectGrid = new Grid()
@@ -58,7 +67,8 @@ namespace ZestyKitchenHelper
                 gridFootIndex += unplacedGridColumns * unplacedGridRows;
                 if (ContentManager.UnplacedItems.Count > gridFootIndex + 1)
                 {
-                    AddView.ChangePageUnplacedGrid(unplacedGrid, gridFootIndex, unplacedGridColumns * unplacedGridRows, _storageName);
+                   // partialUnplacedGrid = GridManager.ConstrainGrid(unplacedGrid, gridFootIndex, unplacedGridColumns * unplacedGridRows, 
+                     //   true, 2, 4, ContentManager.pUnplacedGridName);
                 }
             };
             var lastPage = new ImageButton() { Source = ContentManager.countIcon, Rotation = 180 };
@@ -67,7 +77,8 @@ namespace ZestyKitchenHelper
                 gridFootIndex -= unplacedGridColumns * unplacedGridRows;
                 if (gridFootIndex > 0)
                 {
-                    AddView.ChangePageUnplacedGrid(unplacedGrid, gridFootIndex, unplacedGridColumns * unplacedGridRows, _storageName);
+                   // partialUnplacedGrid =  GridManager.ConstrainGrid(unplacedGrid, gridFootIndex, unplacedGridColumns * unplacedGridRows, 
+                     //   true, 2, 4, ContentManager.pUnplacedGridName);
                 }
             };
             var addNewButton = new ImageButton() { Source = ContentManager.addIcon };
@@ -79,8 +90,8 @@ namespace ZestyKitchenHelper
 
             void OnSearch(string text)
             {
-                unplacedGrid.Children.Clear();
-                foreach (ItemLayout item in unplacedGrid.Children) {
+                partialUnplacedGrid.Children.Clear();
+                foreach (ItemLayout item in partialUnplacedGrid.Children) {
                     var match = 0;
                     for (int i = 0; i < text.Length; i++)
                     {
@@ -89,9 +100,9 @@ namespace ZestyKitchenHelper
                         }
                         else { match = 0; break; }
                     }
-                    if ((match > 0 && !unplacedGrid.Children.Contains(item)) || text == "" || text == ContentManager.defaultSearchAllBarText)
+                    if ((match > 0 && !partialUnplacedGrid.Children.Contains(item)) || text == "" || text == ContentManager.defaultSearchAllBarText)
                     {
-                        unplacedGrid.Children.Add(item);
+                        partialUnplacedGrid.Children.Add(item);
                     }
                 }
             }
@@ -117,7 +128,7 @@ namespace ZestyKitchenHelper
             pageContainer.Children.Add(infoGrid, new Rectangle(0,0,1, .1), AbsoluteLayoutFlags.All);
             pageContainer.Children.Add(storage, new Rectangle(.5, 1, .8, .5), AbsoluteLayoutFlags.All);
             pageContainer.Children.Add(gridPageSelectGrid, new Rectangle(0, .07, 1, .1), AbsoluteLayoutFlags.All);
-            pageContainer.Children.Add(unplacedGrid, new Rectangle(0, .25, 1, .3), AbsoluteLayoutFlags.All);
+            pageContainer.Children.Add(partialUnplacedGrid, new Rectangle(0, .25, 1, .3), AbsoluteLayoutFlags.All);
 
             Content = new AbsoluteLayout()
             {
@@ -129,19 +140,6 @@ namespace ZestyKitchenHelper
             };
             AbsoluteLayout.SetLayoutBounds(pageContainer, new Rectangle(0, 0, 1, 1));
             AbsoluteLayout.SetLayoutFlags(pageContainer, AbsoluteLayoutFlags.All);
-        }
-
-        public void SetView()
-        {
-            storage = ContentManager.GetStorageView(storageName) as AbsoluteLayout;
-            Content = new AbsoluteLayout()
-            {
-                Children =
-                {
-                    pageContainer,
-                    addForm
-                }
-            };
         }
 
         public static async void UpdateShelf(string name, ItemLayout item, int cellIndex,  Item itemStruct)
@@ -156,7 +154,7 @@ namespace ZestyKitchenHelper
             item.StorageIndex = cellIndex;
             item.SetMarkingVisibility(false);
             ContentManager.UnplacedItems.Remove(itemStruct);
-            AddView.ChangePageUnplacedGrid(unplacedGrid, gridFootIndex, unplacedGridRows * unplacedGridColumns, storageName);
+            //GridManager.ConstrainGrid("Unplaced Grid", gridFootIndex, unplacedGridRows * unplacedGridColumns, false);
             await ViewExtensions.QuadraticInterpolator(itemInfo[name][cellIndex], .5, 250, d => itemInfo[name][cellIndex].Scale = d, null);
             string rowInfo, rowItems;
             if(ContentManager.storageSelection == ContentManager.StorageSelection.fridge)

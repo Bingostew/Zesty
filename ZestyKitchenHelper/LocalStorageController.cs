@@ -28,14 +28,14 @@ namespace ZestyKitchenHelper
             () => { return new SQLiteAsyncConnection(DatabasePath, SQLFlags); } 
             );
         static SQLiteAsyncConnection SQLDatabase => sqlStorageInitializer.Value;
-        bool isInitialized = false;
+        static bool isInitialized = false;
 
-        public LocalStorageController()
+        public static void InitializeLocalDataBase()
         {
             SafeFireAndForget(InitializeAsync(), false);
         }
 
-        async Task InitializeAsync()
+        static async Task InitializeAsync()
         {
             if (!isInitialized && !SQLDatabase.TableMappings.Any(m => m.MappedType.Name == typeof(Item).Name))
             {
@@ -128,7 +128,7 @@ namespace ZestyKitchenHelper
         {
             return SQLDatabase.Table<Item>().ToListAsync();
         }
-        private async void SafeFireAndForget(Task task, bool returnToContext, Action<Exception> onException = null)
+        private static async void SafeFireAndForget(Task task, bool returnToContext, Action<Exception> onException = null)
         {
             await task.ConfigureAwait(returnToContext);
         }

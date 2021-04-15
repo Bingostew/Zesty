@@ -8,14 +8,13 @@ using Utility;
 
 namespace ZestyKitchenHelper
 {
-    public class CabinetViewPage : ContentPage, INavigatablePage
+    public class CabinetViewPage : ContentPage
     {
         const int max_grid_count = 20;
         private Grid currentGrid;
         private AbsoluteLayout viewOverlay;
         private string storageName;
         private Dictionary<int, Grid> expandedViews = new Dictionary<int, Grid>();
-        private int dictIter;
         Action<Item> deleteItemLocalEvent, deleteItemBaseEvent, updateItemLocalEvent, updateItemBaseEvent;
         Action<string, string, string> saveStorageLocalEvent, saveStorageBaseEvent;
         public CabinetViewPage(string name, Action<Item> deleteItemLocal, Action<Item> deleteItemBase, Action<Item> updateItemLocal, Action<Item> updateItemBase,
@@ -151,16 +150,11 @@ namespace ZestyKitchenHelper
             //var currentAmount = presetResult.IndexOf(presetSelectGrid.Children.Last() as IconLayout);
             List<View> results = new List<View>();
             var max = max_grid_count + currentAmount < currentGrid.GetGridChilrenList().Count ? max_grid_count + currentAmount : currentGrid.GetGridChilrenList().Count;
-            Console.WriteLine("min " + currentAmount + " max " + max);
             for (int i = currentAmount; i < max; i++)
             {
                 results.Add(currentGrid.GetGridChilrenList()[i] as View);
             }
             currentGrid.OrganizeGrid(results, GridOrganizer.OrganizeMode.HorizontalLeft);
-        }
-        public void SetView()
-        {
-
         }
 
         private Grid GetItemGrid(List<ItemLayout> itemList)

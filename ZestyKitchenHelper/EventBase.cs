@@ -59,7 +59,7 @@ namespace ZestyKitchenHelper
         /// <summary>
         /// For item buffers, must be in this order (Left, Right, Top, Bottom)
         /// </summary>
-        public List<ImageButton> ContactÍnitiators { get; set; }
+        public List<ImageButton> ContactInitiators { get; set; }
         public Dictionary<int, List<ImageButton>> ContactViews { get; set; }
 
         public event TouchActionEventHandler OnTouchEvent;

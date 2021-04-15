@@ -81,7 +81,7 @@ namespace ZestyKitchenHelper.Droid.Effects
                         coordinate = new Point(motionEvent.GetX(pointerIndex),
                                                        motionEvent.GetY(pointerIndex));
                         if (!capture) { CheckCollision(touchEffect.ContactViews, coordinate, TouchActionEventArgs.TouchActionType.Moved); }
-                        else { CheckOverlay(touchEffect.ContactViews, touchEffect.ContactÍnitiators, coordinate, TouchActionEventArgs.TouchActionType.Moved); }
+                        else { CheckOverlay(touchEffect.ContactViews, touchEffect.ContactInitiators, coordinate, TouchActionEventArgs.TouchActionType.Moved); }
 
                     }
                     break;
@@ -92,18 +92,18 @@ namespace ZestyKitchenHelper.Droid.Effects
                     coordinate = new Point(motionEvent.GetX(pointerIndex),
                                                      motionEvent.GetY(pointerIndex));
                     if (!capture) { CheckCollision(touchEffect.ContactViews, coordinate, TouchActionEventArgs.TouchActionType.Released); }
-                    else { CheckOverlay(touchEffect.ContactViews, touchEffect.ContactÍnitiators, coordinate, TouchActionEventArgs.TouchActionType.Released); }
+                    else { CheckOverlay(touchEffect.ContactViews, touchEffect.ContactInitiators, coordinate, TouchActionEventArgs.TouchActionType.Released); }
                     break;
             }
         }
 
-        Vector2D GetAbsolutePositionAndroid(Android.Views.View view)
+        Vector2D<double> GetAbsolutePositionAndroid(Android.Views.View view)
         {
             var x = view.GetX();
             var y = view.GetY();
             var parent = (Android.Views.View)view.Parent;
             while(parent != null && typeof(Android.Views.View).IsAssignableFrom(parent.Parent.GetType())) { x += parent.GetX(); y += parent.GetY(); parent = (Android.Views.View)parent.Parent; }
-            return new Vector2D(x, y);
+            return new Vector2D<double>(x, y);
         }
 
         int GetStatusBarHeight()

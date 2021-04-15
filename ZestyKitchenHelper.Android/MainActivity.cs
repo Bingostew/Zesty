@@ -56,10 +56,13 @@ namespace ZestyKitchenHelper.Droid
             skipLoginField = FindViewById<TextView>(Resource.Id.skipLoginButton);
             loadingText = FindViewById<TextView>(Resource.Id.loadingText);
             loginButton = FindViewById<Android.Widget.Button>(Resource.Id.loginButton);
-            
+
+
           // LocalStorageController.DeleteTableAsync<Cabinet>();
           // LocalStorageController.DeleteTableAsync<Fridge>();
-          // LocalStorageController.DeleteTableAsync<Item>();
+           LocalStorageController.DeleteTableAsync<Item>();
+
+            ContentManager.InitializeApp();
 
             RemoveLoadingPage();
             loginButton.Click += (obj, args) => { Login(); loginButton.Enabled = false; };
@@ -166,6 +169,7 @@ namespace ZestyKitchenHelper.Droid
         private void ToSelectionActivity()
         {
             SetSavedInstance();
+
             LoadingPage();
             StartBackgroundCheck();
             StartActivity(new Intent(this, typeof(SelectionActivity)));
