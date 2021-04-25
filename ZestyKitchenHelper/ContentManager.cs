@@ -36,6 +36,7 @@ namespace ZestyKitchenHelper
 
         public const string defaultSearchAllBarText = "Search item...";
 
+        public static string metaGridName = "Meta Grid";
         public static string unplacedGridName = "Unplaced Grid";
         public static string pUnplacedGridName = "Partial Unplaced Grid";
 
@@ -51,6 +52,7 @@ namespace ZestyKitchenHelper
             IDGenerator.InitializeIDGroup(itemStorageIdGenerator);
             LocalStorageController.InitializeLocalDataBase();
 
+            GridManager.InitializeGrid(metaGridName, 10, 4);
             GridManager.InitializeGrid(unplacedGridName, 10, 4);
         }
 
@@ -181,7 +183,7 @@ namespace ZestyKitchenHelper
                                 .AddTitle()
                                 .AddInfoIcon();
                     MetaItemBase.Add(item.ID, itemLayout);
-                    if (!item.stored) UnplacedItems.Add(item);
+                    if (!item.stored) UnplacedItemBase.Add(item.ID, itemLayout);
                 }
             }
         }
@@ -291,7 +293,7 @@ namespace ZestyKitchenHelper
                                         itemLayout.RecalculateDate();
                                         itemLayout.AddInfoIcon();
                                         cabinetItemBase[name][cellIndexer][button].Add(itemLayout);
-                                        UnplacedItems.Remove(item);
+                                        UnplacedItemBase.Remove(item.ID);
                                         itemIterator++;
                                     }
                                 }
@@ -457,7 +459,7 @@ namespace ZestyKitchenHelper
                                         itemLayout.RecalculateDate();
                                         itemLayout.AddInfoIcon();
                                         fridgeItemBase[name][cellIndexer][button].Add(itemLayout);
-                                        UnplacedItems.Remove(item);
+                                        UnplacedItemBase.Remove(item.ID);
                                         itemIterator++;
                                     }
                                 }
@@ -528,7 +530,7 @@ namespace ZestyKitchenHelper
             return storageSelection == StorageSelection.fridge ? fridgeItemBase : cabinetItemBase;
         }
 
-        public static List<Item> UnplacedItems = new List<Item>();
+        public static Dictionary<int, ItemLayout> UnplacedItemBase = new Dictionary<int, ItemLayout>();
         public static Dictionary<int, ItemLayout> MetaItemBase = new Dictionary<int, ItemLayout>();
 
         public enum StorageSelection

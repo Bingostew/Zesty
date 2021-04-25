@@ -212,67 +212,7 @@ namespace Utility
         }
     }
 
-    public static class EffectToggle
-    {
-        public static void RemoveEffect(this VisualElement element, Type effectType)
-        {
-            var tryEffect = element.Effects.Where(e => e.GetType() == effectType);
-            if (tryEffect.Any()) { element.Effects.Remove(tryEffect.FirstOrDefault()); }
-        }
-        public static void RemoveEffects(this IList<View> elements, Type effectType)
-        {
-            foreach(View element in elements)
-            {
-                var tryEffect = element.Effects.Where(e => e.GetType() == effectType);
-                if (tryEffect.Any()) { element.Effects.Remove(tryEffect.FirstOrDefault()); }
-            }
-        }
-        public static Effect GetEffect(this VisualElement element, Type effectType)
-        {
-            var tryEffect = element.Effects.Where(e => e.GetType() == effectType);
-            if (tryEffect.Any())
-            {
-                return tryEffect.First();
-            }
-            return null;
-        }
-
-        public static void AddEffect(this VisualElement element, Effect effect)
-        {
-            var tryEffect = element.Effects.Where(e => e.GetType() == effect.GetType());
-            if (!tryEffect.Any())
-            {
-                element.Effects.Add(effect);
-            }
-        }
-        public static void ToggleEffects(this VisualElement button, Effect effect, List<VisualElement> toggleElements)
-        {
-            if (button != null)
-            {
-                var tryEffect = button.Effects.Where(e => e.GetType() == effect.GetType());
-                if (tryEffect.Any())
-                {
-                    button.Effects.Remove(tryEffect.FirstOrDefault());
-                    if (toggleElements != null)
-                        foreach (var element in toggleElements)
-                        {
-                            element.IsVisible = false;
-                        }
-                }
-                else
-                {
-                    button.Effects.Add(effect);
-
-                    if (toggleElements != null)
-                        foreach (var element in toggleElements)
-                        {
-                            element.IsVisible = true;
-                        }
-                }
-            }
-        }
-    }
-
+   
     public static class ListSorter
     {
         public static void Swap<T>(this List<T> list, int index1, int index2)

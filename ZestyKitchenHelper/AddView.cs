@@ -78,61 +78,8 @@ namespace ZestyKitchenHelper
             else { UpdateUnplacedGrid(grid); }
         }*/
         
-        static void OnContact(TouchActionEventArgs args, ItemLayout itemIcon, string currentStorageName, Item item, Grid grid)
-        {
-            var itemBase = ContentManager.GetItemBase();
-            itemIcon.TranslationY += args.Location.Y; itemIcon.TranslationX += args.Location.X;
-            if (args.Type == TouchActionEventArgs.TouchActionType.Released)
-            {
-                itemIcon.TranslationX = 0;
-                itemIcon.TranslationY = 0;
-            }
-
-            if (args.IsInContact)
-            {
-                foreach (var value in itemBase[currentStorageName].Values)
-                {
-                    foreach (ImageButton button in value.Keys)
-                    {
-                        button.RemoveEffect(typeof(ImageTint));
-                    }
-                }
-                args.ContactView[0].ToggleEffects(new ImageTint() { tint = Color.FromRgba(100, 30, 30, 70) }, null);
-                if (args.Type == TouchActionEventArgs.TouchActionType.Released)
-                {
-                    itemIcon.iconImage.RemoveEffect(typeof(ScreenTouch));
-                    args.ContactView[0].RemoveEffect(typeof(ImageTint));
-                    itemBase[currentStorageName][args.ContactIndex[0]][args.ContactView[0] as ImageButton].Insert(0, itemIcon);
-                    itemIcon.TranslationX += args.ContactView[0].TranslationX;
-                    itemIcon.BindCabinetInfo(args.ContactView[0].TranslationX, args.ContactIndex[0], args.ContactView[0] as ImageButton, currentStorageName, ContentManager.GetStorageView);
-                    CabinetAddPage.UpdateShelf(currentStorageName, itemIcon, args.ContactIndex[0], item); 
-                    GridManager.RemoveGridItem(grid, itemIcon);
-                }
-            }
-            else if(args.ContactView != null) { args.ContactView[0].ToggleEffects(new ImageTint(), null); }
-
-        }
-        public static void UpdateDragDropBounds(Grid grid, string storageName)
-        {
-            foreach (View child in grid.Children)
-            {
-                if (child.GetType() == typeof(ItemLayout)) {
-                    Console.WriteLine("AddView 119: touch check 1");
-                    var tryEffect = child.GetEffect(typeof(ScreenTouch)) as ScreenTouch;
-                    if (tryEffect != null)
-                    {
-                        tryEffect.ContactViews = ContentManager.GetContactViews(storageName);
-                    }
-                    else
-                    {
-                        Console.WriteLine("AddView 127: touch effect added");
-                        ScreenTouch touchEvent = new ScreenTouch() { ContactViews =ContentManager.GetContactViews(storageName) };
-                        touchEvent.OnTouchEvent += (obj, args) => OnContact(args, child as ItemLayout, storageName, (child as ItemLayout).ItemData, grid);
-                        (child as ItemLayout).iconImage.Effects.Add(touchEvent);
-                    }
-                }
-            }
-        }
+        
+        
 
         static List<Item> newItem = new List<Item>();
         const int addFormTextFontSize = 20;
@@ -142,7 +89,7 @@ namespace ZestyKitchenHelper
         /// </summary>
         ///
         /// <returns></returns>
-        public static AbsoluteLayout GetAddForm(Action<Item> localUnplacedEvent, Action<Item> baseUnplacedEvent,
+        public static AbsoluteLayout GetAddForm(Action<Item> localUnplacedEvent, Action<Item> baseUnplacedEvent, bool metaPriority,
             string storageName = "", bool limited = true, Grid partialUnplacedGrid = null)
         {
             List<Button> formSelector = new List<Button>();
@@ -356,7 +303,6 @@ namespace ZestyKitchenHelper
 
             void resetForm()
             {
-                ContentManager.UnplacedItems.Add(item);
                 imageSelectorIndex = 0;
                 selectorIndex = 0;
                 nameInput.Text = "product";
@@ -546,24 +492,13 @@ namespace ZestyKitchenHelper
 
             saveButton.Clicked += (obj, args) =>
             {
-                item.SetDaysUntilExpiration();
-                newItem.Add(item);
                 List<ItemLayout> newItemLayouts = new List<ItemLayout>();
-                foreach (Item _item in newItem)
-                {
-                    ItemLayout itemLayout = new ItemLayout(60, 60, _item)
-                        .AddMainImage()
-                        .AddAmountMark()
-                        .AddExpirationMark()
-                        .AddTitle()
-                        .AddInfoIcon();
+                List<ItemLayout> newItemLayoutsCopy = new List<ItemLayout>();
 
-                    newItemLayouts.Add(itemLayout);
-                    ContentManager.MetaItemBase.Add(_item.ID, itemLayout);
-                }
-                GridManager.AddGridItem(GridManager.GetGrid(ContentManager.unplacedGridName), newItemLayouts, false);
+                SaveInput(item, newItemLayouts, newItemLayoutsCopy);
+
                 if (partialUnplacedGrid != null)
-                    GridManager.AddGridItem(partialUnplacedGrid, newItemLayouts, false);
+                    GridManager.AddGridItem(partialUnplacedGrid, newItemLayoutsCopy, false);
                 baseUnplacedEvent?.Invoke(item);
                 localUnplacedEvent?.Invoke(item);
                 resetForm();
@@ -574,5 +509,38 @@ namespace ZestyKitchenHelper
             return layout;
         }
  
+
+        private static void SaveInput(Item item, List<ItemLayout> newItemLayouts, List<ItemLayout> newItemLayoutsCopy)
+        {
+            item.SetDaysUntilExpiration();
+            newItem.Add(item);
+
+            foreach (Item _item in newItem)
+            {
+                ItemLayout itemLayout = new ItemLayout(60, 60, _item)
+                    .AddMainImage()
+                    .AddAmountMark()
+                    .AddExpirationMark()
+                    .AddTitle()
+                    .AddInfoIcon();
+
+                ItemLayout itemLayoutCopy = new ItemLayout(60, 60, _item)
+                    .AddMainImage()
+                    .AddAmountMark()
+                    .AddExpirationMark()
+                    .AddTitle()
+                    .AddInfoIcon();
+
+                newItemLayouts.Add(itemLayout);
+                newItemLayoutsCopy.Add(itemLayoutCopy);
+                ContentManager.MetaItemBase.Add(_item.ID, itemLayout);
+                ContentManager.UnplacedItemBase.Add(_item.ID, itemLayoutCopy);
+            }
+            Console.WriteLine("AddView 564: new item length = " + newItemLayouts.Count);
+
+
+            GridManager.AddGridItem(GridManager.GetGrid(ContentManager.unplacedGridName), newItemLayoutsCopy, false);
+            GridManager.AddGridItem(GridManager.GetGrid(ContentManager.metaGridName), newItemLayouts, false);       
+        }
     }
 }

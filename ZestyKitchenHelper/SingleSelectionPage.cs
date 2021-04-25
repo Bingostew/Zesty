@@ -39,7 +39,7 @@ namespace ZestyKitchenHelper
                 }
             };
 
-            var newButton = new ImageButton() { Source = ContentManager.addIcon, Aspect = Aspect.Fill };
+            var newButton = new ImageButton() { Source = ContentManager.addIcon, Aspect = Aspect.Fill, BackgroundColor = Color.Transparent };
             newButton.Clicked += (obj, args) => ContentManager.pageController.ToStorageCreationPage(true);
             newSelectionButton.Add(newButton);
             returnButton = new ImageButton() { Source = ContentManager.backButton, WidthRequest = 80, HorizontalOptions = LayoutOptions.StartAndExpand };
@@ -78,7 +78,8 @@ namespace ZestyKitchenHelper
                 var metaName = key;
                 var name = new Label() { Text = key.ToString(), TextColor = Color.Black, FontSize = 25, HorizontalTextAlignment = TextAlignment.Center };
                 var model = ContentManager.GetStorageView(key);
-                var button = new ImageButton() { Source = ContentManager.transIcon, Aspect = Aspect.Fill, BorderColor = Color.Black, BorderWidth = 1 };
+                var button = new ImageButton() { Source = ContentManager.transIcon, Aspect = Aspect.Fill, BorderColor = Color.Black, 
+                    BorderWidth = 1, BackgroundColor = Color.Transparent };
                 AbsoluteLayout preview = new AbsoluteLayout()
                 {
                     HorizontalOptions = LayoutOptions.Center,
@@ -151,7 +152,7 @@ namespace ZestyKitchenHelper
                             {
                                 foreach (var item in itemInfoBase[key][index][cabButton])
                                 {
-                                    ContentManager.UnplacedItems.Add(item.ItemData);
+                                    ContentManager.UnplacedItemBase.Add(item.ItemData.ID, item);
                                 }
                             }
                         }

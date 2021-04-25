@@ -33,9 +33,6 @@ namespace ZestyKitchenHelper
             storage.WidthRequest = Application.Current.MainPage.Width * .8;
             storage.HeightRequest = 5 * Application.Current.MainPage.Height / 8;
             storage.VerticalOptions = LayoutOptions.EndAndExpand;
-            var backButton = new ImageButton(){ Source = ContentManager.backButton, Aspect = Aspect.Fill};
-            backButton.Clicked += (o, a) => ContentManager.pageController.ToSingleSelectionPage();
-
 
             unplacedGrid = GridManager.GetGrid(ContentManager.unplacedGridName);
             partialUnplacedGrid = GridManager.ConstrainGrid(unplacedGrid, 0, 8, true,
@@ -46,8 +43,18 @@ namespace ZestyKitchenHelper
                                 .AddTitle()
                                 .AddInfoIcon(), 2, 4,  "Partial Unplaced Grid");
             partialUnplacedGrid.HeightRequest = 300;
-            partialUnplacedGrid.ChildAdded += (o, v) => AddView.UpdateDragDropBounds(partialUnplacedGrid, storageName);
-            addForm = AddView.GetAddForm(saveLocalItemEvent, saveBaseItemEvent, storageName, true, partialUnplacedGrid);
+            partialUnplacedGrid.ChildAdded += (o, v) => EffectManager.UpdateScreenTouchBounds(partialUnplacedGrid.Children.Last(), storageName); // fix this get children and add effect
+            addForm = AddView.GetAddForm(saveLocalItemEvent, saveBaseItemEvent, false, storageName, true, partialUnplacedGrid);
+
+            var backButton = new ImageButton() { Source = ContentManager.backButton, Aspect = Aspect.Fill, BackgroundColor = Color.Transparent };
+            backButton.Clicked += (o, a) =>
+            {
+                ContentManager.pageController.ToSingleSelectionPage();
+                foreach (ItemLayout child in partialUnplacedGrid.Children)
+                {
+                    child.RemoveEffect(typeof(ScreenTouch));
+                }
+            };
 
             gridFootIndex = 0;
             var gridPageSelectGrid = new Grid()
@@ -65,7 +72,7 @@ namespace ZestyKitchenHelper
             nextPage.Clicked += (obj, args) =>
             {
                 gridFootIndex += unplacedGridColumns * unplacedGridRows;
-                if (ContentManager.UnplacedItems.Count > gridFootIndex + 1)
+                if (ContentManager.UnplacedItemBase.Count > gridFootIndex + 1)
                 {
                    // partialUnplacedGrid = GridManager.ConstrainGrid(unplacedGrid, gridFootIndex, unplacedGridColumns * unplacedGridRows, 
                      //   true, 2, 4, ContentManager.pUnplacedGridName);
@@ -81,7 +88,7 @@ namespace ZestyKitchenHelper
                      //   true, 2, 4, ContentManager.pUnplacedGridName);
                 }
             };
-            var addNewButton = new ImageButton() { Source = ContentManager.addIcon };
+            var addNewButton = new ImageButton() { Source = ContentManager.addIcon, BackgroundColor = Color.Transparent };
             addNewButton.Clicked += (obj, args) => { addForm.IsVisible = true; };
             var searchBar = new SearchBar() { Text = ContentManager.defaultSearchAllBarText, MinimumWidthRequest = 300 };
             searchBar.Focused += (obj, args) => searchBar.Text = "";
@@ -142,6 +149,7 @@ namespace ZestyKitchenHelper
             AbsoluteLayout.SetLayoutFlags(pageContainer, AbsoluteLayoutFlags.All);
         }
 
+
         public static async void UpdateShelf(string name, ItemLayout item, int cellIndex,  Item itemStruct)
         {
             var itemInfo = ContentManager.GetInfoBase();
@@ -153,8 +161,10 @@ namespace ZestyKitchenHelper
             item.StorageName = name;
             item.StorageIndex = cellIndex;
             item.SetMarkingVisibility(false);
-            ContentManager.UnplacedItems.Remove(itemStruct);
-            //GridManager.ConstrainGrid("Unplaced Grid", gridFootIndex, unplacedGridRows * unplacedGridColumns, false);
+            ContentManager.UnplacedItemBase.Remove(itemStruct.ID);
+            item.iconImage.ClearEffects();
+            GridManager.RemoveGridItem(partialUnplacedGrid, item);
+            GridManager.RemoveGridItem(GridManager.GetGrid(ContentManager.unplacedGridName), item);
             await ViewExtensions.QuadraticInterpolator(itemInfo[name][cellIndex], .5, 250, d => itemInfo[name][cellIndex].Scale = d, null);
             string rowInfo, rowItems;
             if(ContentManager.storageSelection == ContentManager.StorageSelection.fridge)

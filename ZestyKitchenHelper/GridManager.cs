@@ -45,7 +45,7 @@ namespace ZestyKitchenHelper
         {
             // If replacing existing children, then does not retrive child list
             List<View> gridChildren = replaceExisting ? item.ToList() : grid.Children.ToList();
-
+            Console.WriteLine("GridManager 48: grid children length = " + grid.Children.Count);
 
             //Append new child to the grid if not replacing
             if (!replaceExisting)
@@ -75,10 +75,12 @@ namespace ZestyKitchenHelper
             List<View> gridChildren =  grid.Children.ToList();
 
             // check if child exist, if so, remove
-            if (gridChildren.Contains(item))
+            if (grid.Children.Contains(item))
                 gridChildren.Remove(item);
-           
+
+            Console.WriteLine("GridManager 81: removed grid children length: " + gridChildren.Count);
             grid.OrganizeGrid(gridChildren, GridOrganizer.OrganizeMode.HorizontalLeft);
+            grid.Children.Remove(item);
         }
 
         public static void RemoveGridItem<T>(string name, T item) where T : View
