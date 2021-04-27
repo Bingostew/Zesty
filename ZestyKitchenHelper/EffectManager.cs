@@ -60,7 +60,7 @@ namespace ZestyKitchenHelper
         /// </summary>
         /// <param name="view">View with TouchEffect attached</param>
         /// <param name="storageName">Name of storage the view belongs to</param>
-        public static void UpdateScreenTouchBounds(View view, string storageName)
+        public static void UpdateScreenTouchBounds(ItemLayout view, string storageName)
         {
             Console.WriteLine("AddView 119: touch check 1");
             var tryEffect = view.GetEffect(typeof(ScreenTouch)) as ScreenTouch;
@@ -72,8 +72,8 @@ namespace ZestyKitchenHelper
             {
                 Console.WriteLine("AddView 127: touch effect added");
                 ScreenTouch touchEvent = new ScreenTouch() { ContactViews = ContentManager.GetContactViews(storageName) };
-                touchEvent.OnTouchEvent += (obj, args) => OnScreenTouch(args, view as ItemLayout, storageName, (view as ItemLayout).ItemData);
-                (view as ItemLayout).iconImage.Effects.Add(touchEvent);
+                touchEvent.OnTouchEvent += (obj, args) => OnScreenTouch(args, view, storageName, view.ItemData);
+                view.iconImage.Effects.Add(touchEvent);
             }
         }
 

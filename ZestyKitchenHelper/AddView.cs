@@ -10,77 +10,6 @@ namespace ZestyKitchenHelper
 {
     public class AddView
     {
-        private static int gridWidth;
-        private static int gridHeight;
-        private static List<View> gridList = new List<View>();
-
-        /// <summary>
-        /// Creates a new grid with all unplaced items
-        /// </summary>
-        /// <param name="width"> number of columns. </param>
-        /// <param name="height"> number of rows. If set to -1, row is added to fit </param>
-        /// <param name="addButton"> the first child of grid, which is a button that sets the add form visiblity to true.</param>
-        /// <returns></returns>
-      /*
-        public static void ChangePageUnplacedGrid(Grid grid, int startIndex, int gridCellAmount, string storageName)
-        {
-            Console.WriteLine("max " + grid.GetGridChilrenList().Count);
-            gridList.Clear();
-            var max = ContentManager.UnplacedItems.Count > gridCellAmount + startIndex ? gridCellAmount + startIndex : ContentManager.UnplacedItems.Count;
-            var limited = true;
-            if (gridCellAmount < 0)
-            {
-                max = grid.GetGridChilrenList().Count; limited = false;
-            }
-
-            for (int i = startIndex; i < max; i++)
-            {
-                AddUnplacedGrid(grid, storageName, null, grid.GetGridChilrenList()[i] as ItemLayout, limited);
-            }
-        }
-        /*
-        /// <summary>
-        /// Add child to unplaced grid. If set _item to null, then itemLayout must not be null. Vice versa.
-        /// </summary>
-        /// <param name="grid"> the instance of the grid from InitializeNewGrid method</param>
-        /// <param name="item"> the item data for the child </param>
-        /// <param name="currentStorageName"> Optional: sets bounds for a rendered cabinet to activate the ScreenTouch effect </param>
-        public static void AddUnplacedGrid(Grid grid, string currentStorageName, Item _item = null, ItemLayout itemLayout = null, bool limited = true)
-        {
-            var max = grid.RowDefinitions.Count * grid.ColumnDefinitions.Count;
-            ItemLayout itemIcon;
-            if (itemLayout == null)
-            {
-                itemIcon = new ItemLayout(60, 60, _item)
-                    .AddMainImage()
-                    .AddAmountMark()
-                    .AddExpirationMark()
-                    .AddTitle()
-                    .AddInfoIcon();
-            }
-            else { itemIcon = itemLayout; }
-            Item item = _item == null ? itemIcon.ItemData : _item;
-            
-            if (!ContentManager.MetaItemBase.ContainsKey(item.ID)) { ContentManager.MetaItemBase.Add(item.ID, itemIcon); }
-
-            
-            if (currentStorageName != null && currentStorageName.Length > 0)
-            {
-
-                ScreenTouch touchEvent = new ScreenTouch() { ContactViews = ContentManager.GetContactViews(currentStorageName) };
-                touchEvent.OnTouchEvent += (obj, args) => OnContact(args, itemIcon, currentStorageName, item, grid);
-
-                itemIcon.iconImage.Effects.Add(touchEvent);
-            }
-            gridList.Add(itemIcon);
-
-            if (grid.Children.Count < max && limited) { grid.SetGridChildrenList(gridList); }
-            else { UpdateUnplacedGrid(grid); }
-        }*/
-        
-        
-        
-
         static List<Item> newItem = new List<Item>();
         const int addFormTextFontSize = 20;
 
@@ -89,7 +18,7 @@ namespace ZestyKitchenHelper
         /// </summary>
         ///
         /// <returns></returns>
-        public static AbsoluteLayout GetAddForm(Action<Item> localUnplacedEvent, Action<Item> baseUnplacedEvent, bool metaPriority,
+        public static AbsoluteLayout GetAddForm(Action<Item> localUnplacedEvent, Action<Item> baseUnplacedEvent,
             string storageName = "", bool limited = true, Grid partialUnplacedGrid = null)
         {
             List<Button> formSelector = new List<Button>();
@@ -98,19 +27,30 @@ namespace ZestyKitchenHelper
             int selectorIndex = 0;
             Item item = new Item().SetItem(2021, 1, 1, 1, "product", ContentManager.addIcon);
             Grid currentGrid = new Grid();
-            //Grid.IGridList<IconLayout> currentGridChildren = (Grid.IGridList <IconLayout> )currentGrid.Children;
 
             Vector2D<int> selectGridIndex = new Vector2D<int>(0, 6);
 
-            Grid expirationGrid = GridManager.InitializeGrid("AddExpirationGrid", 2, 3);
+            Grid expirationGrid = GridManager.InitializeGrid("AddExpirationGrid", 2, 3, GridLength.Auto, GridLength.Star);
 
-            Grid iconGrid = GridManager.InitializeGrid("AddIconGrid", 2, 3);
+            Grid iconGrid = new Grid()
+            {
+                RowDefinitions =
+                {
+                    new RowDefinition(){ Height = GridLength.Star },
+                    new RowDefinition(){ Height = GridLength.Star }
+                },
+                ColumnDefinitions =
+                {
+                    new ColumnDefinition(){ Width = GridLength.Auto },
+                    new ColumnDefinition(){ Width = GridLength.Star }
+                }
+            };
 
             List<IconLayout> presetResult = new List<IconLayout>();
             List<int> presetResultSorter = new List<int>();
-            Grid presetSelectGrid = GridManager.InitializeGrid("AddPresetGrid", 2, 3);
+            Grid presetSelectGrid = GridManager.InitializeGrid("AddPresetGrid", 2, 3, GridLength.Star, GridLength.Star);
 
-            Grid defaultSelectGrid = GridManager.InitializeGrid("AddDefaultGrid", 2, 3);
+            Grid defaultSelectGrid = GridManager.InitializeGrid("AddDefaultGrid", 2, 3, GridLength.Star, GridLength.Star);
 
             foreach (var name in ContentManager.DefaultIcons.Keys)
             {
@@ -132,11 +72,11 @@ namespace ZestyKitchenHelper
                 BackgroundColor = Color.FromRgb(200, 200, 200),
                 RowDefinitions =
                 {
-                    new RowDefinition(){ Height = 40 },
-                    new RowDefinition(){ Height = 40 },
-                    new RowDefinition(){ Height = 40 },
-                    new RowDefinition(){ Height = 30 },
-                    new RowDefinition(){Height = GridLength.Star }
+                    new RowDefinition(){ Height = GridLength.Star },
+                    new RowDefinition(){ Height = GridLength.Star },
+                    new RowDefinition(){ Height = GridLength.Star },
+                    new RowDefinition(){ Height = GridLength.Star },
+                    new RowDefinition(){Height = new GridLength(2, GridUnitType.Star) }
                 },
                 ColumnDefinitions =
                 {
@@ -155,34 +95,36 @@ namespace ZestyKitchenHelper
             var dateLabel = new Label() { Text = "Exp. Date: ", FontSize = addFormTextFontSize, TextColor = Color.Black };
             var amountLabel = new Label() { Text = "Amount: ", FontSize = addFormTextFontSize, TextColor = Color.Black };
             var iconLabel = new Label() { Text = "Icon: ", FontSize = addFormTextFontSize, TextColor = Color.Black };
-            var dateMonth = new Button() { BorderColor = Color.Black, BorderWidth = 2 };
+            var dateMonth = new Button() { BorderColor = Color.Black, BorderWidth = 2, BackgroundColor = Color.Transparent };
             dateMonth.Clicked += (obj, arg) => { selectorIndex = 0; ClearText(dateMonth); };
-            var dateDay = new Button() { BorderColor = Color.Black, BorderWidth = 2 };
+            var dateDay = new Button() { BorderColor = Color.Black, BorderWidth = 2, BackgroundColor = Color.Transparent, };
             dateDay.Clicked += (obj, arg) => { selectorIndex = 1; ClearText(dateDay); };
             var dateYear = new Button() { BorderColor = Color.Black, BorderWidth = 2 };
             dateYear.Clicked += (obj, arg) => { selectorIndex = 2; ClearText(dateYear); };
-            var amountInput = new Button() { BorderColor = Color.Black, BorderWidth = 2 };
+            var amountInput = new Button() { BorderColor = Color.Black, BorderWidth = 2, BackgroundColor = Color.Transparent, };
             amountInput.Clicked += (obj, arg) => { selectorIndex = 3; ClearText(amountInput); };
-            var lastPageButton = new ImageButton() { Source = ContentManager.countIcon, Rotation = 180, Aspect = Aspect.Fill, WidthRequest = 50 };
+            var lastPageButton = new ImageButton() { Source = ContentManager.countIcon, Rotation = 180, 
+                BackgroundColor = Color.Transparent, Aspect = Aspect.Fill, WidthRequest = 50 };
             lastPageButton.Clicked += (obj, args) =>
             {
                 selectGridIndex = new Vector2D<int>(selectGridIndex.X - 6, selectGridIndex.Y - 6);
-                GridManager.ConstrainGrid(presetSelectGrid, selectGridIndex.X, selectGridIndex.Y, false); 
+                GridManager.ConstrainGrid(presetSelectGrid, selectGridIndex.X, selectGridIndex.Y); 
 
                // var index = currentGridChildren.IndexOf(currentGrid.Children[0] as IconLayout);
                // if (index > 6) nextPresetPage(currentGridChildren.IndexOf(currentGrid.Children[0] as IconLayout) - 6);
                // else nextPresetPage(0);
             };
-            var nextPageButton = new ImageButton() { Source = ContentManager.countIcon, Aspect = Aspect.Fill, WidthRequest = 50, TranslationX = 50 };
+            var nextPageButton = new ImageButton() { Source = ContentManager.countIcon, Aspect = Aspect.Fill, 
+                BackgroundColor = Color.Transparent, WidthRequest = 50, TranslationX = 50 };
             nextPageButton.Clicked += (obj, args) =>
             {
                 selectGridIndex = new Vector2D<int>(selectGridIndex.X + 6, selectGridIndex.Y + 6);
-                GridManager.ConstrainGrid(presetSelectGrid, selectGridIndex.X, selectGridIndex.Y, false);
+                GridManager.ConstrainGrid(presetSelectGrid, selectGridIndex.X, selectGridIndex.Y);
                 //if (currentGrid.Children.Count >= 6) nextPresetPage(currentGridChildren.IndexOf(currentGrid.Children.Last() as IconLayout) + 1);
             };
             var pageToolGrid = new Grid() { ColumnDefinitions = { new ColumnDefinition() { Width = 50 }, new ColumnDefinition() { Width = 50 } } };
             pageToolGrid.Children.Add(lastPageButton, 0, 0); pageToolGrid.Children.Add(nextPageButton, 1, 0);
-            var iconSelect1 = new Button() { HeightRequest = 10, CornerRadius = 2, BorderColor = Color.Wheat, BorderWidth = 3 };
+            var iconSelect1 = new Button() { WidthRequest = 30, CornerRadius = 2, BorderColor = Color.Wheat, BorderWidth = 3 };
             iconSelect1.Clicked += (obj, arg) =>
             {
                 imageSelectorIndex = 0; toggleSelect(0, imageSelector, Color.Black, Color.Wheat);
@@ -193,7 +135,7 @@ namespace ZestyKitchenHelper
                 presetSelectGrid.Children.Clear();
                 changeSelectedIcon();
             };
-            var iconSelect2 = new Button() { HeightRequest = 10, CornerRadius = 2, BorderColor = Color.Wheat, BorderWidth = 3 };
+            var iconSelect2 = new Button() { WidthRequest = 30, CornerRadius = 2, BorderColor = Color.Wheat, BorderWidth = 3 };
             iconSelect2.Clicked += (obj, arg) =>
             {
                 imageSelectorIndex = 1; toggleSelect(1, imageSelector, Color.Black, Color.Wheat);
@@ -347,7 +289,6 @@ namespace ZestyKitchenHelper
             form.Children.Add(pageToolGrid, 1, 3);
             form.Children.Add(presetSelectGrid, 1, 4);
             form.Children.Add(defaultSelectGrid, 1, 4);
-            Grid.SetColumnSpan(iconGrid, 2);
 
 
             Grid numPadGrid = new Grid()
@@ -435,10 +376,10 @@ namespace ZestyKitchenHelper
                 numPadList.Add(button);
             }
 
-            var nextButton = new Button() { IsVisible = false };
-            var zeroButton = new Button() { Text = "0" };
+            var nextButton = new Button() { IsVisible = false, BackgroundColor = Color.Transparent, };
+            var zeroButton = new Button() { Text = "0"};
             zeroButton.Clicked += (obj, arg) => changeText("0");
-            var deleteButton = new Button() { IsVisible = false };
+            var deleteButton = new Button() { IsVisible = false, BackgroundColor = Color.Transparent, };
 
             numPadList.Add(nextButton);
             numPadList.Add(zeroButton);
@@ -517,14 +458,14 @@ namespace ZestyKitchenHelper
 
             foreach (Item _item in newItem)
             {
-                ItemLayout itemLayout = new ItemLayout(60, 60, _item)
+                ItemLayout itemLayout = new ItemLayout(100,100, _item)
                     .AddMainImage()
                     .AddAmountMark()
                     .AddExpirationMark()
                     .AddTitle()
                     .AddInfoIcon();
 
-                ItemLayout itemLayoutCopy = new ItemLayout(60, 60, _item)
+                ItemLayout itemLayoutCopy = new ItemLayout(100, 100, _item)
                     .AddMainImage()
                     .AddAmountMark()
                     .AddExpirationMark()

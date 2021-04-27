@@ -28,23 +28,21 @@ namespace ZestyKitchenHelper
             saveLocalItemToShelfEvent = _saveLocalItemToShelfEvent;
             saveBaseItemToShelfEvent = _saveBaseItemToShelfEvent;
 
+            //-- set up storage view
             var name = new Label() { Text = _storageName, FontSize = 30, TextColor = Color.Black };
             storage = ContentManager.GetStorageView(storageName) as AbsoluteLayout;
             storage.WidthRequest = Application.Current.MainPage.Width * .8;
             storage.HeightRequest = 5 * Application.Current.MainPage.Height / 8;
             storage.VerticalOptions = LayoutOptions.EndAndExpand;
 
+            //-- set up unplaced grid
             unplacedGrid = GridManager.GetGrid(ContentManager.unplacedGridName);
-            partialUnplacedGrid = GridManager.ConstrainGrid(unplacedGrid, 0, 8, true,
-                (View v) =>  new ItemLayout(50, 50, (v as ItemLayout).ItemData)
-                                .AddMainImage()
-                                .AddAmountMark()
-                                .AddExpirationMark()
-                                .AddTitle()
-                                .AddInfoIcon(), 2, 4,  "Partial Unplaced Grid");
-            partialUnplacedGrid.HeightRequest = 300;
-            partialUnplacedGrid.ChildAdded += (o, v) => EffectManager.UpdateScreenTouchBounds(partialUnplacedGrid.Children.Last(), storageName); // fix this get children and add effect
-            addForm = AddView.GetAddForm(saveLocalItemEvent, saveBaseItemEvent, false, storageName, true, partialUnplacedGrid);
+            partialUnplacedGrid = GridManager.InitializeGrid(ContentManager.pUnplacedGridName, 2, 4, GridLength.Star, GridLength.Star);
+            // add listener to set TouchEffect for each new item added
+            partialUnplacedGrid.ChildAdded += (o, v) => EffectManager.UpdateScreenTouchBounds(partialUnplacedGrid.Children.Last() as ItemLayout, storageName);
+            // initialize grid by constraining UnplacedGrid
+            partialUnplacedGrid = GridManager.ConstrainGrid(unplacedGrid, 0, 8, null, partialUnplacedGrid);
+            addForm = AddView.GetAddForm(saveLocalItemEvent, saveBaseItemEvent, storageName, true, partialUnplacedGrid);
 
             var backButton = new ImageButton() { Source = ContentManager.backButton, Aspect = Aspect.Fill, BackgroundColor = Color.Transparent };
             backButton.Clicked += (o, a) =>

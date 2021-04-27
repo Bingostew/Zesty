@@ -20,7 +20,7 @@ namespace ZestyKitchenHelper
         /// <param name="rows"></param>
         /// <param name="columns"></param>
         /// <returns></returns>
-        public static Grid InitializeGrid(string name, int rows, int columns)
+        public static Grid InitializeGrid(string name, int rows, int columns, GridLength gridHeight, GridLength gridWidth)
         {
             // if exist, then get instead of create
             if (gridDataBase.ContainsKey(name))
@@ -30,11 +30,11 @@ namespace ZestyKitchenHelper
             Grid grid = new Grid();
             for(int i = 0; i < rows; i++)
             {
-                grid.RowDefinitions.Add(new RowDefinition());
+                grid.RowDefinitions.Add(new RowDefinition() { Height = gridHeight });
             }
             for (int i = 0; i < columns; i++)
             {
-                grid.ColumnDefinitions.Add(new ColumnDefinition());
+                grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = gridWidth });
             }
 
             gridDataBase.Add(name, grid);
@@ -88,21 +88,20 @@ namespace ZestyKitchenHelper
             RemoveGridItem(gridDataBase[name], item);
         }
 
+
         /// <summary>
         /// Returns a grid with constraint in children from another grid
         /// </summary>
-        /// <param name="baseGrid">Grid to extract from</param>
-        /// <param name="startChildIndex">Starting child index to extract from</param>
-        /// <param name="endChildIndex">End child index of the extraction</param>
-        /// <param name="newGrid">If the extraction creates a new grid or constrain the original grid</param>
-        /// <param name="newgridName">New name of the new grid</param>
+        /// <param name="baseGrid">grid to extract from</param>
+        /// <param name="startChildIndex">index of basegrid to start extraction</param>
+        /// <param name="endChildIndex">index of basegrid to end extractionparam>
+        /// <param name="converter">method to convert item from basegrid to something else in constrained grid</param>
+        /// <param name="newGrid">a new grid, if applicable</param>
         /// <returns></returns>
-        /// 
-        public static Grid ConstrainGrid(Grid baseGrid, int startChildIndex, int endChildIndex,  bool newGrid, Converter<View, View> converter = null,
-            int rows = 0, int columns = 0, string newgridName = "") 
+        public static Grid ConstrainGrid(Grid baseGrid, int startChildIndex, int endChildIndex, Converter<View, View> converter = null, Grid newGrid = null) 
         {
             // if initializing a new grid, create one, otherwise, use provided grid 
-            Grid grid = newGrid ? InitializeGrid(newgridName, rows, columns) : baseGrid;
+            Grid grid = newGrid != null ? newGrid : baseGrid;
 
             // note the maximum number of children the grid is allowed to have
             if(!constraintBase.ContainsKey(grid))
@@ -119,8 +118,8 @@ namespace ZestyKitchenHelper
             // get the child list from beginning index to end index
             List<View> extractedChildren = new List<View>(); 
 
-            // If creating a new grid, creates a deep copy of the base grid children
-            if (newGrid)
+            // If creating a new grid and has a converter, creates a deep copy of the base grid children
+            if (newGrid != null && converter != null)
                 extractedChildren = baseGrid.Children.ToList().GetRange(startIndex, endIndex - startIndex).ConvertAll(converter);
             else
                 extractedChildren = baseGrid.Children.ToList().GetRange(startIndex, endIndex - startIndex);
@@ -129,10 +128,9 @@ namespace ZestyKitchenHelper
 
             return grid;
         }
-        public static Grid ConstrainGrid(string name, int startChildIndex, int endChildIndex,  bool newGrid, Converter<View, View> converter = null,
-            int rows = 0, int columns = 0, string newgridName = "")
+        public static Grid ConstrainGrid(string name, int startChildIndex, int endChildIndex, Converter<View, View> converter = null, Grid newGrid = null)
         {
-            return ConstrainGrid(gridDataBase[name], startChildIndex, endChildIndex, newGrid, converter, rows, columns, newgridName);
+            return ConstrainGrid(gridDataBase[name], startChildIndex, endChildIndex, converter, newGrid);
         }
 
         public static Grid GetGrid(string name)

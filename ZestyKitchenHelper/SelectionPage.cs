@@ -10,24 +10,48 @@ namespace ZestyKitchenHelper
 {
     public class SelectionPage : ContentPage
     {
-        public ImageButton cabinetButton = new ImageButton()
+        private ImageButton cabinetButton = new ImageButton()
         {
             Source = ContentManager.pantryIcon,
             Aspect = Aspect.AspectFill,
+            BackgroundColor = Color.Transparent,
             WidthRequest = 300, HeightRequest = 300
         };
-        public ImageButton fridgeButton = new ImageButton()
+        private ImageButton fridgeButton = new ImageButton()
         {
             Source = ContentManager.refridgeIcon,
             Aspect = Aspect.AspectFill,
+            BackgroundColor = Color.Transparent,
             WidthRequest = 300,
             HeightRequest = 300
         };
-        public ImageButton addUnplaceButton = new ImageButton()
+        private ImageButton addUnplaceButton = new ImageButton()
         {
-            Source = ContentManager.addIcon
+            Source = ContentManager.addIcon,
+            BackgroundColor = Color.Transparent
         };
-        
+        private Label cabinetLabel = new Label()
+        {
+            FontSize = 30,
+            TextColor = Color.Black,
+            HorizontalOptions = LayoutOptions.Center,
+            Text = "My Pantries"
+        };
+        private Label fridgeLabel = new Label()
+        {
+            FontSize = 30,
+            TextColor = Color.Black,
+            HorizontalOptions = LayoutOptions.Center,
+            Text = "My Fridges"
+        };
+        private Label unplacedLabel = new Label()
+        {
+            FontSize = 30,
+            HorizontalOptions = LayoutOptions.Center,
+            TextColor = Color.Black,
+            Text = "All Items"
+        };
+
 
         public SelectionPage()
         {
@@ -36,8 +60,10 @@ namespace ZestyKitchenHelper
                 BackgroundColor = Color.Wheat,
                 RowDefinitions =
                 {
-                    new RowDefinition(),
-                    new RowDefinition(),
+                    new RowDefinition(){Height = GridLength.Auto },
+                    new RowDefinition(){Height = GridLength.Star },
+                    new RowDefinition(){Height = GridLength.Auto },
+                    new RowDefinition(){Height = GridLength.Star },
                 },
                 ColumnDefinitions =
                 {
@@ -46,9 +72,8 @@ namespace ZestyKitchenHelper
                 }
             };
 
-            grid.Children.Add(cabinetButton, 0, 0);
-            grid.Children.Add(fridgeButton, 1, 0);
-            grid.Children.Add(addUnplaceButton, 0, 1);
+            List<View> gridChildren = new List<View>(){ cabinetLabel, cabinetButton, fridgeLabel, fridgeButton, unplacedLabel, addUnplaceButton };
+            grid.OrganizeGrid(gridChildren, GridOrganizer.OrganizeMode.TwoRowSpanLeft);
 
             void SetSelection(ContentManager.StorageSelection selection)
             {

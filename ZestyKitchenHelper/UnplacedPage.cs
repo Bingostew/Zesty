@@ -20,11 +20,11 @@ namespace ZestyKitchenHelper
         const string alphaIndicatorString = "A-Z";
         public UnplacedPage(Action<Item> localUnplacedEvent, Action<Item> baseUnplaceEvent, Action<Item> deleteItemLocal, Action<Item> deleteItemBase)
         {
-            var returnButton = new ImageButton() { Source = ContentManager.backButton };
+            var returnButton = new ImageButton() { Source = ContentManager.backButton, BackgroundColor = Color.Transparent };
             returnButton.Clicked += (o,a) => ContentManager.pageController.ToMainSelectionPage();
-            var addNewButton = new ImageButton() { Source = ContentManager.addIcon };
+            var addNewButton = new ImageButton() { Source = ContentManager.addIcon, BackgroundColor = Color.Transparent };
             metaGrid = GridManager.GetGrid(ContentManager.metaGridName); 
-            var addForm = AddView.GetAddForm(localUnplacedEvent, baseUnplaceEvent,true, "", false);
+            var addForm = AddView.GetAddForm(localUnplacedEvent, baseUnplaceEvent, "", false);
             searchAllBar.Text = ContentManager.defaultSearchAllBarText;
             searchAllBar.Focused += (obj, args) => searchAllBar.Text = "";
             searchAllBar.Unfocused += (obj, args) => { if (searchAllBar.Text.Length == 0) searchAllBar.Text = ContentManager.defaultSearchAllBarText; };
@@ -51,6 +51,7 @@ namespace ZestyKitchenHelper
             gridScroll = new ScrollView()
             {
                 VerticalScrollBarVisibility = ScrollBarVisibility.Always,
+                HeightRequest = Height * 0.8,
                 Content = metaGrid
             };
 

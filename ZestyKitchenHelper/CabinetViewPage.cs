@@ -30,7 +30,7 @@ namespace ZestyKitchenHelper
             storageName = name;
             Image backgroundCell = new Image()
             { Source = backgroundImage, Aspect = Aspect.Fill };
-            ImageButton backButton = new ImageButton() { Source = ContentManager.backButton, WidthRequest = 100, HeightRequest = 100 };
+            ImageButton backButton = new ImageButton() { Source = ContentManager.backButton, BackgroundColor = Color.Transparent, WidthRequest = 100, HeightRequest = 100 };
             backButton.Clicked += (obj, args) =>
             {
                 if (currentGrid != null) { currentGrid.IsVisible = false; }
@@ -52,14 +52,16 @@ namespace ZestyKitchenHelper
                 }
 
             };
-            var lastPageButton = new ImageButton() { Source = ContentManager.countIcon, Rotation = 180, Aspect = Aspect.Fill, WidthRequest = 50 };
+            var lastPageButton = new ImageButton() { Source = ContentManager.countIcon, BackgroundColor = Color.Transparent,
+                Rotation = 180, Aspect = Aspect.Fill, WidthRequest = 50 };
             lastPageButton.Clicked += (obj, args) =>
             {
                 var index = currentGrid.GetGridChilrenList().IndexOf(currentGrid.Children[0]);
                 if (index > max_grid_count) NextPresetPage(index - max_grid_count);
                 else NextPresetPage(0);
             };
-            var nextPageButton = new ImageButton() { Source = ContentManager.countIcon, Aspect = Aspect.Fill, WidthRequest = 50};
+            var nextPageButton = new ImageButton() { Source = ContentManager.countIcon, BackgroundColor = Color.Transparent,
+                Aspect = Aspect.Fill, WidthRequest = 50};
             nextPageButton.Clicked += (obj, args) =>
             {
                 Console.WriteLine("children count " + currentGrid.GetGridChilrenList().IndexOf(currentGrid.Children[currentGrid.Children.Count - 1]));
@@ -103,7 +105,7 @@ namespace ZestyKitchenHelper
             viewOverlay.ChildAdded += (obj, args) => viewOverlay.ForceLayout();
 
             var storageLabel = new Label() { Text = name, FontSize = 40, TextColor = Color.Black, HorizontalTextAlignment = TextAlignment.Center };
-            var returnButton = new ImageButton() { Source = ContentManager.backButton, WidthRequest = 100, HeightRequest = 100 };
+            var returnButton = new ImageButton() { Source = ContentManager.backButton, BackgroundColor = Color.Transparent, WidthRequest = 100, HeightRequest = 100 };
             returnButton.Clicked += (o,a) => ContentManager.pageController.ToSingleSelectionPage();
             var storage = ContentManager.GetStorageView(name);
             storage.HorizontalOptions = LayoutOptions.CenterAndExpand;

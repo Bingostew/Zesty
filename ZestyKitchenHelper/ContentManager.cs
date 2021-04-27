@@ -52,8 +52,8 @@ namespace ZestyKitchenHelper
             IDGenerator.InitializeIDGroup(itemStorageIdGenerator);
             LocalStorageController.InitializeLocalDataBase();
 
-            GridManager.InitializeGrid(metaGridName, 10, 4);
-            GridManager.InitializeGrid(unplacedGridName, 10, 4);
+            GridManager.InitializeGrid(metaGridName, 9, 4, GridLength.Auto, GridLength.Star);
+            GridManager.InitializeGrid(unplacedGridName, 0, 4, GridLength.Star, GridLength.Star);
         }
 
         public static Layout<View> GetStorageView(string name)

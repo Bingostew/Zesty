@@ -26,7 +26,7 @@ namespace ZestyKitchenHelper
 
         protected StackLayout pageContent = new StackLayout() { BackgroundColor = Color.Wheat };
         protected AbsoluteLayout cellContainer = new AbsoluteLayout() { HorizontalOptions = LayoutOptions.Center};
-        protected Dictionary<int, AbsoluteLayout> preSaveState = new Dictionary<int, AbsoluteLayout>();
+        protected Dictionary<int, AbsoluteLayout> preSaveState;
         protected Action<string, string, string> storageSaveLocalEvent, storageSaveBaseEvent;
         protected int selectedCellIndex = -1;
         protected ImageButton selectedButton;
@@ -450,23 +450,23 @@ namespace ZestyKitchenHelper
             };
 
             var dividerImage = new Image() { BackgroundColor = Color.Gray };
-            var subdivideButton = new ImageButton() { Source = subdivideIcon };
+            var subdivideButton = new ImageButton() { Source = subdivideIcon, BackgroundColor = Color.Transparent, };
             subdivideButton.Clicked += (object obj, EventArgs args) => { if (CanTransform()) { SubdivideCell(subdivideAmount); } };
             var subdivideLabel = new Label() { Text = "Subdivide", HorizontalOptions = LayoutOptions.CenterAndExpand, FontSize = 15 };
             var numLabel = new Label() { Text = "2", HorizontalOptions = LayoutOptions.Center, FontSize = 20, VerticalOptions = LayoutOptions.Center, TextColor = Color.Black };
-            var minusButton = new ImageButton() { Source = countArrow };
+            var minusButton = new ImageButton() { Source = countArrow, BackgroundColor = Color.Transparent, };
             minusButton.Clicked += (obj, args) =>
             {
                 if (subdivideAmount > 2) { subdivideAmount--; numLabel.Text = subdivideAmount.ToString(); }
             };
-            var plusButton = new ImageButton() { Source = countArrow, Rotation = 180 };
+            var plusButton = new ImageButton() { Source = countArrow, BackgroundColor = Color.Transparent, Rotation = 180 };
             plusButton.Clicked += (obj, args) => {
                 if (subdivideAmount < 9) { subdivideAmount++; numLabel.Text = subdivideAmount.ToString(); }
             };
-            var mergeRowButton = new ImageButton() { Source = mergeIcon };
+            var mergeRowButton = new ImageButton() { Source = mergeIcon, BackgroundColor = Color.Transparent, };
             mergeRowButton.Clicked += (obj, args) => { if (CanTransform()) MergeCell(); };
             var mergeRowLabel = new Label() { Text = "Merge Row", HorizontalOptions = LayoutOptions.CenterAndExpand, FontSize = 15 };
-            var deleteButton = new ImageButton() { Source = ContentManager.deleteCellIcon };
+            var deleteButton = new ImageButton() { Source = ContentManager.deleteCellIcon, BackgroundColor = Color.Transparent, };
             deleteButton.Clicked += (obj, args) => { if (CanTransform()) DeleteCell(); };
             var deleteLabel = new Label() { Text = "Delete", HorizontalOptions = LayoutOptions.CenterAndExpand, FontSize = 15 };
 
@@ -511,7 +511,7 @@ namespace ZestyKitchenHelper
             {
                 var rowContainer = new AbsoluteLayout() { WidthRequest = cellContainer.WidthRequest, HorizontalOptions = LayoutOptions.Center };
                 var newCabinetCell = new Image() { Source = cellImageSource, Aspect = Aspect.Fill, WidthRequest = cellContainer.WidthRequest, HeightRequest = rowContainer.HeightRequest };
-                var button = new ImageButton() { Source = ContentManager.transIcon, Aspect = Aspect.Fill };
+                var button = new ImageButton() { Source = ContentManager.transIcon, BackgroundColor = Color.Transparent, Aspect = Aspect.Fill };
                 AbsoluteLayout.SetLayoutBounds(button, new Rectangle(.5, 0, 1, 1));
                 AbsoluteLayout.SetLayoutFlags(button, AbsoluteLayoutFlags.All);
 
@@ -568,7 +568,8 @@ namespace ZestyKitchenHelper
             for (int i = 0; i <amount; i ++)
             {
                 var lastIndex = ContentManager.cabinetInfo[nameLegacy][selectedCellIndex].Children.Count - 1;
-                var button = new ImageButton() { Source = ContentManager.transIcon, Aspect = Aspect.Fill, WidthRequest = parentWidth / amount, HeightRequest = parentHeight };
+                var button = new ImageButton() { Source = ContentManager.transIcon, BackgroundColor = Color.Transparent,
+                    Aspect = Aspect.Fill, WidthRequest = parentWidth / amount, HeightRequest = parentHeight };
 
                 Image divider = new Image() { Aspect = Aspect.Fill };
                 if (i != 0)
@@ -641,7 +642,7 @@ namespace ZestyKitchenHelper
             }
             var index = selectedCellIndex;
             var buttonIndex = ContentManager.cabinetInfo[nameLegacy][index].Children.Count - 1;
-            var button = new ImageButton() { Source = ContentManager.transIcon, Aspect = Aspect.Fill };
+            var button = new ImageButton() { Source = ContentManager.transIcon, BackgroundColor = Color.Transparent, Aspect = Aspect.Fill };
             var ancestorWidth = ContentManager.cabinetInfo[nameLegacy][selectedCellIndex].Children[0].Width;
             var widthDifference = ancestorWidth - totalWidth <= 0 ? 0 : ancestorWidth - totalWidth;
             var buttonX = leftBound == 0 ? 0 : leftBound / widthDifference;
@@ -677,7 +678,18 @@ namespace ZestyKitchenHelper
         protected override async void ConfirmationCancelEvent(Action finishEvent)
         {
             bool cancelConfirmed = await ContentManager.pageController.DisplayAlert("Confirmation", "Do you want to discard all current changes?", "Discard", "Cancel");
-            if (cancelConfirmed) { ContentManager.cabinetInfo[nameLegacy] = preSaveState; finishEvent.Invoke(); }
+            if (cancelConfirmed) 
+            {
+                if (preSaveState != null)
+                    ContentManager.cabinetInfo[nameLegacy] = preSaveState;
+                else
+                {
+                    ContentManager.cabinetInfo.Remove(nameLegacy);
+                    ContentManager.cabinetItemBase.Remove(nameLegacy);
+                }
+                    
+                finishEvent.Invoke(); 
+            }
         }
 
         protected async override void ConfirmationSaveEvent(Action finishEvent)
@@ -777,34 +789,41 @@ namespace ZestyKitchenHelper
                     new RowDefinition(){Height = 50 }
                 }
             };
-            var addLeftCellButton = new ImageButton() { Source = countArrow, Rotation = -90, Aspect = Aspect.Fill, WidthRequest = 50, HeightRequest = 50 };
+            var addLeftCellButton = new ImageButton() { Source = countArrow, Rotation = -90, BackgroundColor = Color.Transparent,
+                Aspect = Aspect.Fill, WidthRequest = 50, HeightRequest = 50 };
             var addLeftLabel = new Label() { Text = "+", HorizontalOptions = LayoutOptions.CenterAndExpand, FontSize = 20 };
-            var deleteLeftCellButton = new ImageButton() { Source = countArrow, Rotation = 90, Aspect = Aspect.Fill, WidthRequest = 50, HeightRequest = 50 };
+            var deleteLeftCellButton = new ImageButton() { Source = countArrow, Rotation = 90, BackgroundColor = Color.Transparent,
+                Aspect = Aspect.Fill, WidthRequest = 50, HeightRequest = 50 };
             var deleteLeftLabel = new Label() { Text = "-", HorizontalOptions = LayoutOptions.CenterAndExpand, FontSize = 20 };
             addLeftCellButton.Clicked += (obj, args) => ChangeSideCell(true, true);
             deleteLeftCellButton.Clicked += (obj, args) => ChangeSideCell(true, false);
-            var addRightCellButton = new ImageButton() { Source = countArrow, Rotation = -90, Aspect = Aspect.Fill, WidthRequest = 50, HeightRequest = 50 };
+            var addRightCellButton = new ImageButton() { Source = countArrow, Rotation = -90, BackgroundColor = Color.Transparent,
+                Aspect = Aspect.Fill, WidthRequest = 50, HeightRequest = 50 };
             var addRightLabel = new Label() { Text = "+", HorizontalOptions = LayoutOptions.CenterAndExpand, FontSize = 20 };
-            var deleteRightCellButton = new ImageButton() { Source = countArrow, Rotation = 90, Aspect = Aspect.Fill, WidthRequest = 50, HeightRequest = 50 };
+            var deleteRightCellButton = new ImageButton() { Source = countArrow, Rotation = 90, BackgroundColor = Color.Transparent,
+                Aspect = Aspect.Fill, WidthRequest = 50, HeightRequest = 50 };
             var deleteRightLabel = new Label() { Text = "-", HorizontalOptions = LayoutOptions.CenterAndExpand, FontSize = 20 };
             addRightCellButton.Clicked += (obj, args) => ChangeSideCell(false, true);
             deleteRightCellButton.Clicked += (obj, args) => ChangeSideCell(false, false);
-            var subdivideButton = new ImageButton() { Source = subdivideIcon, Aspect = Aspect.Fill, WidthRequest = 50, HeightRequest = 50 };
+            var subdivideButton = new ImageButton() { Source = subdivideIcon, Aspect = Aspect.Fill, BackgroundColor = Color.Transparent,
+                WidthRequest = 50, HeightRequest = 50 };
             subdivideButton.Clicked += (object obj, EventArgs args) => { if (CanTransform()) { SubdivideCell(subdivideAmount); } };
             var subdivideLabel = new Label() { Text = "Div", HorizontalOptions = LayoutOptions.CenterAndExpand, FontSize = 15 };
-            var mergeButton = new ImageButton() { Source = mergeIcon, Aspect = Aspect.Fill, WidthRequest = 50, HeightRequest = 50 };
+            var mergeButton = new ImageButton() { Source = mergeIcon, Aspect = Aspect.Fill, BackgroundColor = Color.Transparent,
+                WidthRequest = 50, HeightRequest = 50 };
             mergeButton.Clicked += (obj, args) => { if (CanTransform()) { MergeCell(); } };
             var mergeLabel = new Label() { Text = "Merge", HorizontalOptions = LayoutOptions.CenterAndExpand, FontSize = 15 };
-            var deleteButton = new ImageButton() { Source = ContentManager.deleteCellIcon, Aspect = Aspect.Fill, WidthRequest = 50, HeightRequest = 50 };
+            var deleteButton = new ImageButton() { Source = ContentManager.deleteCellIcon, BackgroundColor = Color.Transparent,
+                Aspect = Aspect.Fill, WidthRequest = 50, HeightRequest = 50 };
             deleteButton.Clicked += (obj, args) => { if (CanTransform()) { DeleteCell(); } };
             var deleteLabel = new Label() { Text = "Del", HorizontalOptions = LayoutOptions.CenterAndExpand, FontSize = 15 };
             var numLabel = new Label() { Text = "2", HorizontalOptions = LayoutOptions.Center, FontSize = 20, VerticalOptions = LayoutOptions.Center, TextColor = Color.Black };
-            var minusButton = new ImageButton() { Source = countArrow, Rotation = 180 };
+            var minusButton = new ImageButton() { Source = countArrow, BackgroundColor = Color.Transparent, Rotation = 180 };
             minusButton.Clicked += (obj, args) =>
             {
                 if (subdivideAmount > 2) { subdivideAmount--; numLabel.Text = subdivideAmount.ToString(); }
             };
-            var plusButton = new ImageButton() { Source = countArrow };
+            var plusButton = new ImageButton() { Source = countArrow, BackgroundColor = Color.Transparent };
             plusButton.Clicked += (obj, args) => {
                 if (subdivideAmount < 9) { subdivideAmount++; numLabel.Text = subdivideAmount.ToString(); }
             };
@@ -898,7 +917,7 @@ namespace ZestyKitchenHelper
                 foreach (var cell in rowContainer.Children)
                 {
                     var index = indexer;
-                    var button = new ImageButton() { Source = ContentManager.transIcon, Aspect = Aspect.Fill };
+                    var button = new ImageButton() { Source = ContentManager.transIcon, BackgroundColor = Color.Transparent, Aspect = Aspect.Fill };
                     button.Clicked += (o, a) =>
                     {
                         foreach (Layout<View> element in cellContainer.Children)
@@ -971,7 +990,8 @@ namespace ZestyKitchenHelper
             for (int i = 0; i < count; i++)
             {
                 var cell = new Image() { Source = ContentManager.fridgeSideIcon, Aspect = Aspect.Fill };
-                var button = new ImageButton() { Source = ContentManager.transIcon, Aspect = Aspect.Fill,BorderColor = Color.Blue, BorderWidth = 5 };
+                var button = new ImageButton() { Source = ContentManager.transIcon, BackgroundColor = Color.Transparent,
+                    Aspect = Aspect.Fill,BorderColor = Color.Blue, BorderWidth = 5 };
                 buttonList.Add(button);
                 button.Clicked += (obj, args) =>
                 {
@@ -1005,7 +1025,8 @@ namespace ZestyKitchenHelper
             for (int i = 0; i < amount; i++)
             {
                 var lastIndex = ContentManager.fridgeInfo[nameLegacy][selectedCellIndex].Children.Count - 1;
-                var button = new ImageButton() { Source = ContentManager.transIcon, Aspect = Aspect.Fill, WidthRequest = parentWidth / amount };
+                var button = new ImageButton() { Source = ContentManager.transIcon, BackgroundColor = Color.Transparent,
+                    Aspect = Aspect.Fill, WidthRequest = parentWidth / amount };
                 Image divider = new Image() { Aspect = Aspect.Fill };
 
                 double offset = 0;
@@ -1052,7 +1073,7 @@ namespace ZestyKitchenHelper
 
             var index = selectedCellIndex;
             var buttonIndex = ContentManager.fridgeInfo[nameLegacy][index].Children.Count - 1;
-            var button = new ImageButton() { Source = ContentManager.transIcon, Aspect = Aspect.Fill };
+            var button = new ImageButton() { Source = ContentManager.transIcon, BackgroundColor = Color.Transparent, Aspect = Aspect.Fill };
 
             ContentManager.fridgeInfo[nameLegacy][selectedCellIndex].Children.Add(button);
             ContentManager.fridgeItemBase[nameLegacy].Add(index, new Dictionary<ImageButton, List<ItemLayout>>());
@@ -1087,7 +1108,16 @@ namespace ZestyKitchenHelper
             if (cancelConfirmed) 
             {
                 if(ContentManager.fridgeInfo[nameLegacy].Count == 0) { ContentManager.fridgeInfo.Remove(nameLegacy); }
-                ContentManager.fridgeInfo[nameLegacy] = preSaveState; finishEvent.Invoke(); 
+                if (preSaveState != null)
+                {
+                    ContentManager.fridgeInfo[nameLegacy] = preSaveState;
+                }
+                else
+                {
+                    ContentManager.fridgeInfo.Remove(nameLegacy);
+                    ContentManager.fridgeItemBase.Remove(nameLegacy);
+                }
+                finishEvent.Invoke(); 
             }
         }
 
