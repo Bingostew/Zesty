@@ -44,16 +44,21 @@ namespace ZestyKitchenHelper
         public static void AddGridItem(Grid grid, IEnumerable<View> item, bool replaceExisting) 
         {
             // If replacing existing children, then does not retrive child list
-            List<View> gridChildren = replaceExisting ? item.ToList() : grid.Children.ToList();
-            Console.WriteLine("GridManager 48: grid children length = " + grid.Children.Count);
+            List<View> gridChildren; 
 
             //Append new child to the grid if not replacing
             if (!replaceExisting)
             {
+                gridChildren = grid.Children.ToList();
                 foreach (var child in item)
                 {
                     gridChildren.Add(child);
                 }
+            }
+            else
+            {
+                grid.Children.Clear();
+                gridChildren = item.ToList();
             }
 
             // Check if the grid is constrained, then constrain children output
@@ -90,47 +95,76 @@ namespace ZestyKitchenHelper
 
 
         /// <summary>
-        /// Returns a grid with constraint in children from another grid
+        /// Constraining a grid given a list of views to extract from
         /// </summary>
         /// <param name="baseGrid">grid to extract from</param>
         /// <param name="startChildIndex">index of basegrid to start extraction</param>
         /// <param name="endChildIndex">index of basegrid to end extractionparam>
         /// <param name="converter">method to convert item from basegrid to something else in constrained grid</param>
-        /// <param name="newGrid">a new grid, if applicable</param>
+        /// <param name="grid">grid to be populated</param>
+        /// <param name="constrainSize">if true, then no child can added if the grid has the size over endChildIndex-startChildIndex</param>
         /// <returns></returns>
-        public static Grid ConstrainGrid(Grid baseGrid, int startChildIndex, int endChildIndex, Converter<View, View> converter = null, Grid newGrid = null) 
+        public static Grid ConstrainGrid<T>(List<T> children, int startChildIndex, int endChildIndex, Grid grid, Converter<View, View> converter = null, bool constrainSize = false) where T : View
         {
-            // if initializing a new grid, create one, otherwise, use provided grid 
-            Grid grid = newGrid != null ? newGrid : baseGrid;
-
+            Console.WriteLine("GridManager 109: index difference: " + (endChildIndex - startChildIndex + 1));
             // note the maximum number of children the grid is allowed to have
-            if(!constraintBase.ContainsKey(grid))
-                constraintBase.Add(grid, endChildIndex - startChildIndex);
+            if (!constraintBase.ContainsKey(grid) && constrainSize)
+                constraintBase.Add(grid, endChildIndex - startChildIndex + 1);
 
             // If no child, then no constraint
-            if (baseGrid.Children.Count == 0)
+            if (children.Count == 0)
                 return grid;
 
             // clamp the child indeces
-            int endIndex = baseGrid.Children.Count >= endChildIndex ? endChildIndex: baseGrid.Children.Count;
-            int startIndex = baseGrid.Children.Count > startChildIndex ? startChildIndex : 0;
+            int endIndex = children.Count >= endChildIndex ? endChildIndex: children.Count;
+            int startIndex = 0 <= startChildIndex ? startChildIndex : 0;
+
+            // If invalid range, then no constraint
+            if (endIndex - startIndex <= 0)
+                return grid;
 
             // get the child list from beginning index to end index
-            List<View> extractedChildren = new List<View>(); 
+            List<View> extractedChildren = new List<View>();
 
-            // If creating a new grid and has a converter, creates a deep copy of the base grid children
-            if (newGrid != null && converter != null)
-                extractedChildren = baseGrid.Children.ToList().GetRange(startIndex, endIndex - startIndex).ConvertAll(converter);
+            // If has a converter, creates a deep copy of the base grid children
+            if (converter != null)
+                extractedChildren = children.GetRange(startIndex, endIndex - startIndex).ConvertAll(converter);
             else
-                extractedChildren = baseGrid.Children.ToList().GetRange(startIndex, endIndex - startIndex);
+                extractedChildren = new List<View>(children.GetRange(startIndex, endIndex - startIndex + 1));
 
             AddGridItem(grid, extractedChildren, true);
 
             return grid;
         }
-        public static Grid ConstrainGrid(string name, int startChildIndex, int endChildIndex, Converter<View, View> converter = null, Grid newGrid = null)
+
+        /// <summary>
+        /// Constraining a grid given the name of the base grid.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="startChildIndex"></param>
+        /// <param name="endChildIndex"></param>
+        /// <param name="grid"></param>
+        /// <param name="converter"></param>
+        /// <param name="constrainSize"></param>
+        /// <returns></returns>
+        public static Grid ConstrainGrid(string name, int startChildIndex, int endChildIndex, Grid grid, Converter<View, View> converter = null, bool constrainSize = false)
         {
-            return ConstrainGrid(gridDataBase[name], startChildIndex, endChildIndex, converter, newGrid);
+            return ConstrainGrid(gridDataBase[name].Children.ToList(), startChildIndex, endChildIndex, grid, converter,constrainSize);
+        }
+
+        /// <summary>
+        /// Constraining a grid given a base grid.
+        /// </summary>
+        /// <param name="baseGrid"></param>
+        /// <param name="startChildIndex"></param>
+        /// <param name="endChildIndex"></param>
+        /// <param name="grid"></param>
+        /// <param name="converter"></param>
+        /// <param name="constrainSize"></param>
+        /// <returns></returns>
+        public static Grid ConstrainGrid(Grid baseGrid, int startChildIndex, int endChildIndex, Grid grid, Converter<View, View> converter = null, bool constrainSize = false)
+        {
+            return ConstrainGrid(baseGrid.Children.ToList(), startChildIndex, endChildIndex, grid, converter, constrainSize);
         }
 
         public static Grid GetGrid(string name)

@@ -41,7 +41,7 @@ namespace ZestyKitchenHelper
             // add listener to set TouchEffect for each new item added
             partialUnplacedGrid.ChildAdded += (o, v) => EffectManager.UpdateScreenTouchBounds(partialUnplacedGrid.Children.Last() as ItemLayout, storageName);
             // initialize grid by constraining UnplacedGrid
-            partialUnplacedGrid = GridManager.ConstrainGrid(unplacedGrid, 0, 8, null, partialUnplacedGrid);
+            partialUnplacedGrid = GridManager.ConstrainGrid(unplacedGrid, 0, 8, partialUnplacedGrid, null, true);
             addForm = AddView.GetAddForm(saveLocalItemEvent, saveBaseItemEvent, storageName, true, partialUnplacedGrid);
 
             var backButton = new ImageButton() { Source = ContentManager.backButton, Aspect = Aspect.Fill, BackgroundColor = Color.Transparent };

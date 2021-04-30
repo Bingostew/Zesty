@@ -28,7 +28,7 @@ namespace ZestyKitchenHelper
             Item item = new Item().SetItem(2021, 1, 1, 1, "product", ContentManager.addIcon);
             Grid currentGrid = new Grid();
 
-            Vector2D<int> selectGridIndex = new Vector2D<int>(0, 6);
+            Vector2D<int> selectGridIndex = new Vector2D<int>(0, 5);
 
             Grid expirationGrid = GridManager.InitializeGrid("AddExpirationGrid", 2, 3, GridLength.Auto, GridLength.Star);
 
@@ -48,9 +48,9 @@ namespace ZestyKitchenHelper
 
             List<IconLayout> presetResult = new List<IconLayout>();
             List<int> presetResultSorter = new List<int>();
-            Grid presetSelectGrid = GridManager.InitializeGrid("AddPresetGrid", 2, 3, GridLength.Star, GridLength.Star);
-
-            Grid defaultSelectGrid = GridManager.InitializeGrid("AddDefaultGrid", 2, 3, GridLength.Star, GridLength.Star);
+            Grid partialPresetSelectGrid = GridManager.InitializeGrid("Partial Preset Grid", 2, 3, GridLength.Star, GridLength.Star);
+            Grid defaultSelectGrid = GridManager.InitializeGrid("Add Default Grid", 2, 3, GridLength.Star, GridLength.Star);
+            Grid partialDefaultSelectGrid = GridManager.InitializeGrid("Partial Default Grid", 2, 3, GridLength.Star, GridLength.Star);
 
             foreach (var name in ContentManager.DefaultIcons.Keys)
             {
@@ -70,6 +70,8 @@ namespace ZestyKitchenHelper
             Grid form = new Grid()
             {
                 BackgroundColor = Color.FromRgb(200, 200, 200),
+                RowSpacing = 5,
+                ColumnSpacing = 5,
                 RowDefinitions =
                 {
                     new RowDefinition(){ Height = GridLength.Star },
@@ -107,20 +109,20 @@ namespace ZestyKitchenHelper
                 BackgroundColor = Color.Transparent, Aspect = Aspect.Fill, WidthRequest = 50 };
             lastPageButton.Clicked += (obj, args) =>
             {
-                selectGridIndex = new Vector2D<int>(selectGridIndex.X - 6, selectGridIndex.Y - 6);
-                GridManager.ConstrainGrid(presetSelectGrid, selectGridIndex.X, selectGridIndex.Y); 
-
-               // var index = currentGridChildren.IndexOf(currentGrid.Children[0] as IconLayout);
-               // if (index > 6) nextPresetPage(currentGridChildren.IndexOf(currentGrid.Children[0] as IconLayout) - 6);
-               // else nextPresetPage(0);
+                selectGridIndex = selectGridIndex.X < 6 ? new Vector2D<int>(0, 5)
+                    : new Vector2D<int>(selectGridIndex.X - 6, selectGridIndex.Y - 6);
+                Console.WriteLine("AddView 113: starting index: " + selectGridIndex.X + " end index: " + selectGridIndex.Y);
+                GridManager.ConstrainGrid(presetResult, selectGridIndex.X, selectGridIndex.Y, partialPresetSelectGrid, null, true);
             };
             var nextPageButton = new ImageButton() { Source = ContentManager.countIcon, Aspect = Aspect.Fill, 
                 BackgroundColor = Color.Transparent, WidthRequest = 50, TranslationX = 50 };
             nextPageButton.Clicked += (obj, args) =>
             {
-                selectGridIndex = new Vector2D<int>(selectGridIndex.X + 6, selectGridIndex.Y + 6);
-                GridManager.ConstrainGrid(presetSelectGrid, selectGridIndex.X, selectGridIndex.Y);
-                //if (currentGrid.Children.Count >= 6) nextPresetPage(currentGridChildren.IndexOf(currentGrid.Children.Last() as IconLayout) + 1);
+                Console.WriteLine("AddView 121: starting index: " + selectGridIndex.X + " end index: " + selectGridIndex.Y);
+                selectGridIndex = selectGridIndex.Y >= presetResult.Count - 6 ? new Vector2D<int>(presetResult.Count - 6, presetResult.Count - 1)
+                    : new Vector2D<int>(selectGridIndex.X + 6, selectGridIndex.Y + 6);
+                Console.WriteLine("AddView 124: starting index: " + selectGridIndex.X + " end index: " + selectGridIndex.Y);
+                GridManager.ConstrainGrid(presetResult, selectGridIndex.X, selectGridIndex.Y, partialPresetSelectGrid, null, true);
             };
             var pageToolGrid = new Grid() { ColumnDefinitions = { new ColumnDefinition() { Width = 50 }, new ColumnDefinition() { Width = 50 } } };
             pageToolGrid.Children.Add(lastPageButton, 0, 0); pageToolGrid.Children.Add(nextPageButton, 1, 0);
@@ -128,21 +130,19 @@ namespace ZestyKitchenHelper
             iconSelect1.Clicked += (obj, arg) =>
             {
                 imageSelectorIndex = 0; toggleSelect(0, imageSelector, Color.Black, Color.Wheat);
-                presetSelectGrid.IsVisible = true;
-                defaultSelectGrid.IsVisible = false;
-                currentGrid = presetSelectGrid;
-               // currentGridChildren = presetResult;
-                presetSelectGrid.Children.Clear();
+                partialPresetSelectGrid.IsVisible = true;
+                partialDefaultSelectGrid.IsVisible = false;
+                currentGrid = partialPresetSelectGrid;
+                partialPresetSelectGrid.Children.Clear();
                 changeSelectedIcon();
             };
             var iconSelect2 = new Button() { WidthRequest = 30, CornerRadius = 2, BorderColor = Color.Wheat, BorderWidth = 3 };
             iconSelect2.Clicked += (obj, arg) =>
             {
                 imageSelectorIndex = 1; toggleSelect(1, imageSelector, Color.Black, Color.Wheat);
-                presetSelectGrid.IsVisible = false;
-                defaultSelectGrid.IsVisible = true;
-                //currentGridChildren = defaultSelectGrid.Children;
-                currentGrid = defaultSelectGrid;
+                partialPresetSelectGrid.IsVisible = false;
+                partialDefaultSelectGrid.IsVisible = true;
+                currentGrid = partialDefaultSelectGrid;
             };
 
             var iconLabel1 = new Label() { Text = "In-App Icons", TextColor = Color.Black, FontSize = 15, VerticalTextAlignment = TextAlignment.Center };
@@ -171,28 +171,15 @@ namespace ZestyKitchenHelper
                         presetResult.Add(ContentManager.PresetIcons[name]);
                         ContentManager.PresetIcons[name].OnClickIconAction += (button) =>
                         {
-                            toggleIconSelect(button, presetSelectGrid); var _name = name;
+                            toggleIconSelect(button, partialPresetSelectGrid); var _name = name;
                             item.icon = ContentManager.PresetIcons[_name].GetImageSource();
                         };
                         match = 0;
                     }
                 }
-                toggleIconSelect(null, presetSelectGrid);
+                toggleIconSelect(null, partialPresetSelectGrid);
                 ListSorter.SortToListAscending(presetResultSorter, presetResult);
-                nextPresetPage(0);
-            }
-
-            void nextPresetPage(int currentAmount)
-            {
-                presetSelectGrid.Children.Clear();
-                //var currentAmount = presetResult.IndexOf(presetSelectGrid.Children.Last() as IconLayout);
-                List<View> results = new List<View>();
-                var max = 6 + currentAmount < presetResult.Count ? 6 + currentAmount : presetResult.Count;
-                for (int i = currentAmount; i < max; i++)
-                {
-                    results.Add(presetResult[i]);
-                }
-                presetSelectGrid.OrganizeGrid(results, GridOrganizer.OrganizeMode.HorizontalLeft);
+                GridManager.ConstrainGrid(presetResult, 0, 5, partialPresetSelectGrid, null);
             }
 
             async void autoDetectExpiration(string name)
@@ -249,7 +236,7 @@ namespace ZestyKitchenHelper
                 selectorIndex = 0;
                 nameInput.Text = "product";
                 defaultSelectGrid.IsVisible = false;
-                presetSelectGrid.IsVisible = false;
+                partialPresetSelectGrid.IsVisible = false;
                 foreach (var button in imageSelector)
                 {
                     button.BackgroundColor = Color.Wheat;
@@ -276,8 +263,8 @@ namespace ZestyKitchenHelper
             iconGrid.Children.Add(iconSelect2, 0, 1);
             iconGrid.Children.Add(iconLabel1, 1, 0);
             iconGrid.Children.Add(iconLabel2, 1, 1);
-            Grid.SetRowSpan(presetSelectGrid, 3);
-            Grid.SetRowSpan(defaultSelectGrid, 3);
+            Grid.SetRowSpan(partialPresetSelectGrid, 3);
+            Grid.SetRowSpan(partialDefaultSelectGrid, 3);
             form.Children.Add(nameLabel, 0, 0);
             form.Children.Add(nameInput, 1, 0);
             form.Children.Add(dateLabel, 0, 1);
@@ -287,8 +274,8 @@ namespace ZestyKitchenHelper
             form.Children.Add(iconLabel, 0, 3);
             form.Children.Add(iconGrid, 0, 4);
             form.Children.Add(pageToolGrid, 1, 3);
-            form.Children.Add(presetSelectGrid, 1, 4);
-            form.Children.Add(defaultSelectGrid, 1, 4);
+            form.Children.Add(partialPresetSelectGrid, 1, 4);
+            form.Children.Add(partialDefaultSelectGrid, 1, 4);
 
 
             Grid numPadGrid = new Grid()
