@@ -38,13 +38,18 @@ namespace Utility
         {
             idBase.Add(groupName, new List<int>());
         }
+
+        public static void DeleteIDGroup(string groupName)
+        {
+            idBase.Remove(groupName);
+        }
         public static int GetID(string groupName)
         {
             if (!idBase.ContainsKey(groupName))
                 return -1;
 
             int newId = 0;
-            while(idBase[groupName].Contains(newId))
+            while (idBase[groupName].Contains(newId))
             {
                 newId++;
             }
@@ -64,7 +69,7 @@ namespace Utility
         public int expMonth { get; set; }
         public int expDay { get; set; }
         public int daysUntilExp { get; set; }
-        
+
         [Column("Warnings")]
         public bool weekWarning { get; set; }
         public bool threeDaysWarning { get; set; }
@@ -100,6 +105,19 @@ namespace Utility
         }
     }
 
+    public class StorageCell
+    {
+        public Vector2D<int> Position { get; set; }
+        public List<View> Children = new List<View>();
+        public int ColumnSpan { get; set; }
+
+        public StorageCell(Vector2D<int> position, int columnSpan = 1)
+        {
+            Position = position;
+            ColumnSpan = columnSpan;
+        }
+    }
+
     [Table("Cabinet")]
     public class Cabinet
     {
@@ -111,6 +129,61 @@ namespace Utility
         public string RowInfo { get; set; }
         //Format: button index and items surrounede by parenthesis, separated in comma: ex- 1(Item1+ITem2),2(Item1)
         public string RowItems { get; set; }
+        public Grid Grid { get; set; }
+
+        // Matches the grid position of each cell to the cell ID.
+        private Dictionary<int, StorageCell> gridCells = new Dictionary<int, StorageCell>();
+
+        public Cabinet(string name, Grid grid)
+        {
+            Name = name;
+            Grid = grid;
+        }
+
+        // Temporary constructor
+        public Cabinet()
+        { }
+
+        public void AddGridCell(int ID, StorageCell cell)
+        {
+            gridCells.Add(ID, cell);
+        }
+
+        public void AddGridCellUI(int ID, Image background, ImageButton button)
+        {
+            if (gridCells.ContainsKey(ID))
+            {
+                gridCells[ID].Children.Insert(0, background);
+                gridCells[ID].Children.Insert(gridCells[ID].Children.Count, button);
+            }
+        }
+
+        public void AddGridItems(int ID, List<View> items)
+        {
+            if (gridCells.ContainsKey(ID))
+            {
+                foreach (ItemLayout newItem in items)
+                {
+                    gridCells[ID].Children.Add(newItem);
+                }
+            }            
+        }
+
+        public StorageCell GetGridCell(int ID)
+        {
+            return gridCells[ID];
+        }
+
+        public List<StorageCell> GetGridCells()
+        {
+            return gridCells.Values.ToList();
+        }
+
+        public List<int> GetGridIDs()
+        {
+            return gridCells.Keys.ToList();
+        }
+
         public Cabinet SetCabinet(string rowInfo, string rowItems, string name)
         {
             RowInfo = rowInfo;

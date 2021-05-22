@@ -41,6 +41,8 @@ namespace ZestyKitchenHelper
         public static string pUnplacedGridName = "Partial Unplaced Grid";
 
         public static string itemStorageIdGenerator = "ItemId";
+        public static string cabinetEditIdGenerator = "Cabinet";
+        public static string fridgeEditIdGenerator = "Fridge";
 
         public static PageController pageController = new PageController();
         public static SelectionPage selectionPage;
@@ -50,6 +52,8 @@ namespace ZestyKitchenHelper
         public static void InitializeApp()
         {
             IDGenerator.InitializeIDGroup(itemStorageIdGenerator);
+            IDGenerator.InitializeIDGroup(cabinetEditIdGenerator);
+            IDGenerator.InitializeIDGroup(fridgeEditIdGenerator);
             LocalStorageController.InitializeLocalDataBase();
 
             GridManager.InitializeGrid(metaGridName, 9, 4, GridLength.Auto, GridLength.Star);
@@ -529,6 +533,8 @@ namespace ZestyKitchenHelper
         {
             return storageSelection == StorageSelection.fridge ? fridgeItemBase : cabinetItemBase;
         }
+
+        public static Dictionary<string, Cabinet> CabinetMetaBase = new Dictionary<string, Cabinet>();
 
         public static Dictionary<int, ItemLayout> UnplacedItemBase = new Dictionary<int, ItemLayout>();
         public static Dictionary<int, ItemLayout> MetaItemBase = new Dictionary<int, ItemLayout>();

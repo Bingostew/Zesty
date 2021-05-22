@@ -41,6 +41,41 @@ namespace ZestyKitchenHelper
             return grid;
         }
 
+        /// <summary>
+        /// Add items to one position in the grid.
+        /// </summary>
+        /// <param name="grid"></param>
+        /// <param name="item">List of children</param>
+        /// <param name="position">position in (x, y) notation</param>
+        public static void AddGridItemAtPosition(Grid grid, IEnumerable<View> item, Vector2D<int> position)
+        {
+            while(grid.RowDefinitions.Count < position.Y + 1)
+            {
+                grid.RowDefinitions.Add(new RowDefinition());
+            }
+
+            while(grid.ColumnDefinitions.Count < position.X + 1)
+            {
+                grid.ColumnDefinitions.Add(new ColumnDefinition());
+            }
+
+            foreach(View view in item)
+            {
+                grid.Children.Add(view, position.X, position.Y);
+            }
+        }
+
+        public static void AddGridItemAtPosition(string name, IEnumerable<View> item, Vector2D<int> position)
+        {
+            AddGridItemAtPosition(GetGrid(name), item, position);
+        }
+
+        /// <summary>
+        /// Populate the grid sequentially with a list of items, where each grid cell contains one item.
+        /// </summary>
+        /// <param name="grid"></param>
+        /// <param name="item">List of children</param>
+        /// <param name="replaceExisting">Whether to clear the grid children first</param>
         public static void AddGridItem(Grid grid, IEnumerable<View> item, bool replaceExisting) 
         {
             // If replacing existing children, then does not retrive child list
