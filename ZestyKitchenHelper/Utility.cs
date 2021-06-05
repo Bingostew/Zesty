@@ -107,14 +107,51 @@ namespace Utility
 
     public class StorageCell
     {
+        public int Index { get; set; }
         public Vector2D<int> Position { get; set; }
         public List<View> Children = new List<View>();
-        public int ColumnSpan { get; set; }
+        private int ColumnSpan { get; set; }
+        private int RowSpan { get; set; }
 
-        public StorageCell(Vector2D<int> position, int columnSpan = 1)
+        public StorageCell(Vector2D<int> position, int index, int columnSpan = 1, int rowSpan = 1)
         {
             Position = position;
             ColumnSpan = columnSpan;
+            RowSpan = rowSpan;
+            Index = index;
+        }
+
+        public void ClearChildren()
+        {
+            Children.Clear();
+        }
+
+        public void SetColumnSpan(int columnSpan)
+        {
+            ColumnSpan = columnSpan;
+            foreach(View child in Children)
+            {
+                Grid.SetColumnSpan(child, columnSpan);
+            }
+        }
+
+        public void SetRowSpan(int rowSpan)
+        {
+            RowSpan = rowSpan;
+            foreach (View child in Children)
+            {
+                Grid.SetRowSpan(child, rowSpan);
+            }
+        }
+
+        public int GetColumnSpan()
+        {
+            return ColumnSpan;
+        }
+
+        public int GetRowSpan()
+        {
+            return RowSpan;
         }
     }
 
@@ -147,6 +184,11 @@ namespace Utility
         public void AddGridCell(int ID, StorageCell cell)
         {
             gridCells.Add(ID, cell);
+        }
+
+        public void RemoveGridCell(int ID)
+        {
+            gridCells.Remove(ID);
         }
 
         public void AddGridCellUI(int ID, Image background, ImageButton button)

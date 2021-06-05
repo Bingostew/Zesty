@@ -399,10 +399,7 @@ namespace ZestyKitchenHelper
             IDGenerator.DeleteIDGroup(name);
         }
 
-        protected abstract void SubdivideCell(int amount);
-
         protected abstract void DeleteCell();
-        protected abstract void MergeCell();
         protected bool CanTransform(){ return true; }
     }
 
@@ -414,7 +411,7 @@ namespace ZestyKitchenHelper
         protected override string cellImageSource => ContentManager.cabinetIcon;
 
         private Cabinet cabinet;
-        public CabinetEditPage(bool newShelf, Action<string, string, string> saveCabinetLocalEvent, Action<string, string, string> saveCabinetBaseEvent, string storageName = "") 
+        public CabinetEditPage(bool newShelf, Action<string, string, string> saveCabinetLocalEvent, Action<string, string, string> saveCabinetBaseEvent, string storageName = "")
             : base(newShelf, storageName)
         {
             storageSaveLocalEvent = saveCabinetLocalEvent;
@@ -425,7 +422,7 @@ namespace ZestyKitchenHelper
             if (newShelf)
             {
                 int identifier = 1;
-                storageGrid = GridManager.InitializeGrid("cabinet" + IDGenerator.GetID(ContentManager.cabinetEditIdGenerator), 0,0, GridLength.Star, GridLength.Star);
+                storageGrid = GridManager.InitializeGrid("cabinet" + IDGenerator.GetID(ContentManager.cabinetEditIdGenerator), 0, 0, GridLength.Star, GridLength.Star);
                 storageGrid.RowSpacing = 0;
                 storageGrid.ColumnSpacing = 0;
                 cabinet = new Cabinet(name, storageGrid);
@@ -457,31 +454,25 @@ namespace ZestyKitchenHelper
                 ColumnDefinitions =
                 {
                     new ColumnDefinition(),
-                    new ColumnDefinition(){Width = 30 },
-                    new ColumnDefinition(){Width = 10 },
-                    new ColumnDefinition(){Width = 30 },
-                    new ColumnDefinition(){Width = 3 },
                     new ColumnDefinition(),
                     new ColumnDefinition(),
+                    new ColumnDefinition(),
+                    new ColumnDefinition()
                 }
             };
 
             var dividerImage = new Image() { BackgroundColor = Color.Gray };
             var subdivideButton = new ImageButton() { Source = subdivideIcon, BackgroundColor = Color.Transparent, };
-            subdivideButton.Clicked += (object obj, EventArgs args) => { if (CanTransform()) { SubdivideCell(subdivideAmount); } };
-            var subdivideLabel = new Label() { Text = "Subdivide", HorizontalOptions = LayoutOptions.CenterAndExpand, FontSize = 15 };
-            var numLabel = new Label() { Text = "2", HorizontalOptions = LayoutOptions.Center, FontSize = 20, VerticalOptions = LayoutOptions.Center, TextColor = Color.Black };
-            var minusButton = new ImageButton() { Source = countArrow, BackgroundColor = Color.Transparent, };
-            minusButton.Clicked += (obj, args) =>
-            {
-                if (subdivideAmount > 2) { subdivideAmount--; numLabel.Text = subdivideAmount.ToString(); }
-            };
-            var plusButton = new ImageButton() { Source = countArrow, BackgroundColor = Color.Transparent, Rotation = 180 };
-            plusButton.Clicked += (obj, args) => {
-                if (subdivideAmount < 9) { subdivideAmount++; numLabel.Text = subdivideAmount.ToString(); }
-            };
+            subdivideButton.Clicked += (object obj, EventArgs args) => { if (CanTransform()) { SubdivideCellHorizontal(); } };
+            var subdivideLabel = new Label() { Text = "Subdivide Column", HorizontalOptions = LayoutOptions.CenterAndExpand, FontSize = 15 };
+            var subdivideVerticalButton = new ImageButton() { Source = subdivideIcon, Rotation = 90, BackgroundColor = Color.Transparent, };
+            subdivideVerticalButton.Clicked += (object obj, EventArgs args) => { if (CanTransform()) { SubdivideCellVertical(); } };
+            var subdivideVerticalLabel = new Label() { Text = "Subdivide Row", HorizontalOptions = LayoutOptions.CenterAndExpand, FontSize = 15 };
+            var mergeColumnButton = new ImageButton() { Source = mergeIcon, Rotation = 90, BackgroundColor = Color.Transparent, };
+            mergeColumnButton.Clicked += (obk, args) => { if (CanTransform()) { MergeCellVertical(); } };
+            var mergeColumnLabel = new Label() { Text = "Merge Column", HorizontalOptions = LayoutOptions.CenterAndExpand, FontSize = 15 };
             var mergeRowButton = new ImageButton() { Source = mergeIcon, BackgroundColor = Color.Transparent, };
-            mergeRowButton.Clicked += (obj, args) => { if (CanTransform()) MergeCell(); };
+            mergeRowButton.Clicked += (obj, args) => { if (CanTransform()) MergeCellHorizontal(); };
             var mergeRowLabel = new Label() { Text = "Merge Row", HorizontalOptions = LayoutOptions.CenterAndExpand, FontSize = 15 };
             var deleteButton = new ImageButton() { Source = ContentManager.deleteCellIcon, BackgroundColor = Color.Transparent, };
             deleteButton.Clicked += (obj, args) => { if (CanTransform()) DeleteCell(); };
@@ -490,16 +481,14 @@ namespace ZestyKitchenHelper
 
             assetGrid.Children.Add(subdivideButton, 0, 0);
             assetGrid.Children.Add(subdivideLabel, 0, 1);
-            assetGrid.Children.Add(minusButton, 1, 0);
-            assetGrid.Children.Add(numLabel, 2, 0);
-            assetGrid.Children.Add(plusButton, 3, 0);
-            Grid.SetColumn(dividerImage, 4);
-            Grid.SetRowSpan(dividerImage, 2);
-            assetGrid.Children.Add(dividerImage, 4, 0);
-            assetGrid.Children.Add(mergeRowButton, 5, 0);
-            assetGrid.Children.Add(mergeRowLabel, 5, 1);
-            assetGrid.Children.Add(deleteButton, 6, 0);
-            assetGrid.Children.Add(deleteLabel, 6, 1);
+            assetGrid.Children.Add(subdivideVerticalButton, 1, 0);
+            assetGrid.Children.Add(subdivideVerticalLabel, 1, 1);
+            assetGrid.Children.Add(mergeColumnButton, 2, 0);
+            assetGrid.Children.Add(mergeColumnLabel, 2, 1);
+            assetGrid.Children.Add(mergeRowButton, 3, 0);
+            assetGrid.Children.Add(mergeRowLabel, 3, 1);
+            assetGrid.Children.Add(deleteButton, 4, 0);
+            assetGrid.Children.Add(deleteLabel, 4, 1);
             return assetGrid;
         }
 
@@ -515,7 +504,7 @@ namespace ZestyKitchenHelper
             ContentManager.cabinetItemBase[nameLegacy][index].Add(button, new List<ItemLayout>());
         }
 
-        protected void AddCell(Vector2D<int> position, int columnSpan = 1)
+        protected void AddCell(Vector2D<int> position, int columnSpan = 1, int rowSpan = 1)
         {
             // button for touch indication, image of cabinet
             Image cabinetCellBackground = new Image() { Source = cellImageSource, Aspect = Aspect.Fill };
@@ -525,7 +514,7 @@ namespace ZestyKitchenHelper
             int cellIndex = IDGenerator.GetID(name);
 
             // add items to the new position
-            GridManager.AddGridItemAtPosition(storageGrid, new List<View>() { cabinetCellBackground, transparentButton}, position);
+            GridManager.AddGridItemAtPosition(storageGrid, new List<View>() { cabinetCellBackground, transparentButton }, position);
 
             // registering tint event on transparent button
             transparentButton.Clicked += (o, a) =>
@@ -540,46 +529,70 @@ namespace ZestyKitchenHelper
                 selectedCellIndex = cellIndex;
             };
 
-            // set the column span of cell children
-            columnSpan = columnSpan < 1 ? 1 : columnSpan;
-            Grid.SetColumnSpan(cabinetCellBackground, columnSpan);
-            Grid.SetColumnSpan(transparentButton, columnSpan);
             // register cipher of new cell
-            cabinet.AddGridCell(cellIndex, new StorageCell(position, columnSpan));
+            StorageCell cell = new StorageCell(position, cellIndex, columnSpan, rowSpan);
+            cabinet.AddGridCell(cellIndex, cell);
             // register children of new cell
             cabinet.AddGridCellUI(cellIndex, cabinetCellBackground, transparentButton);
+            // set the column and row span of cell children
+            columnSpan = columnSpan < 1 ? 1 : columnSpan;
+            rowSpan = rowSpan < 1 ? 1 : rowSpan;
+            cell.SetColumnSpan(columnSpan);
+            cell.SetRowSpan(rowSpan);
         }
         protected override void AddCellRow()
         {
             AddCell(new Vector2D<int>(0, storageGrid.RowDefinitions.Count), storageGrid.ColumnDefinitions.Count);
         }
 
-        protected override void SubdivideCell(int amount)
+        /// <summary>
+        /// Subdivide cell horizontally or vertically
+        /// </summary>
+        /// <param name="layerCount">Retrieves the row/column count. Column for horizontal; Row for vertical.</param>
+        /// <param name="sameLayerPositionGetter">Get the position that will be checked to be equal. Y for horizontal; X for vertical.</param>
+        /// <param name="compareLayerPositionGetter">Get the position that will be compared for subdivision. X for horizontal; X for vertical.</param>
+        /// <param name="subdivideLayerSpanGetter">Get the layer span on the subdividing layer. Row span for horizontal; Column span for vertical.</param>
+        /// <param name="addLayer">Function that adds a layer to the grid. Column for horizontal; Row for vertical.</param>
+        /// <param name="setLayer">Function that sets layer span. Parameters: (cell, layer span). Column for horizontal; Row for vertical.</param>
+        /// <param name="updateControlLayer"u>Function that updates the control layer span.</param>
+        /// <param name="getNewPosition">Function that retrieves a cell position. Parameters: (x, y, change). </param>
+        /// <param name="addCell">Function that adds the new celll after subdivision. Parameters: (position, layer span, cell).</param>
+        protected void SubdivideCell(Func<int> layerCount, Func<Vector2D<int>, int> sameLayerPositionGetter, Func<Vector2D<int>, int> compareLayerPositionGetter,
+            Func<StorageCell, int> subdivideLayerSpanGetter, Action addLayer, Action<StorageCell, int> setLayer, 
+            Action<StorageCell> updateControlLayer, Func<int, int, int, Vector2D<int>> getNewPosition, Action<Vector2D<int>, int, StorageCell> addCell)
         {
-            // column span for the new cell made from subdivision
-            int defaultColumnSpan = 1;
-            // retrieve position of the selected cell
-            Vector2D<int> position = cabinet.GetGridCell(selectedCellIndex).Position;
+            // if nothing is selected, then do not execute
+            if (selectedCellIndex < 0)
+                return;
 
-            // cycle through all cells and retrieve the number of columns for the given row
-            int rowColumnCount = 0;
-            foreach(StorageCell cell in cabinet.GetGridCells())
+            StorageCell selectedCell = cabinet.GetGridCell(selectedCellIndex);
+            Vector2D<int> position = selectedCell.Position;
+
+            // For horizontal, cycle through all cells and retrieve the number of columns for the given row
+            // For vertical, cycle through all cells and retrieve the number row for each column
+            int layerInLayerCount = 0;
+            foreach (StorageCell cell in cabinet.GetGridCells())
             {
                 Vector2D<int> pos = cell.Position;
-                if (pos.Y == position.Y)
-                    rowColumnCount++;
+                if (sameLayerPositionGetter(pos) == sameLayerPositionGetter(position))
+                    layerInLayerCount++;
             }
 
-            // retrieve the current column count and projected column count after subdivision
-            int oldColumnCount = storageGrid.ColumnDefinitions.Count;
+            // retrieve the position in the middle of the cell. This will be the position of the new cell as well.
+            double subdivideLine = (double)subdivideLayerSpanGetter(selectedCell) / 2;
+            // retrieve the current row/column count and projected row/column count after subdivision
+            int oldLayerCount = layerCount();
 
-            // check if column needs to be added: if current column count is less than projected count, then don't add
-            int newColumnCount = rowColumnCount == oldColumnCount ? oldColumnCount * 2 : oldColumnCount;
-            Console.WriteLine("CabinetEdit 575 column count " + newColumnCount);
-            // add new columns for subdivision
-            while (storageGrid.ColumnDefinitions.Count < newColumnCount)
+            // check if row/column needs to be added: if current row/column count is less than projected count, then don't add
+            int newLayerCount = layerInLayerCount == oldLayerCount || subdivideLine % 1 != 0 ? oldLayerCount * 2 : oldLayerCount;
+            // row/column span for the new cell made from subdivision
+            int defaultLayerSpan = newLayerCount != oldLayerCount ? (int)(subdivideLine * 2) : (int)subdivideLine;
+
+
+            // add new row/columns for subdivision
+            while (layerCount() < newLayerCount)
             {
-                storageGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
+                addLayer();
             }
 
             foreach (int id in cabinet.GetGridIDs())
@@ -592,39 +605,55 @@ namespace ZestyKitchenHelper
                 List<View> children = cell.Children;
 
                 // calculate the new position of the cell due to change in column numbers. Formula: currentX / oldMaxX * newMaxX
-                Vector2D<int> newPosition = new Vector2D<int>((int)(pos.X / (float)oldColumnCount * newColumnCount), pos.Y);
+                Vector2D<int> newPosition = getNewPosition(pos.X, pos.Y, (int)(compareLayerPositionGetter(pos) / (float)oldLayerCount * newLayerCount));
 
-                // Explanation: If subdivision causes column count to double, then all existing cells unaffected by the subdivison must have a doubled column span.  
+                // Explanation for horizontal: If subdivision causes column count to double, then all existing cells unaffected by the subdivison must have a doubled column span.  
                 // Their positions must also be scaled accordingly. The selected cell for subdivision is halved, but since the column span is doubled, nothing is changed.
                 // If subidvision keeps the column count, then existing cells unaffected by the subdivision are unaffected, no change required. 
                 // The selected cell for subdivision is halved, thus its column span is halved.
-                if (newColumnCount != oldColumnCount)
+                // (Logic is the same for vertical)
+                if (newLayerCount != oldLayerCount)
                 {
                     // scaling position accordingly
                     GridManager.AddGridItemAtPosition(storageGrid, children, newPosition);
                     cell.Position = newPosition;
-
-                    // If unaffected by subdivision, then double column span. Else, maintain column span.
-                    cell.ColumnSpan = !isSelectedCell ? cell.ColumnSpan * 2 : cell.ColumnSpan;
+                    // If unaffected by subdivision, then double rpw/column span. Else, maintain row/column span.
+                    if (!isSelectedCell)
+                        setLayer(cell, subdivideLayerSpanGetter(cell) * 2);
+                    else
+                        setLayer(cell, subdivideLayerSpanGetter(cell));
                 }
-                else if (pos.Y == position.Y && cell.ColumnSpan > 1)
+
+                // If selected cell then half row/column span. Else, maintain row/column span.
+                else if (isSelectedCell && subdivideLayerSpanGetter(cell) > 1)
                 {
-                    // If selected cell then half column span. Else, maintain column span.
-                    cell.ColumnSpan = isSelectedCell && cell.ColumnSpan > 1 ? cell.ColumnSpan / 2 : cell.ColumnSpan;
+                    setLayer(cell, defaultLayerSpan);
                 }
 
-                // Set the column span of the new cell. This is the same as the column span of the subdivided cell.
-                defaultColumnSpan = isSelectedCell ? cell.ColumnSpan : defaultColumnSpan;
-
-                // Actually applying the column span
-                foreach (View child in children)
-                {
-                    Grid.SetColumnSpan(child, cell.ColumnSpan);
-                }
+                // Reset cell's column/row span as changing grid's property changes its view.
+                updateControlLayer(cell);
             }
 
             // add the new cell after subdivision
-            AddCell(new Vector2D<int>((int)(position.X / (float)oldColumnCount * newColumnCount) + defaultColumnSpan, position.Y), defaultColumnSpan);
+            Vector2D<int> newCellPosition = getNewPosition(position.X, position.Y,
+                (int)(compareLayerPositionGetter(position) / (float)oldLayerCount * newLayerCount) + defaultLayerSpan);
+            addCell(newCellPosition, defaultLayerSpan, selectedCell);
+            // reset cell index
+            selectedCellIndex = -1;
+        }
+
+        protected void SubdivideCellHorizontal()
+        {
+            SubdivideCell(() => storageGrid.ColumnDefinitions.Count, v => v.Y, v => v.X, c => c.GetColumnSpan(),
+                () => storageGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star }), (c, i) => c.SetColumnSpan(i), c => c.SetRowSpan(c.GetRowSpan()),
+                (x, y, p) => new Vector2D<int>(p, y),(v, s, c) => AddCell(v, s, c.GetRowSpan()));
+        }
+
+        protected void SubdivideCellVertical()
+        {
+            SubdivideCell(() => storageGrid.RowDefinitions.Count, v => v.X, v => v.Y, c => c.GetRowSpan(),
+                () => storageGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star }), (c, i) => c.SetRowSpan(i), c => c.SetColumnSpan(c.GetColumnSpan()),
+                 (x, y, p) => new Vector2D<int>(x, p), (v, s, c) => AddCell(v, c.GetColumnSpan(), s));
         }
 
         private void ReCalculateCellBounds()
@@ -634,176 +663,85 @@ namespace ZestyKitchenHelper
                 AbsoluteLayout.SetLayoutBounds(cellContainer.Children[i], new Rectangle(0, cabinet_height / cellContainer.HeightRequest * i, 1, cabinet_height / cellContainer.HeightRequest));
             }
         }
-        /*
-        protected override async void AddCellRow()
+
+        /// <summary>
+        /// Merges cells either horizontally or vertically
+        /// </summary>
+        /// <param name="layerCount"> Column count for horizontal. Row count for vertical.</param>
+        /// <param name="sameLayerPositionGetter"> Position to check if cells are in the same position for control layer. Y for horizontal; X for vertical. </param>
+        /// <param name="compareLayerPositionGetter"> Position in the merging layer. X for horizontal; Y for vertical.</param>
+        /// <param name="sameLayerSpanGetter"> Layer span to check if both cells are the same length. Row span for horizontal; Column span for vertical. </param>
+        /// <param name="mergeLayerSpanGetter"> Layer span to add when merging cells. Column span for horizontal; Row span for vertical </param>
+        /// <param name="setLayerSpan"> Method that sets row/column span. Parameter: (cell, layer span). </param>
+        protected void MergeCell(int layerCount, Func<Vector2D<int>, int> sameLayerPositionGetter, Func<Vector2D<int>, int> compareLayerPositionGetter, 
+            Func<StorageCell, int> sameLayerSpanGetter, Func<StorageCell, int> mergeLayerSpanGetter, Action<StorageCell, int> setLayerSpan, Action<StorageCell> updateControlSpan)
         {
-            if (cellContainer.Children.Count < 10)
+            // if nothing is selected, then do not execute
+            if (selectedCellIndex < 0)
+                return;
+            StorageCell selectedCell = cabinet.GetGridCell(selectedCellIndex);
+            StorageCell nextCell = null;
+            int closestLayer = layerCount;
+
+            foreach (int id in cabinet.GetGridIDs())
             {
-                var rowContainer = new AbsoluteLayout() { WidthRequest = cellContainer.WidthRequest, HorizontalOptions = LayoutOptions.Center };
-                var newCabinetCell = new Image() { Source = cellImageSource, Aspect = Aspect.Fill, WidthRequest = cellContainer.WidthRequest, HeightRequest = rowContainer.HeightRequest };
-                var button = new ImageButton() { Source = ContentManager.transIcon, BackgroundColor = Color.Transparent, Aspect = Aspect.Fill };
-                AbsoluteLayout.SetLayoutBounds(button, new Rectangle(.5, 0, 1, 1));
-                AbsoluteLayout.SetLayoutFlags(button, AbsoluteLayoutFlags.All);
+                StorageCell cell = cabinet.GetGridCell(id);
+                Vector2D<int> pos = cell.Position;
 
-                if (cellContainer.Children.Count > 0)
+                // constrain: (If for horizontal) same row, column index must be greater than selected cell column index, row span of both cells are equal,
+                // column index must be smaller than previous candidate's column index.
+                // (Same logic for vertical)
+                if (sameLayerPositionGetter(pos) == sameLayerPositionGetter(selectedCell.Position) && sameLayerSpanGetter(cell) == sameLayerSpanGetter(selectedCell) 
+                    && compareLayerPositionGetter(pos) > compareLayerPositionGetter(selectedCell.Position) && compareLayerPositionGetter(pos) < closestLayer)
                 {
-                    AbsoluteLayout.SetLayoutBounds(rowContainer, new Rectangle(0, cabinet_height / cellContainer.HeightRequest * cellContainer.Children.Count, 1, cabinet_height / cellContainer.HeightRequest));
+                    closestLayer = compareLayerPositionGetter(pos);
+                    nextCell = cell;
                 }
-                else
-                {
-                    AbsoluteLayout.SetLayoutBounds(rowContainer, new Rectangle(0, 0, 1, cabinet_height / cellContainer.HeightRequest));
-                }
-
-                AbsoluteLayout.SetLayoutFlags(rowContainer, AbsoluteLayoutFlags.All);
-
-                rowContainer.Children.Add(newCabinetCell);
-                rowContainer.Children.Add(button);
-                cellContainer.Children.Insert(0, rowContainer);
-
-                var index = indexer;
-                AddCellStorage(rowContainer, button);
-
-                button.Clicked += (o, a) =>
-                {
-                    foreach (Layout<View> element in cellContainer.Children)
-                    {
-                        element.Children.RemoveEffects(typeof(ImageTint));
-                    }
-                    button.ToggleEffects(new ImageTint() { tint = Color.FromHsla(1, .1, .5, .5) }, null);
-                    selectedCellIndex = index;
-                    selectedButton = button;
-                };
-
-                indexer++;
-                AbsoluteLayout.SetLayoutBounds(newCabinetCell, new Rectangle(.5, .5, 1, 1));
-                AbsoluteLayout.SetLayoutFlags(newCabinetCell, AbsoluteLayoutFlags.All);
             }
-            else { await DisplayAlert("Unable to add new row", "Maximun number of rows reached", "cancel"); }
-        }
 
-        const string Divider_Tag = "divider";
-        protected override void SubdivideCell(int amount)
-        {
-            var parent = selectedButton;
-            var ancestorWidth = ContentManager.cabinetInfo[nameLegacy][selectedCellIndex].Children[0].Width;
-            var parentWidth = parent.Width;
-            var parentHeight = parent.Height;
-            var parentLeftOffset = parent.TranslationX / ancestorWidth;
-            var index = selectedCellIndex;
-            var indexUnderParent = ContentManager.cabinetInfo[nameLegacy][selectedCellIndex].Children.IndexOf(selectedButton);
+            // If no cell found, do not execute
+            if (nextCell == null)
+                return;
 
-            ContentManager.cabinetInfo[nameLegacy][selectedCellIndex].Children.Remove(selectedButton);
-            ContentManager.cabinetItemBase[nameLegacy][selectedCellIndex].Remove(selectedButton);
-            double offset = 0;
-            for (int i = 0; i <amount; i ++)
+            // Remove children from cell, then remove cell from grid
+            foreach (View child in nextCell.Children)
             {
-                var lastIndex = ContentManager.cabinetInfo[nameLegacy][selectedCellIndex].Children.Count - 1;
-                var button = new ImageButton() { Source = ContentManager.transIcon, BackgroundColor = Color.Transparent,
-                    Aspect = Aspect.Fill, WidthRequest = parentWidth / amount, HeightRequest = parentHeight };
-
-                Image divider = new Image() { Aspect = Aspect.Fill };
-                if (i != 0)
-                {
-                    offset = parentWidth / amount * i;
-                    var parentLeft = parent.Bounds.Left;
-                    var dividerX = parentWidth / amount * i + parent.GetAbsolutePosition().X;
-                    ContentManager.cabinetInfo[nameLegacy][selectedCellIndex].Children.Add(divider);
-
-                    AbsoluteLayout.SetLayoutBounds(divider, new Rectangle(dividerX / ancestorWidth, 0, .05, 1));
-                    AbsoluteLayout.SetLayoutFlags(divider, AbsoluteLayoutFlags.All);
-                    if (amount % 2 == 0)
-                    {
-                        divider.Source = dividerX < ancestorWidth / 2 ? cabinetDividerLeft :
-                            dividerX == ancestorWidth / 2 ? cabinetDividerMiddle : cabinetDividerRight;
-                    }
-                    else
-                    {
-                        divider.Source = dividerX < ancestorWidth / 2 ? cabinetDividerLeft : cabinetDividerRight;
-                    }
-
-
-                    if (divider.Source != cabinetDividerMiddle)
-                    {
-                        divider.ScaleX = Math.Abs(ancestorWidth / 2 - (dividerX)) / (ancestorWidth / 2);
-                        if (divider.ScaleX < 0.2) { divider.ScaleX = 0.2; }
-                    }
-                    else { divider.ScaleX = .3; }
-                }
-
-                dividerHelper.Add(button, divider);
-                AbsoluteLayout.SetLayoutBounds(button, new Rectangle((parent.GetAbsolutePosition().X + offset) / (ancestorWidth - button.WidthRequest), 0, button.WidthRequest / ancestorWidth, 1));
-                AbsoluteLayout.SetLayoutFlags(button, AbsoluteLayoutFlags.All);
-                ContentManager.cabinetInfo[nameLegacy][selectedCellIndex].Children.Insert(indexUnderParent + i, button);
-                ContentManager.cabinetItemBase[nameLegacy][selectedCellIndex].Add(button, new List<ItemLayout>());
-                button.Clicked += (o, a) => {
-                    foreach (Layout<View> element in cellContainer.Children)
-                    {
-                        element.Children.RemoveEffects(typeof(ImageTint));
-                    }
-                    button.ToggleEffects((new ImageTint() { tint = Color.FromHsla(1, .1, .5, .5) }), null);
-                    selectedCellIndex = index;
-                    selectedButton = button;
-                };
+                storageGrid.Children.Remove(child);
             }
+            cabinet.RemoveGridCell(nextCell.Index);
+            
+
+            // add the column/row span of both cells to merge
+            setLayerSpan(selectedCell, mergeLayerSpanGetter(selectedCell) + mergeLayerSpanGetter(nextCell));
+            updateControlSpan(selectedCell);
+            // reset cell index
             selectedCellIndex = -1;
         }
-        */
 
-        protected override void MergeCell()
+        protected void MergeCellHorizontal()
         {
-            var itemBase = ContentManager.cabinetItemBase[name][selectedCellIndex];
-            var infoBase = ContentManager.cabinetInfo[nameLegacy][selectedCellIndex];
+            MergeCell(storageGrid.ColumnDefinitions.Count, v => v.Y, v => v.X, c => c.GetRowSpan(), c => c.GetColumnSpan(), (c, i) => c.SetColumnSpan(i), c => c.SetRowSpan(c.GetRowSpan()));
+         
+        }
 
-            var currentButtonIndex = infoBase.Children.IndexOf(selectedButton);
-            var buttonList = infoBase.Children.Where(e => e.GetType() == typeof(ImageButton)).Cast<ImageButton>().ToList();
-            var selectedButtonListIndex = buttonList.IndexOf(selectedButton); 
-            var mergeButtonIndex = buttonList.Count > selectedButtonListIndex + 1 ? selectedButtonListIndex + 1 : -1;
-            Console.WriteLine("ultra merger " + selectedButtonListIndex);
-            ImageButton mergeButton = mergeButtonIndex >= 0 ? buttonList[mergeButtonIndex] : null;
-            var leftBound = selectedButton.GetAbsolutePosition(0).X;
-            var totalWidth = mergeButton != null ? mergeButton.Width + selectedButton.Width : selectedButton.Width;
-
-            infoBase.Children.Remove(selectedButton);
-            itemBase.Remove(selectedButton);
-            if (mergeButton != null)
-            {
-                itemBase.Remove(mergeButton);
-                infoBase.Children.Remove(mergeButton);
-                infoBase.Children.Remove(dividerHelper[mergeButton]);
-            }
-            var index = selectedCellIndex;
-            var buttonIndex = ContentManager.cabinetInfo[nameLegacy][index].Children.Count - 1;
-            var button = new ImageButton() { Source = ContentManager.transIcon, BackgroundColor = Color.Transparent, Aspect = Aspect.Fill };
-            var ancestorWidth = ContentManager.cabinetInfo[nameLegacy][selectedCellIndex].Children[0].Width;
-            var widthDifference = ancestorWidth - totalWidth <= 0 ? 0 : ancestorWidth - totalWidth;
-            var buttonX = leftBound == 0 ? 0 : leftBound / widthDifference;
-            infoBase.Children.Insert(currentButtonIndex, button);
-            AbsoluteLayout.SetLayoutBounds(button, new Rectangle(buttonX, 0, totalWidth / ancestorWidth, 1));
-            AbsoluteLayout.SetLayoutFlags(button, AbsoluteLayoutFlags.All);
-
-            itemBase.Add(button, new List<ItemLayout>());
-            button.Clicked += (o, a) =>
-            {
-                foreach (Layout<View> element in cellContainer.Children)
-                {
-                    element.Children.RemoveEffects(typeof(ImageTint));
-                }
-                button.ToggleEffects((new ImageTint() { tint = Color.FromHsla(1, .1, .5, .5) }), null);
-                selectedCellIndex = index;
-                selectedButton = button;
-            };
-            Image divider = dividerHelper.ContainsKey(selectedButton) ? dividerHelper[selectedButton] : null;
-            if(divider != null) dividerHelper.Add(button, divider);
-            if(mergeButton != null)dividerHelper.Remove(mergeButton);
+        protected void MergeCellVertical()
+        {
+            MergeCell(storageGrid.RowDefinitions.Count, v => v.X, v => v.Y, c => c.GetColumnSpan(), c => c.GetRowSpan(), (c, i) => c.SetRowSpan(i), c => c.SetColumnSpan(c.GetColumnSpan()));
         }
 
         protected override void DeleteCell()
         {
-            var index = selectedCellIndex;
-            ContentManager.cabinetItemBase[nameLegacy].Remove(selectedCellIndex);
-            cellContainer.Children.Remove(ContentManager.cabinetInfo[nameLegacy][selectedCellIndex]);
-            ContentManager.cabinetInfo[nameLegacy].Remove(index);
-            ReCalculateCellBounds();
+            foreach (int id in cabinet.GetGridIDs())
+            {
+                foreach (View child in cabinet.GetGridCell(id).Children)
+                {
+                    storageGrid.Children.Remove(child);
+                }
+                cabinet.RemoveGridCell(id);
+            }
+            storageGrid.RowDefinitions.Clear();
+            storageGrid.ColumnDefinitions.Clear();
+            AddCellRow();
         }
 
         protected override async void ConfirmationCancelEvent(Action finishEvent)
@@ -1138,7 +1076,7 @@ namespace ZestyKitchenHelper
             }
             indexer++;
         }
-        protected override void SubdivideCell(int amount)
+        protected void SubdivideCell(int amount)
         {
             ContentManager.fridgeInfo[nameLegacy][selectedCellIndex].Children.Remove(selectedButton);
             ContentManager.fridgeItemBase[nameLegacy][selectedCellIndex].Remove(selectedButton);
@@ -1191,7 +1129,7 @@ namespace ZestyKitchenHelper
             }
             selectedCellIndex = -1;
         }
-        protected override void MergeCell()
+        protected void MergeCell()
         {
             for (int i = ContentManager.fridgeInfo[nameLegacy][selectedCellIndex].Children.Count - 1; i >= 1; i--)
             {
