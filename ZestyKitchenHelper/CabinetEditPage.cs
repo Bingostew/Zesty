@@ -20,30 +20,21 @@ namespace ZestyKitchenHelper
         protected ImageSource subdivideIcon = "subdivide.png";
         protected ImageSource mergeIcon = "merge.png";
         protected ImageSource countArrow = "small_arrow.png";
-
         protected ImageButton addRowButton = new ImageButton() { Source = ContentManager.addItemIcon, WidthRequest = 50, HeightRequest = 50, HorizontalOptions = LayoutOptions.CenterAndExpand };
-        protected Grid assetGrid;
 
+        protected Grid assetGrid;
         protected Grid storageGrid;
 
         protected StackLayout pageContent = new StackLayout() { BackgroundColor = Color.Wheat };
-        protected AbsoluteLayout cellContainer = new AbsoluteLayout() { HorizontalOptions = LayoutOptions.Center};
-        protected Dictionary<int, AbsoluteLayout> preSaveState;
-        protected Action<string, string, string> storageSaveLocalEvent, storageSaveBaseEvent;
+
+        protected Action<string, Grid> storageSaveLocalEvent, storageSaveBaseEvent;
         protected int selectedCellIndex = -1;
-        protected ImageButton selectedButton;
-        protected int subdivideAmount = 2;
+
         protected string nameLegacy;
         protected string name;
         protected double screenWidth = Application.Current.MainPage.Width;
         protected double screenHeight = Application.Current.MainPage.Width;
 
-        protected double initialItemX = 0;
-        protected int indexer = 0;
-
-        protected const double bufferWidth = 15;
-        protected const string outlineTag = "outline";
-        protected const string movedTag = "move";
         protected abstract string cellImageSource { get; }
         public EditPage(bool newShelf, string storageName = "")
         {
@@ -82,12 +73,8 @@ namespace ZestyKitchenHelper
             pageContent.Children.Add(nameEntry);
 
             if (!newShelf) 
-            {
-                preSaveState = ContentManager.GetInfoBase()[nameLegacy];
-                var itemMaxIndex = ContentManager.cabinetItemBase[nameLegacy].Keys.Any() ?  ContentManager.cabinetItemBase[nameLegacy].Keys.Max() : 0;
-                var infoMaxIndex = ContentManager.cabinetInfo[nameLegacy].Keys.Any() ? ContentManager.cabinetInfo[nameLegacy].Keys.Max() : 0;
-                while (indexer <= itemMaxIndex || indexer <= infoMaxIndex) { indexer++; }
-            }
+                SaveGridState(name);
+            
             SetBasicView(newShelf);
 
             pageContent.Children.Add(saveGrid);
@@ -96,278 +83,9 @@ namespace ZestyKitchenHelper
         }
 
         protected abstract void SetNewShelf(bool newShelf);
-        
-        /*
-        private void SetAdvancedView()
-        {
-            int currentIndex = 0;
-            Dictionary<int, List<ImageButton>> contactViews = new Dictionary<int, List<ImageButton>>();
 
-            assetGrid = new Grid()
-            {
-                RowDefinitions =
-                {
-                    new RowDefinition(){Height = 50},
-                    new RowDefinition(){Height = 20}
-                },
-                ColumnDefinitions =
-                {
-                     new ColumnDefinition(),
-                     new ColumnDefinition(),
-                     new ColumnDefinition(),
-                     new ColumnDefinition()
-                }
-            };
-
-
-            int selectedIndex = 0;
-            AbsoluteLayout selectedView = null;
-            List<ImageButton> selectedInitiators = null;
-            View selectedControl = null;
-
-            var cellAsset = new ImageButton() { Source = ContentManager.addIcon, Aspect = Aspect.Fill };
-            var cellLabel = new Label() { Text = "Insert Cell", HorizontalTextAlignment = TextAlignment.Center };
-            var deleteButton = new ImageButton() { Source = ContentManager.addIcon, Aspect = Aspect.Fill };
-            var deleteLabel = new Label() { Text = "Delete", HorizontalTextAlignment = TextAlignment.Center };
-            var moveButton = new ImageButton() { Source = ContentManager.addIcon, Aspect = Aspect.Fill };
-            var moveLabel = new Label() { Text = "Move", HorizontalTextAlignment = TextAlignment.Center };
-            var transformButton = new ImageButton() { Source = ContentManager.addIcon, Aspect = Aspect.Fill };
-            var transformLabel = new Label() { Text = "Transform", HorizontalTextAlignment = TextAlignment.Center };
-            assetGrid.OrganizeGrid(new List<View>()
-                { cellAsset, cellLabel, deleteButton, deleteLabel, moveButton, moveLabel, transformButton, transformLabel }, GridOrganizer.OrganizeMode.TwoRowSpanLeft);
-            initialItemX = cellAsset.GetAbsolutePosition().X;
-
-            var cabinetBackground = new ImageButton() { Source = ContentManager.cabinetIcon, Aspect = Aspect.Fill };
-            AbsoluteLayout.SetLayoutBounds(cabinetBackground, new Rectangle(0, 0, 1, 1));
-            AbsoluteLayout.SetLayoutFlags(cabinetBackground, AbsoluteLayoutFlags.All);
-
-            var cabinetContainer = new AbsoluteLayout()
-            {
-                WidthRequest = screenWidth,
-                BackgroundColor = Color.Wheat,
-                HeightRequest = 7 * screenHeight / 10,
-                Children =
-                {
-                    cabinetBackground
-                }
-            };
-
-            cellAsset.Clicked += (obj, args) =>
-            {
-                var imageInstance = new ImageButton() { Source = ContentManager.cabinetIcon, Aspect = Aspect.Fill };
-                var button = new ImageButton() { Source = ContentManager.transIcon };
-                button.SetElementTag(movedTag);
-                var outline = new Button() { BorderColor = Color.Blue, BorderWidth = 3, IsVisible = false };
-                outline.SetElementTag(outlineTag);
-                var container = new AbsoluteLayout()
-                {
-                    WidthRequest = 100,
-                    HeightRequest = 100,
-                };
-                container.Children.Add(imageInstance, new Rectangle(0, 0, 1, 1), AbsoluteLayoutFlags.All);
-                var contactViewInstance = new Dictionary<int, List<ImageButton>>(contactViews);
-                var contactInitiators = new List<ImageButton>();
-                AddBuffer(container, indexer, contactInitiators);
-                container.Children.Add(outline, new Rectangle(0, 0, 1, 1), AbsoluteLayoutFlags.All);
-                container.Children.Add(button);
-                ContentManager.cabinetInfo[nameLegacy].Add(indexer, container);
-                ContentManager.cabinetItemBase[nameLegacy].Add(indexer, new Dictionary<ImageButton, List<ItemLayout>>() { { button, new List<ItemLayout>() } });
-                var index = indexer;
-                button.Clicked += (objct, argument) =>
-                {
-                    foreach (var outlineContainer in ContentManager.cabinetInfo[nameLegacy].Values)
-                    {
-                        outlineContainer.Children.FirstOrDefault(e => e.GetElementTag() == outlineTag).IsVisible = false;
-                        outlineContainer.Children.FirstOrDefault(e => e.GetElementTag() == movedTag).RemoveEffect(typeof(ImageTint));
-                    }
-                    button.AddEffect(new ImageTint() { tint = Color.FromRgba(100, 50, 50, 50) });
-                    if (selectedView != container) { selectedView = container; selectedInitiators = contactInitiators; selectedControl = button; selectedIndex = index; }
-                    outline.IsVisible = true;
-                };
-                indexer++;
-
-
-                ScreenTouch touchEvent = new ScreenTouch() { Capture = true, ContactViews = contactViewInstance, ContactÍnitiators = contactInitiators };
-                touchEvent.OnTouchEvent += (objct, arguments) => OnTouch(objct, arguments, container, button);
-                button.Effects.Add(touchEvent);
-                cabinetContainer.Children.Add(container, new Rectangle(0, 0, container.WidthRequest / cabinetContainer.Width, container.HeightRequest / cabinetContainer.Height), AbsoluteLayoutFlags.All);
-            };
-            moveButton.Clicked += (obj, args) =>
-            {
-                if (selectedView != null)
-                {
-                    Console.WriteLine("select " + selectedIndex);
-                    var contactViewsInstance = new Dictionary<int, List<ImageButton>>(contactViews);
-                    contactViewsInstance.Remove(selectedIndex);
-                    ScreenTouch touchEvent = new ScreenTouch() { Capture = true, ContactViews = contactViewsInstance, ContactÍnitiators = selectedInitiators };
-                    touchEvent.OnTouchEvent += (objct, arguments) => OnTouch(objct, arguments, selectedView, selectedControl);
-                    selectedControl.AddEffect(touchEvent);
-                }
-            };
-            deleteButton.Clicked += (obj, args) =>
-            {
-                if (selectedView != null)
-                {
-                    ContentManager.cabinetItemBase[name].Remove(selectedIndex);
-                    cabinetContainer.Children.Remove(selectedView);
-                }
-            };
-            transformButton.Clicked += (obj, args) =>
-            {
-                if (selectedView != null)
-                {
-                    selectedView.Children.Add(GetTransformationOverlay(selectedView, cabinetContainer), new Rectangle(0, 0, 1, 1), AbsoluteLayoutFlags.All);
-                }
-            };
-
-            void AddBuffer(Layout<View> parent, int index, List<ImageButton> bufferList = null)
-            {
-                var bufferRectLeft = new ImageButton() { BackgroundColor = Color.Red };
-                bufferRectLeft.SetElementTag("left");
-                var bufferRectTop = new ImageButton() { BackgroundColor = Color.Red };
-                bufferRectTop.SetElementTag("top");
-                var bufferRectRight = new ImageButton() { BackgroundColor = Color.Red };
-                bufferRectRight.SetElementTag("right");
-                var bufferRectBottom = new ImageButton() { BackgroundColor = Color.Red };
-                bufferRectBottom.SetElementTag("bottom");
-                var parentWidth = parent.WidthRequest;
-                var parentHeight = parent.HeightRequest;
-                var bufferWidthProportionalX = bufferWidth / parentWidth;
-                var bufferWidthProportionalY = bufferWidth / parentHeight;
-                AbsoluteLayout.SetLayoutBounds(bufferRectLeft, new Rectangle(0, .5, bufferWidthProportionalX, (parentHeight - bufferWidth * 2) / parentHeight));
-                AbsoluteLayout.SetLayoutFlags(bufferRectLeft, AbsoluteLayoutFlags.All);
-                AbsoluteLayout.SetLayoutBounds(bufferRectRight, new Rectangle(1, .5, bufferWidthProportionalX, (parent.HeightRequest - bufferWidth * 2) / parentHeight));
-                AbsoluteLayout.SetLayoutFlags(bufferRectRight, AbsoluteLayoutFlags.All);
-                AbsoluteLayout.SetLayoutBounds(bufferRectTop, new Rectangle(.5, 0, (parent.WidthRequest - (bufferWidth * 2)) / parentWidth, bufferWidthProportionalY));
-                AbsoluteLayout.SetLayoutFlags(bufferRectTop, AbsoluteLayoutFlags.All);
-                AbsoluteLayout.SetLayoutBounds(bufferRectBottom, new Rectangle(.5, 1, (parent.WidthRequest - (bufferWidth * 2)) / parentWidth, bufferWidthProportionalY));
-                AbsoluteLayout.SetLayoutFlags(bufferRectBottom, AbsoluteLayoutFlags.All);
-                parent.Children.Add(bufferRectLeft);
-                parent.Children.Add(bufferRectRight);
-                parent.Children.Add(bufferRectTop);
-                parent.Children.Add(bufferRectBottom);
-                if (bufferList != null)
-                { bufferList.Add(bufferRectLeft); bufferList.Add(bufferRectRight); bufferList.Add(bufferRectTop); bufferList.Add(bufferRectBottom); }
-                contactViews.Add(index, new List<ImageButton>() { bufferRectLeft, bufferRectRight, bufferRectTop, bufferRectBottom });
-            }
-
-            void OnTouch(object obj, TouchActionEventArgs args, View movedElement, View control)
-            {
-                movedElement.TranslationX += args.Location.X;
-                movedElement.TranslationY += args.Location.Y;
-                var pos = movedElement.GetAbsolutePosition();
-                var containerPos = cabinetContainer.GetAbsolutePosition();
-                if (args.IsInContact)
-                {
-                    if (args.Type == TouchActionEventArgs.TouchActionType.Released)
-                    {
-                        movedElement.RemoveEffect(typeof(ScreenTouch));
-                        var checker = args.ContactView[0].Width;
-                        if (args.ContactView.Count > 1 && args.ContactView[1].Width != checker)
-                        {
-                            SetBufferOffset(movedElement, args.ContactView[0]);
-                            SetBufferOffset(movedElement, args.ContactView[1]);
-                        }
-                        else
-                        {
-                            SetBufferOffset(movedElement, args.ContactView[0]);
-                            Console.WriteLine("movexed " + movedElement.X);
-                        }
-                    }
-                }
-                if (args.Type == TouchActionEventArgs.TouchActionType.Released)
-                {
-                    control.RemoveEffect(typeof(ScreenTouch));
-                    if (pos.X < containerPos.X) { movedElement.TranslationX -= pos.X; }
-                    else if (pos.X + movedElement.Width > containerPos.X + cabinetContainer.Width) { movedElement.TranslationX -= pos.X + movedElement.Width - (containerPos.X + cabinetContainer.Width); }
-                    if (pos.Y < containerPos.Y) { movedElement.TranslationY += containerPos.Y - pos.Y; }
-                    else if (pos.Y + movedElement.Height > containerPos.Y + cabinetContainer.Height) { movedElement.TranslationY -= pos.Y + movedElement.Height - (containerPos.Y + cabinetContainer.Height); }
-                    if (!args.IsInContact)
-                    {
-                        AbsoluteLayout.SetLayoutBounds(movedElement,
-                            new Rectangle(pos.X / (cabinetContainer.Width - movedElement.Width), (pos.Y - containerPos.Y) / (cabinetContainer.Height - movedElement.Height),
-                            movedElement.Width / cabinetContainer.Width, movedElement.Height / cabinetContainer.Height));
-                        AbsoluteLayout.SetLayoutFlags(movedElement, AbsoluteLayoutFlags.All);
-                    }
-                    movedElement.TranslationX = 0;
-                    movedElement.TranslationY = 0;
-                }
-            }
-
-            void SetBufferOffset(View view, View buffer)
-            {
-                // formula for x position of view in absolute layout : P = a(x-w) and P = a(y-h)
-                //where P is the x position and a is the proprotional factor (0-1). x is the parent width, y is the parent height
-                var tag = buffer.GetElementTag();
-                var bufferPos = buffer.GetAbsolutePosition();
-                var viewPos = view.GetAbsolutePosition(0);
-                var containerPos = cabinetContainer.GetAbsolutePosition();
-                var containerWidth = cabinetContainer.Width - view.Width;
-                var containerHeight = cabinetContainer.Height - view.Height;
-                switch (tag)
-                {
-                    case "right":
-                        AbsoluteLayout.SetLayoutBounds(view, new Rectangle((bufferPos.X + bufferWidth) / containerWidth, viewPos.Y / containerHeight,
-                          view.Width / cabinetContainer.Width, view.Height / cabinetContainer.Height));
-                        AbsoluteLayout.SetLayoutFlags(view, AbsoluteLayoutFlags.All);
-                        break;
-                    case "left":
-                        AbsoluteLayout.SetLayoutBounds(view, new Rectangle((bufferPos.X - view.Width) / containerWidth, viewPos.Y / containerHeight,
-                         view.Width / cabinetContainer.Width, view.Height / cabinetContainer.Height));
-                        AbsoluteLayout.SetLayoutFlags(view, AbsoluteLayoutFlags.All);
-                        break;
-                    case "bottom":
-                        AbsoluteLayout.SetLayoutBounds(view, new Rectangle(viewPos.X / containerWidth, (bufferPos.Y - containerPos.Y + bufferWidth) / containerHeight,
-                          view.Width / cabinetContainer.Width, view.Height / cabinetContainer.Height));
-                        AbsoluteLayout.SetLayoutFlags(view, AbsoluteLayoutFlags.All);
-                        break;
-                    case "top":
-                        AbsoluteLayout.SetLayoutBounds(view, new Rectangle(viewPos.X / containerWidth, (bufferPos.Y - containerPos.Y - view.Height) / containerHeight,
-                        view.Width / cabinetContainer.Width, view.Height / cabinetContainer.Height));
-                        AbsoluteLayout.SetLayoutFlags(view, AbsoluteLayoutFlags.All);
-                        break;
-                }
-            }
-            pageContent.Children.Add(cabinetContainer);
-            pageContent.Children.Add(assetGrid);
-        }
-
-        
-        private AbsoluteLayout GetTransformationOverlay(AbsoluteLayout overlayedView, Layout<View> parent)
-        {
-            var buttonSize = 0.2;
-            double[] xCycle = new double[8] { 0, 0, 0, .5, .5, 1, 1, 1 };
-            double[] yCycle = new double[8] { 0, .5, 1, 0, 1, 0, .5, 1 };
-            AbsoluteLayout overlay = new AbsoluteLayout();
-            for (int i = 0; i < 8; i++)
-            {
-                var scaleButton = new Button();
-                ScreenTouch touchEvent = new ScreenTouch();
-                int index = i;
-                var width = overlayedView.Width;
-                var height = overlayedView.Height;
-                var originX = overlayedView.X;
-                var originY = overlayedView.Y;
-                touchEvent.OnTouchEvent += (obj, args) =>
-                {
-                    Console.WriteLine("transformed touched " + overlayedView.WidthRequest);
-                    overlayedView.AnchorY = yCycle[index] == 0 ? 1 : 0; overlayedView.AnchorX = xCycle[index] == 0 ? 1 : 0;
-                    if (yCycle[index] == 0.5) { overlayedView.ScaleX += args.Location.X / width; }
-                    else if (xCycle[index] == 0.5) { overlayedView.ScaleY += args.Location.Y / height; }
-                    else { var scale = args.Location.X > args.Location.Y ? args.Location.X / width : args.Location.Y / height; overlayedView.Scale += scale; }
-
-                };
-                scaleButton.Effects.Add(touchEvent);
-                overlay.Children.Add(scaleButton, new Rectangle(xCycle[i], yCycle[i], buttonSize, buttonSize), AbsoluteLayoutFlags.All);
-            }
-
-            return overlay;
-        }
-        */
         protected virtual void SetBasicView(bool newShelf)
         {
-            //   cellContainer.WidthRequest = screenWidth;
-            // cellContainer.HeightRequest = 7 * screenHeight / 8;
             storageGrid.WidthRequest = screenWidth;
             storageGrid.HeightRequest = 7 * screenWidth / 8;
             storageGrid.BackgroundColor = Color.SaddleBrown;
@@ -379,18 +97,13 @@ namespace ZestyKitchenHelper
             pageContent.Children.Add(storageGrid);
             pageContent.Children.Add(addRowButton);
         }
+        protected abstract void SaveGridState(string name);
 
         protected abstract Grid GetAssetGrid();
-        protected abstract void StoreCabinetInfo(); 
+        protected abstract void StoreCabinetInfo();
 
-        
-        public void DeleteCabinet()
-        {
-            ContentManager.cabinetInfo.Remove(name);
-        }
 
-        protected virtual void AddCellStorage(View parent, ImageButton button) { }
-        protected virtual void AddCellStorage(View parent, List<ImageButton> button) { }
+        public abstract void DeleteStorage();
         protected abstract void AddCellRow();
 
         protected abstract void ConfirmationSaveEvent(Action finishEditEvent);
@@ -411,7 +124,9 @@ namespace ZestyKitchenHelper
         protected override string cellImageSource => ContentManager.cabinetIcon;
 
         private Cabinet cabinet;
-        public CabinetEditPage(bool newShelf, Action<string, string, string> saveCabinetLocalEvent, Action<string, string, string> saveCabinetBaseEvent, string storageName = "")
+        private Grid initialCabinetState; // the cabinet at the beginning of the edit, in the case where user discards all changes.
+
+        public CabinetEditPage(bool newShelf, Action<string, Grid> saveCabinetLocalEvent, Action<string, Grid> saveCabinetBaseEvent, string storageName = "")
             : base(newShelf, storageName)
         {
             storageSaveLocalEvent = saveCabinetLocalEvent;
@@ -421,27 +136,49 @@ namespace ZestyKitchenHelper
         {
             if (newShelf)
             {
-                int identifier = 1;
-                storageGrid = GridManager.InitializeGrid("cabinet" + IDGenerator.GetID(ContentManager.cabinetEditIdGenerator), 0, 0, GridLength.Star, GridLength.Star);
+                int id = IDGenerator.GetID(ContentManager.cabinetEditIdGenerator);
+                storageGrid = GridManager.InitializeGrid("cabinet" + id, 0, 0, GridLength.Star, GridLength.Star);
                 storageGrid.RowSpacing = 0;
                 storageGrid.ColumnSpacing = 0;
                 cabinet = new Cabinet(name, storageGrid);
 
-                while (ContentManager.cabinetInfo.ContainsKey("untitled shelf" + identifier) || ContentManager.cabinetItemBase.ContainsKey("untitled shelf" + identifier))
-                {
-                    identifier++;
-                }
-                name = "untitled shelf" + identifier;
+                name = "untitled shelf " + id;
                 nameLegacy = name;
-                ContentManager.cabinetInfo.Add(name, new Dictionary<int, AbsoluteLayout>());
-                ContentManager.cabinetItemBase.Add(name, new Dictionary<int, Dictionary<ImageButton, List<ItemLayout>>>());
+                ContentManager.CabinetMetaBase.Add(name, cabinet);
             }
             else
             {
-                cellContainer.Children.Add(ContentManager.GetStorageView(name));
+                storageGrid = ContentManager.GetCabinetView(name) as Grid;
             }
         }
 
+        protected override void SaveGridState(string name)
+        {
+            Cabinet cabinet = ContentManager.CabinetMetaBase[name];
+            Grid gridCopy = new Grid();
+
+            // cycle through each cell of the grid to retrieve and copy info
+            foreach(var cell in cabinet.GetGridCells())
+            {
+                // create copies of cells and childlist.
+                StorageCell cellCopy = new StorageCell(cell.Position, cell.Index, cell.GetColumnSpan(), cell.GetRowSpan());
+                List<View> childrenCopy = new List<View>();
+
+                // cycle through each child to copy.
+                foreach (var child in cell.GetChildren())
+                {
+                    childrenCopy.Add(child);
+                }
+
+                // put copied children into copied grid
+                cellCopy.SetChildren(childrenCopy);
+                GridManager.AddGridItemAtPosition(gridCopy, cellCopy.GetChildren(), cellCopy.Position);
+            }
+           
+            initialCabinetState = gridCopy;
+        }
+
+        // Set up tool bar 
         protected override Grid GetAssetGrid()
         {
             Grid assetGrid = new Grid()
@@ -490,18 +227,6 @@ namespace ZestyKitchenHelper
             assetGrid.Children.Add(deleteButton, 4, 0);
             assetGrid.Children.Add(deleteLabel, 4, 1);
             return assetGrid;
-        }
-
-        protected override void AddCellStorage(View parent, ImageButton button)
-        {
-            var index = indexer;
-            while (ContentManager.cabinetInfo[nameLegacy].ContainsKey(index))
-            {
-                index++;
-            }
-            ContentManager.cabinetInfo[nameLegacy].Add(index, parent as AbsoluteLayout);
-            ContentManager.cabinetItemBase[nameLegacy].Add(index, new Dictionary<ImageButton, List<ItemLayout>>());
-            ContentManager.cabinetItemBase[nameLegacy][index].Add(button, new List<ItemLayout>());
         }
 
         protected void AddCell(Vector2D<int> position, int columnSpan = 1, int rowSpan = 1)
@@ -602,7 +327,9 @@ namespace ZestyKitchenHelper
                 bool isSelectedCell = pos.X == position.X && pos.Y == position.Y;
 
                 // retrieve the children of a cell
-                List<View> children = cell.Children;
+                List<View> children = cell.GetChildren();
+                children.Add(cell.GetBackground());
+                children.Add(cell.GetButton());
 
                 // calculate the new position of the cell due to change in column numbers. Formula: currentX / oldMaxX * newMaxX
                 Vector2D<int> newPosition = getNewPosition(pos.X, pos.Y, (int)(compareLayerPositionGetter(pos) / (float)oldLayerCount * newLayerCount));
@@ -656,13 +383,6 @@ namespace ZestyKitchenHelper
                  (x, y, p) => new Vector2D<int>(x, p), (v, s, c) => AddCell(v, c.GetColumnSpan(), s));
         }
 
-        private void ReCalculateCellBounds()
-        {
-            for (int i = 0; i < cellContainer.Children.Count; i++)
-            {
-                AbsoluteLayout.SetLayoutBounds(cellContainer.Children[i], new Rectangle(0, cabinet_height / cellContainer.HeightRequest * i, 1, cabinet_height / cellContainer.HeightRequest));
-            }
-        }
 
         /// <summary>
         /// Merges cells either horizontally or vertically
@@ -704,10 +424,12 @@ namespace ZestyKitchenHelper
                 return;
 
             // Remove children from cell, then remove cell from grid
-            foreach (View child in nextCell.Children)
+            foreach (View child in nextCell.GetChildren())
             {
                 storageGrid.Children.Remove(child);
             }
+            storageGrid.Children.Remove(nextCell.GetButton());
+            storageGrid.Children.Remove(nextCell.GetBackground());
             cabinet.RemoveGridCell(nextCell.Index);
             
 
@@ -731,17 +453,25 @@ namespace ZestyKitchenHelper
 
         protected override void DeleteCell()
         {
-            foreach (int id in cabinet.GetGridIDs())
+            foreach (int index in cabinet.GetGridIDs())
             {
-                foreach (View child in cabinet.GetGridCell(id).Children)
+                var cell = cabinet.GetGridCell(index);
+                foreach (View child in cell.GetChildren())
                 {
                     storageGrid.Children.Remove(child);
                 }
-                cabinet.RemoveGridCell(id);
+                storageGrid.Children.Remove(cell.GetButton());
+                storageGrid.Children.Remove(cell.GetBackground());
+                cabinet.RemoveGridCell(index);
             }
             storageGrid.RowDefinitions.Clear();
             storageGrid.ColumnDefinitions.Clear();
             AddCellRow();
+        }
+
+        public override void DeleteStorage()
+        {
+            ContentManager.CabinetMetaBase.Remove(name);
         }
 
         protected override async void ConfirmationCancelEvent(Action finishEvent)
@@ -750,12 +480,12 @@ namespace ZestyKitchenHelper
             bool cancelConfirmed = await ContentManager.pageController.DisplayAlert("Confirmation", "Do you want to discard all current changes?", "Discard", "Cancel");
             if (cancelConfirmed) 
             {
-                if (preSaveState != null)
-                    ContentManager.cabinetInfo[nameLegacy] = preSaveState;
+                if (initialCabinetState != null)
+                    ContentManager.CabinetMetaBase[nameLegacy].Grid = initialCabinetState;
                 else
                 {
-                    ContentManager.cabinetInfo.Remove(nameLegacy);
-                    ContentManager.cabinetItemBase.Remove(nameLegacy);
+                    ContentManager.CabinetMetaBase.Remove(nameLegacy);
+                    //ContentManager.cabinetItemBase.Remove(nameLegacy);
                 }
                     
                 finishEvent.Invoke(); 
@@ -767,11 +497,9 @@ namespace ZestyKitchenHelper
             bool saveConfirmed = await ContentManager.pageController.DisplayAlert("Confirmation", "Do you want to save all changes?", "Save", "Cancel");
             if (saveConfirmed)
             {
-                foreach (var layout in ContentManager.cabinetInfo[nameLegacy].Values)
-                {
-                    layout.Children.RemoveEffects(typeof(ImageTint));
-                }
-                cellContainer.Children.Remove(addRowButton);
+                storageGrid.Children.RemoveEffects(typeof(ImageTint));
+
+                //cellContainer.Children.Remove(addRowButton);
                 StoreCabinetInfo();
                 finishEvent.Invoke();
             }
@@ -780,21 +508,17 @@ namespace ZestyKitchenHelper
 
         protected override void StoreCabinetInfo()
         {
-            var content = ContentManager.cabinetInfo[nameLegacy];
-            var itemContent = ContentManager.cabinetItemBase[nameLegacy];
             if (nameLegacy != name)
             {
-                if (ContentManager.cabinetInfo.ContainsKey(nameLegacy)) ContentManager.cabinetInfo.Remove(nameLegacy);
-                if (ContentManager.cabinetItemBase.ContainsKey(nameLegacy)) ContentManager.cabinetItemBase.Remove(nameLegacy);
-                ContentManager.cabinetInfo.Add(name, content);
-                ContentManager.cabinetItemBase.Add(name, itemContent);
+                ContentManager.CabinetMetaBase.Remove(nameLegacy);
+                ContentManager.CabinetMetaBase.Add(name, cabinet);
             }
             nameLegacy = name;
 
             string rowInfo, itemInfo;
-            ContentManager.SetLocalCabinet(name, out rowInfo, out itemInfo);
-            storageSaveLocalEvent(name, rowInfo, itemInfo);
-            storageSaveBaseEvent(name, rowInfo, itemInfo);
+           // ContentManager.SetLocalCabinet(name, out rowInfo, out itemInfo);
+        //    storageSaveLocalEvent(name, rowInfo, itemInfo);
+         //   storageSaveBaseEvent(name, rowInfo, itemInfo);
         }
     }
 
@@ -804,11 +528,11 @@ namespace ZestyKitchenHelper
         const string untitledName = "untitled fridge ";
         public const string Left_Cell_Tag = "sideLeft";
         public const string Right_Cell_Tag = "sideRight";
-        public const double Main_Cell_Width_Div =2;
+        public const double Main_Cell_Width_Div = 2;
         public const double Side_Cell_Width_Div = 5;
         public const double fridge_height = 50;
-        protected override string cellImageSource => ContentManager.fridgeIcon; 
-        public FridgeEditPage(bool newShelf, Action<string, string, string> _saveFridgeLocalEvent, Action<string, string, string> _saveFridgeBaseEvent, string storageName = "") 
+        protected override string cellImageSource => ContentManager.fridgeIcon;
+        public FridgeEditPage(bool newShelf, Action<string, Grid> _saveFridgeLocalEvent, Action<string, Grid> _saveFridgeBaseEvent, string storageName = "")
             : base(newShelf, storageName)
         {
             storageSaveBaseEvent = _saveFridgeBaseEvent;
@@ -816,7 +540,7 @@ namespace ZestyKitchenHelper
         }
 
         protected override void SetNewShelf(bool newShelf)
-        {
+        {/*
             if (newShelf)
             {
                 int identifier = 1;
@@ -828,7 +552,12 @@ namespace ZestyKitchenHelper
                 nameLegacy = name;
                 ContentManager.fridgeInfo.Add(nameLegacy, new Dictionary<int, AbsoluteLayout>());
                 ContentManager.fridgeItemBase.Add(nameLegacy, new Dictionary<int, Dictionary<ImageButton, List<ItemLayout>>>());
-            }
+            }*/
+        }
+
+        protected override void SaveGridState(string name)
+        {
+            
         }
 
         protected override Grid GetAssetGrid()
@@ -873,7 +602,7 @@ namespace ZestyKitchenHelper
             deleteRightCellButton.Clicked += (obj, args) => ChangeSideCell(false, false);
             var subdivideButton = new ImageButton() { Source = subdivideIcon, Aspect = Aspect.Fill, BackgroundColor = Color.Transparent,
                 WidthRequest = 50, HeightRequest = 50 };
-            subdivideButton.Clicked += (object obj, EventArgs args) => { if (CanTransform()) { SubdivideCell(subdivideAmount); } };
+            subdivideButton.Clicked += (object obj, EventArgs args) => { if (CanTransform()) { SubdivideCell(); } };
             var subdivideLabel = new Label() { Text = "Div", HorizontalOptions = LayoutOptions.CenterAndExpand, FontSize = 15 };
             var mergeButton = new ImageButton() { Source = mergeIcon, Aspect = Aspect.Fill, BackgroundColor = Color.Transparent,
                 WidthRequest = 50, HeightRequest = 50 };
@@ -883,24 +612,12 @@ namespace ZestyKitchenHelper
                 Aspect = Aspect.Fill, WidthRequest = 50, HeightRequest = 50 };
             deleteButton.Clicked += (obj, args) => { if (CanTransform()) { DeleteCell(); } };
             var deleteLabel = new Label() { Text = "Del", HorizontalOptions = LayoutOptions.CenterAndExpand, FontSize = 15 };
-            var numLabel = new Label() { Text = "2", HorizontalOptions = LayoutOptions.Center, FontSize = 20, VerticalOptions = LayoutOptions.Center, TextColor = Color.Black };
-            var minusButton = new ImageButton() { Source = countArrow, BackgroundColor = Color.Transparent, Rotation = 180 };
-            minusButton.Clicked += (obj, args) =>
-            {
-                if (subdivideAmount > 2) { subdivideAmount--; numLabel.Text = subdivideAmount.ToString(); }
-            };
-            var plusButton = new ImageButton() { Source = countArrow, BackgroundColor = Color.Transparent };
-            plusButton.Clicked += (obj, args) => {
-                if (subdivideAmount < 9) { subdivideAmount++; numLabel.Text = subdivideAmount.ToString(); }
-            };
+
             assetGrid.Children.Add(addLeftCellButton, 0, 1);
             assetGrid.Children.Add(deleteLeftCellButton, 1, 1);
-            assetGrid.Children.Add(deleteButton, 2,1);
+            assetGrid.Children.Add(deleteButton, 2, 1);
             assetGrid.Children.Add(mergeButton, 3, 1);
             assetGrid.Children.Add(subdivideButton, 4, 1);
-            assetGrid.Children.Add(minusButton, 5, 1);
-            assetGrid.Children.Add(numLabel, 6, 1);
-            assetGrid.Children.Add(plusButton, 7, 1);
             assetGrid.Children.Add(addRightCellButton, 8, 1);
             assetGrid.Children.Add(deleteRightCellButton, 9, 1);
             assetGrid.Children.Add(addLeftLabel, 0, 0);
@@ -913,29 +630,12 @@ namespace ZestyKitchenHelper
             return assetGrid;
         }
 
-        private void ReCalculateCellBounds()
-        {
-            for (int i = 2; i < cellContainer.Children.Count; i++)
-            {
-                var y = i == 2 ? 0 : fridge_height / (cellContainer.HeightRequest - fridge_height) * (i - 2);
-                if (cellContainer.Children[i].GetElementTag() != Left_Cell_Tag || cellContainer.Children[i].GetElementTag() != Right_Cell_Tag)
-                AbsoluteLayout.SetLayoutBounds(cellContainer.Children[i], new Rectangle(.5, y, 1/Main_Cell_Width_Div, fridge_height / cellContainer.HeightRequest));
-            }
-        }
-
-        protected override void AddCellStorage(View parent, List<ImageButton> buttons)
-        {
-            var index = indexer;
-            ContentManager.fridgeInfo[nameLegacy].Add(index, parent as AbsoluteLayout);
-            ContentManager.fridgeItemBase[nameLegacy].Add(index, new Dictionary<ImageButton, List<ItemLayout>>());
-            foreach (var button in buttons)
-            {
-                ContentManager.fridgeItemBase[nameLegacy][index].Add(button, new List<ItemLayout>());
-            }
-        }
 
         AbsoluteLayout leftCellContainer = new AbsoluteLayout();
         AbsoluteLayout rightCellContainer = new AbsoluteLayout();
+
+        protected async override void AddCellRow() { }
+        /*
         protected async override void AddCellRow()
         {
             if (cellContainer.Children.Count < 10)
@@ -1030,15 +730,18 @@ namespace ZestyKitchenHelper
             else { await DisplayAlert("Unable to add new row", "Maximun number of rows reached", "cancel"); }
         }
 
+        */
+        /*
         private void ConfigureSideCells()
         {
             var height = cellContainer.Children.Count * fridge_height;
             var width = cellContainer.WidthRequest;
             AbsoluteLayout.SetLayoutBounds(leftCellContainer, new Rectangle(0, 0, width / Side_Cell_Width_Div / cellContainer.WidthRequest, fridge_height * (cellContainer.Children.Count - 2) / cellContainer.HeightRequest));
             AbsoluteLayout.SetLayoutBounds(rightCellContainer, new Rectangle(1, 0, width / Side_Cell_Width_Div / cellContainer.WidthRequest, fridge_height * (cellContainer.Children.Count - 2) / cellContainer.HeightRequest));
-        }
+        }*/
+        
         protected void ChangeSideCell(bool left, bool add)
-        {
+        {/*
             var container = left ? leftCellContainer : rightCellContainer;
             var itemBase = left ? ContentManager.fridgeItemBase[nameLegacy][0] : ContentManager.fridgeItemBase[nameLegacy][1];
             var tag = left ? Left_Cell_Tag : Right_Cell_Tag;
@@ -1057,7 +760,7 @@ namespace ZestyKitchenHelper
             {
                 var cell = new Image() { Source = ContentManager.fridgeSideIcon, Aspect = Aspect.Fill };
                 var button = new ImageButton() { Source = ContentManager.transIcon, BackgroundColor = Color.Transparent,
-                    Aspect = Aspect.Fill,BorderColor = Color.Blue, BorderWidth = 5 };
+                    Aspect = Aspect.Fill, BorderColor = Color.Blue, BorderWidth = 5 };
                 buttonList.Add(button);
                 button.Clicked += (obj, args) =>
                 {
@@ -1074,8 +777,10 @@ namespace ZestyKitchenHelper
                 container.Children.Add(button, new Rectangle(0, y, 1, height / parentHeight), AbsoluteLayoutFlags.All);
                 itemBase.Add(button, new List<ItemLayout>());
             }
-            indexer++;
+            indexer++;*/
         }
+        protected void SubdivideCell() { }
+        /*
         protected void SubdivideCell(int amount)
         {
             ContentManager.fridgeInfo[nameLegacy][selectedCellIndex].Children.Remove(selectedButton);
@@ -1128,7 +833,10 @@ namespace ZestyKitchenHelper
                 };
             }
             selectedCellIndex = -1;
-        }
+        }*/
+
+        protected void MergeCell() { }
+        /*
         protected void MergeCell()
         {
             for (int i = ContentManager.fridgeInfo[nameLegacy][selectedCellIndex].Children.Count - 1; i >= 1; i--)
@@ -1157,7 +865,10 @@ namespace ZestyKitchenHelper
                 selectedCellIndex = index;
                 selectedButton = button;
             };
-        }
+        }*/
+
+        protected override void DeleteCell() { }
+        /*
         protected override void DeleteCell()
         {
             var index = selectedCellIndex;
@@ -1167,11 +878,18 @@ namespace ZestyKitchenHelper
             ConfigureSideCells();
             ReCalculateCellBounds();
         }
+        */
+
+        public override void DeleteStorage()
+        {
+
+        }
 
         protected override async void ConfirmationCancelEvent(Action finishEvent)
         {
             base.ConfirmationCancelEvent(finishEvent);
             bool cancelConfirmed = await ContentManager.pageController.DisplayAlert("Confirmation", "Do you want to discard all current changes?", "Discard", "Cancel");
+            /*
             if (cancelConfirmed) 
             {
                 if(ContentManager.fridgeInfo[nameLegacy].Count == 0) { ContentManager.fridgeInfo.Remove(nameLegacy); }
@@ -1185,11 +903,12 @@ namespace ZestyKitchenHelper
                     ContentManager.fridgeItemBase.Remove(nameLegacy);
                 }
                 finishEvent.Invoke(); 
-            }
+            }*/
         }
 
         protected override async void ConfirmationSaveEvent(Action finishEvent)
         {
+            /*
             bool saveConfirmed = await ContentManager.pageController.DisplayAlert("Confirmation", "Do you want to save all changes?", "Save", "Cancel");
             if (saveConfirmed)
             {
@@ -1199,11 +918,12 @@ namespace ZestyKitchenHelper
                 }
                 StoreCabinetInfo();
                 finishEvent?.Invoke();
-            }
+            }*/
         }
         
         protected override void StoreCabinetInfo()
         {
+            /*
             var content = ContentManager.fridgeInfo[nameLegacy];
             var itemContent = ContentManager.fridgeItemBase[nameLegacy];
             if (nameLegacy != name)
@@ -1217,7 +937,7 @@ namespace ZestyKitchenHelper
             string rowInfo, itemInfo;
             ContentManager.SetLocalFridge(name, out rowInfo, out itemInfo);
             storageSaveLocalEvent(name, rowInfo, itemInfo);
-            storageSaveBaseEvent(name, rowInfo, itemInfo);
+            storageSaveBaseEvent(name, rowInfo, itemInfo);*/
         }
     }
 }

@@ -14,7 +14,7 @@ namespace ZestyKitchenHelper
         private static Dictionary<Grid, int> constraintBase = new Dictionary<Grid, int>();
 
         /// <summary>
-        /// Creates a new grid if name not exist, otherwise, retrieve grid.
+        /// Creates a new grid with a name does if name not exist, otherwise, retrieve grid.
         /// </summary>
         /// <param name="name">Name of grid</param>
         /// <param name="rows"></param>
@@ -22,13 +22,18 @@ namespace ZestyKitchenHelper
         /// <returns></returns>
         public static Grid InitializeGrid(string name, int rows, int columns, GridLength gridHeight, GridLength gridWidth)
         {
+            return InitializeGrid(rows, columns, gridHeight, gridWidth, name);
+        }
+
+        public static Grid InitializeGrid(int rows, int columns, GridLength gridHeight, GridLength gridWidth, string name = null)
+        {
             // if exist, then get instead of create
-            if (gridDataBase.ContainsKey(name))
+            if (name != null && gridDataBase.ContainsKey(name))
                 return gridDataBase[name];
 
             // initialize grid with rows and columns parameter
             Grid grid = new Grid();
-            for(int i = 0; i < rows; i++)
+            for (int i = 0; i < rows; i++)
             {
                 grid.RowDefinitions.Add(new RowDefinition() { Height = gridHeight });
             }
@@ -37,7 +42,9 @@ namespace ZestyKitchenHelper
                 grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = gridWidth });
             }
 
-            gridDataBase.Add(name, grid);
+            if(name != null)
+                gridDataBase.Add(name, grid);
+
             return grid;
         }
 
@@ -141,7 +148,6 @@ namespace ZestyKitchenHelper
         /// <returns></returns>
         public static Grid ConstrainGrid<T>(List<T> children, int startChildIndex, int endChildIndex, Grid grid, Converter<View, View> converter = null, bool constrainSize = false) where T : View
         {
-            Console.WriteLine("GridManager 109: index difference: " + (endChildIndex - startChildIndex + 1));
             // note the maximum number of children the grid is allowed to have
             if (!constraintBase.ContainsKey(grid) && constrainSize)
                 constraintBase.Add(grid, endChildIndex - startChildIndex + 1);
@@ -151,7 +157,7 @@ namespace ZestyKitchenHelper
                 return grid;
 
             // clamp the child indeces
-            int endIndex = children.Count >= endChildIndex ? endChildIndex: children.Count;
+            int endIndex = children.Count >= endChildIndex ? endChildIndex: children.Count - 1;
             int startIndex = 0 <= startChildIndex ? startChildIndex : 0;
 
             // If invalid range, then no constraint
@@ -163,7 +169,7 @@ namespace ZestyKitchenHelper
 
             // If has a converter, creates a deep copy of the base grid children
             if (converter != null)
-                extractedChildren = children.GetRange(startIndex, endIndex - startIndex).ConvertAll(converter);
+                extractedChildren = children.GetRange(startIndex, endIndex - startIndex + 1).ConvertAll(converter);
             else
                 extractedChildren = new List<View>(children.GetRange(startIndex, endIndex - startIndex + 1));
 
@@ -205,6 +211,11 @@ namespace ZestyKitchenHelper
         public static Grid GetGrid(string name)
         {
             return gridDataBase[name];
+        }
+
+        public static void RemoveGrid(string name)
+        {
+            gridDataBase.Remove(name);
         }
     }
 }

@@ -72,29 +72,29 @@ namespace ZestyKitchenHelper
         {
             await SQLDatabase.Table<Cabinet>().DeleteAsync(f => f.Name == name);
         }
-        public static async void SaveFridgeLocal(string name, string fridgeRows, string rowItems)
+        public static async void SaveFridgeLocal(string name, Xamarin.Forms.Grid grid)
         {
             var tryFridge = await GetFridgeAsync(name);
             if (tryFridge != null)
             {
-                UpdateItemsAsync(new Fridge().SetFridge(fridgeRows, rowItems, name));
+                UpdateItemsAsync(new Fridge().SetFridge(name, grid));
             }
             else
             {
-                Fridge fridge = new Fridge().SetFridge(fridgeRows, rowItems, name);
+                Fridge fridge = new Fridge().SetFridge(name, grid);
                 SaveItemAsync(fridge);
             }
         }
-        public static async void SaveCabinetLocal(string name, string cabinetRows, string rowItems)
+        public static async void SaveCabinetLocal(string name, Xamarin.Forms.Grid grid)
         {
             var tryCabinet = await GetCabinetAsync(name);
             if (tryCabinet != null)
             {
-                UpdateItemsAsync(new Cabinet().SetCabinet(cabinetRows, rowItems, name));
+                UpdateItemsAsync(new Cabinet().SetCabinet(name, grid));
             }
             else
             {
-                Cabinet cabinet = new Cabinet().SetCabinet(cabinetRows, rowItems, name);
+                Cabinet cabinet = new Cabinet().SetCabinet(name, grid);
                 SaveItemAsync(cabinet);
             }
         }

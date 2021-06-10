@@ -81,12 +81,12 @@ namespace ZestyKitchenHelper.Droid
         private async void SetSavedInstance()
         {
             if (ContentManager.sessionUserName != null && ContentManager.sessionUserName.Length > 0)
-            {
+            {/*
                 ContentManager.ParseLocalCabinets(await FireBaseMediator.fireBaseController.GetUserCabinetList(ContentManager.sessionUserName),
                     await LocalStorageController.GetItemListAsync());
                 ContentManager.ParseLocalFridge(await FireBaseMediator.fireBaseController.GetUserFridgeList(ContentManager.sessionUserName), 
                     await LocalStorageController.GetItemListAsync());
-                ContentManager.ParseLocalItems(await FireBaseMediator.fireBaseController.GetUserItemList(ContentManager.sessionUserName));
+                ContentManager.ParseLocalItems(await FireBaseMediator.fireBaseController.GetUserItemList(ContentManager.sessionUserName));*/
             }
 
            // ContentManager.ParseLocalCabinets(await LocalStorageController.GetCabinetListAsync(), await LocalStorageController.GetItemListAsync());

@@ -203,18 +203,18 @@ namespace ZestyKitchenHelper
             }
         }
 
-        public static void SaveCabinet(string name, string cabinetRows, string rowItems)
+        public static void SaveCabinet(string name, Xamarin.Forms.Grid grid)
         {
             if (ContentManager.sessionUserName != null)
             {
-                PutCabinet(new Cabinet().SetCabinet(cabinetRows, rowItems, name));
+                PutCabinet(new Cabinet().SetCabinet(name, grid));
             }
         }
-        public static void SaveFridge(string name, string fridgeRows, string rowItems)
+        public static void SaveFridge(string name, Xamarin.Forms.Grid grid)
         {
             if (ContentManager.sessionUserName != null)
             {
-                FireBaseMediator.PutFridge(new Fridge().SetFridge(fridgeRows, rowItems, name));
+                PutFridge(new Fridge().SetFridge(name, grid));
             }
         }
     }

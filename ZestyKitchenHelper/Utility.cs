@@ -107,11 +107,13 @@ namespace Utility
 
     public class StorageCell
     {
+        private Grid Grid { get; set; }
         public int Index { get; set; }
         public Vector2D<int> Position { get; set; }
-        public List<View> Children = new List<View>();
         private int ColumnSpan { get; set; }
         private int RowSpan { get; set; }
+        private Image background;
+        private ImageButton button;
 
         public StorageCell(Vector2D<int> position, int index, int columnSpan = 1, int rowSpan = 1)
         {
@@ -119,29 +121,25 @@ namespace Utility
             ColumnSpan = columnSpan;
             RowSpan = rowSpan;
             Index = index;
-        }
-
-        public void ClearChildren()
-        {
-            Children.Clear();
+            Grid = GridManager.InitializeGrid(2, 5, GridLength.Star, GridLength.Star);
         }
 
         public void SetColumnSpan(int columnSpan)
         {
             ColumnSpan = columnSpan;
-            foreach(View child in Children)
-            {
-                Grid.SetColumnSpan(child, columnSpan);
-            }
+
+            Grid.SetColumnSpan(Grid, columnSpan);
+            Grid.SetColumnSpan(background, columnSpan);
+            Grid.SetColumnSpan(button, columnSpan);
         }
 
         public void SetRowSpan(int rowSpan)
         {
             RowSpan = rowSpan;
-            foreach (View child in Children)
-            {
-                Grid.SetRowSpan(child, rowSpan);
-            }
+
+            Grid.SetRowSpan(Grid, rowSpan);
+            Grid.SetRowSpan(background, rowSpan);
+            Grid.SetRowSpan(button, rowSpan);
         }
 
         public int GetColumnSpan()
@@ -153,19 +151,65 @@ namespace Utility
         {
             return RowSpan;
         }
+        public List<View> GetChildren()
+        {
+            return Grid.Children.ToList();
+        }
+        public void SetChildren(List<View> newChildren)
+        {
+            GridManager.AddGridItem(Grid, newChildren, true);
+        }
+
+        public int GetChildrenCount()
+        {
+            return GetChildren().Count;
+        }
+        public void AddItem(List<View> items)
+        {
+            GridManager.AddGridItem(Grid, items, false);
+        }
+        public void AddUI(Image background, ImageButton button)
+        {
+            this.background = background;
+            this.button = button;
+        }
+        public Image GetBackground()
+        {
+            return background;
+        }
+        public ImageButton GetButton()
+        {
+            return button;
+        }
+        public Grid GetItemGrid()
+        {
+            return Grid;
+        }
+    }
+
+    public interface IStorage
+    {
+        Grid Grid { get; set; }
+        void AddGridCell(int ID, StorageCell cell);
+        void RemoveGridCell(int ID);
+        void AddGridCellUI(int ID, Image background, ImageButton button);
+        /// <summary>
+        /// Add item to the storage
+        /// </summary>
+        /// <param name="ID">The index of the cell</param>
+        /// <param name="items">List of Views</param>
+        void AddGridItems(int ID, List<View> items);
+        StorageCell GetGridCell(int ID);
+        List<int> GetGridIDs();
+        List<StorageCell> GetGridCells();
     }
 
     [Table("Cabinet")]
-    public class Cabinet
+    public class Cabinet : IStorage
     {
         [PrimaryKey]
         [Column("Name")]
         public string Name { get; set; }
-        [Column("Row")]
-        //Format: button proportional position each row, separated in comma, ex- (.25+.5),(.5),
-        public string RowInfo { get; set; }
-        //Format: button index and items surrounede by parenthesis, separated in comma: ex- 1(Item1+ITem2),2(Item1)
-        public string RowItems { get; set; }
         public Grid Grid { get; set; }
 
         // Matches the grid position of each cell to the cell ID.
@@ -195,20 +239,17 @@ namespace Utility
         {
             if (gridCells.ContainsKey(ID))
             {
-                gridCells[ID].Children.Insert(0, background);
-                gridCells[ID].Children.Insert(gridCells[ID].Children.Count, button);
+                var cell = gridCells[ID];
+                cell.AddUI(background, button);
+
+                GridManager.AddGridItemAtPosition(Grid, new List<View>() { background, button }, cell.Position);
             }
         }
 
         public void AddGridItems(int ID, List<View> items)
         {
-            if (gridCells.ContainsKey(ID))
-            {
-                foreach (ItemLayout newItem in items)
-                {
-                    gridCells[ID].Children.Add(newItem);
-                }
-            }            
+            var cell = gridCells[ID];
+            cell.AddItem(items);
         }
 
         public StorageCell GetGridCell(int ID)
@@ -226,31 +267,83 @@ namespace Utility
             return gridCells.Keys.ToList();
         }
 
-        public Cabinet SetCabinet(string rowInfo, string rowItems, string name)
+        public Cabinet SetCabinet(string name, Grid grid)
         {
-            RowInfo = rowInfo;
-            RowItems = rowItems;
+            Grid = grid;
             Name = name;
             return this;
         }
     }
 
     [Table("Fridge")]
-    public class Fridge
+    public class Fridge : View, IStorage
     {
         [PrimaryKey]
         [Column("Name")]
         public string Name { get; set; }
-        [Column("Row")]
-        //Format: button proportional position each row, separated in comma, ex- (.25+.5),(.5),
-        public string RowInfo { get; set; }
-        //Format: button index and items surrouneded by parenthesis, separated in comma: ex- 1(Item1+ITem2),2(Item1)
-        public string RowItems { get; set; }
-        public Fridge SetFridge(string rowInfo, string rowItems, string name)
+        public Grid Grid { get; set; }
+        // Matches the grid position of each cell to the cell ID.
+        private Dictionary<int, StorageCell> gridCells = new Dictionary<int, StorageCell>();
+        public Fridge(string name, Grid grid)
         {
-            RowInfo = rowInfo;
-            RowItems = rowItems;
             Name = name;
+            Grid = grid;
+        }
+
+        public Fridge() { }
+
+        public void AddGridCell(int ID, StorageCell cell)
+        {
+            gridCells.Add(ID, cell);
+        }
+
+        public void RemoveGridCell(int ID)
+        {
+            gridCells.Remove(ID);
+        }
+
+        public void AddGridCellUI(int ID, Image background, ImageButton button)
+        {
+            if (gridCells.ContainsKey(ID))
+            {
+                var cell = gridCells[ID];
+                cell.AddUI(background, button);
+                GridManager.AddGridItemAtPosition(Grid, new List<View>() { background, cell.GetItemGrid(), button }, cell.Position);
+            }
+        }
+
+        public void AddGridItems(int ID, List<View> items)
+        {
+            if (gridCells.ContainsKey(ID))
+            {
+                var cell = gridCells[ID];
+                cell.AddItem(items);
+
+                GridManager.AddGridItemAtPosition(Grid, items, cell.Position);
+            }
+        }
+
+        public StorageCell GetGridCell(int ID)
+        {
+            return gridCells[ID];
+        }
+
+        public List<StorageCell> GetGridCells()
+        {
+            return gridCells.Values.ToList();
+        }
+
+        public List<int> GetGridIDs()
+        {
+            return gridCells.Keys.ToList();
+        }
+
+        //TEMPORARY
+        public Fridge SetFridge(string name, Grid grid)
+        {
+            Name = name;
+            Grid = grid;
+
             return this;
         }
     }

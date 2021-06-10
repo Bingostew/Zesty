@@ -71,9 +71,10 @@ namespace ZestyKitchenHelper
             mainGrid.Children.Clear();
             gridList.Clear();
             gridList.Add(newSelectionButton);
-            var itemBase = ContentManager.storageSelection == ContentManager.StorageSelection.cabinet ? ContentManager.cabinetInfo : ContentManager.fridgeInfo;
-            var itemInfoBase = ContentManager.storageSelection == ContentManager.StorageSelection.cabinet ? ContentManager.cabinetItemBase : ContentManager.fridgeItemBase;
-            foreach (var key in itemBase.Keys)
+            var itemBase = ContentManager.storageSelection == ContentManager.StorageSelection.cabinet ? ContentManager.CabinetMetaBase.Keys.ToList()
+                : ContentManager.FridgeMetaBase.Keys.ToList();
+
+            foreach (var key in itemBase)
             {
                 var metaName = key;
                 var name = new Label() { Text = key.ToString(), TextColor = Color.Black, FontSize = 25, HorizontalTextAlignment = TextAlignment.Center };
@@ -144,21 +145,20 @@ namespace ZestyKitchenHelper
                 deleteButton.Clicked += async (obj, args) =>
                 {
                     var confirm = await DisplayAlert("Caution", "Are you sure you want to delete this layout?", "Delete", "Cancel");
-                    if (confirm && itemBase.ContainsKey(key) && itemInfoBase.ContainsKey(key))
+                    if (confirm)
                     {
-                        foreach (var index in itemBase[key].Keys)
+                        foreach (var cell in ContentManager.GetSelectedStorage(key).GetGridCells())
                         {
-                            foreach (var cabButton in itemInfoBase[key][index].Keys)
+                            foreach (var child in cell.GetChildren())
                             {
-                                foreach (var item in itemInfoBase[key][index][cabButton])
-                                {
-                                    ContentManager.UnplacedItemBase.Add(item.ItemData.ID, item);
+                                if (child.GetType() == typeof(ItemLayout)) {
+                                    Item item = (child as ItemLayout).ItemData;
+                                    ContentManager.UnplacedItemBase.Add(item.ID, (ItemLayout)child);
                                 }
                             }
                         }
                         deleteStorageBase.Invoke(key);
                         deleteStorageLocal.Invoke(key);
-                        itemInfoBase.Remove(key);
                         itemBase.Remove(key);
                         foreach (var child in mainGridChildren[key])
                         {
@@ -174,14 +174,11 @@ namespace ZestyKitchenHelper
                 };
                 void onNameChanged()
                 {
-                    if (changeNameField.Text != null && !itemBase.ContainsKey(changeNameField.Text))
+                    if (changeNameField.Text != null && !itemBase.Contains(changeNameField.Text))
                     {
-                        var itemInfoHistory = itemBase[metaName];
-                        var itemBaseHistory = itemInfoBase[metaName];
+                        var itemStorage = ContentManager.GetSelectedStorage(metaName);
                         metaName = changeNameField.Text;
-                        itemBase.Remove(metaName); itemInfoBase.Remove(metaName);
-                        itemBase.Add(changeNameField.Text, itemInfoHistory);
-                        itemInfoBase.Add(changeNameField.Text, itemBaseHistory);
+                        ContentManager.AddSelectedStorage(metaName, itemStorage);
                         name.Text = metaName;
                     }
                     changeNameField.ScaleX = 0;

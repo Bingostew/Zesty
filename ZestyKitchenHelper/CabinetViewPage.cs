@@ -16,9 +16,9 @@ namespace ZestyKitchenHelper
         private string storageName;
         private Dictionary<int, Grid> expandedViews = new Dictionary<int, Grid>();
         Action<Item> deleteItemLocalEvent, deleteItemBaseEvent, updateItemLocalEvent, updateItemBaseEvent;
-        Action<string, string, string> saveStorageLocalEvent, saveStorageBaseEvent;
+        Action<string, Grid> saveStorageLocalEvent, saveStorageBaseEvent;
         public CabinetViewPage(string name, Action<Item> deleteItemLocal, Action<Item> deleteItemBase, Action<Item> updateItemLocal, Action<Item> updateItemBase,
-            Action<string, string, string> _saveStorageLocalEvent, Action<string, string, string> _saveStorageBaseEvent)
+            Action<string, Grid> _saveStorageLocalEvent, Action<string, Grid> _saveStorageBaseEvent)
         {
             saveStorageBaseEvent = _saveStorageBaseEvent;
             saveStorageLocalEvent = _saveStorageLocalEvent;
@@ -102,30 +102,35 @@ namespace ZestyKitchenHelper
                     toolGrid
                 }
             };
+
             viewOverlay.ChildAdded += (obj, args) => viewOverlay.ForceLayout();
 
             var storageLabel = new Label() { Text = name, FontSize = 40, TextColor = Color.Black, HorizontalTextAlignment = TextAlignment.Center };
             var returnButton = new ImageButton() { Source = ContentManager.backButton, BackgroundColor = Color.Transparent, WidthRequest = 100, HeightRequest = 100 };
             returnButton.Clicked += (o,a) => ContentManager.pageController.ToSingleSelectionPage();
-            var storage = ContentManager.GetStorageView(name);
-            storage.HorizontalOptions = LayoutOptions.CenterAndExpand;
-            storage.WidthRequest = Application.Current.MainPage.Width * .8;
-            storage.HeightRequest = 7 * Application.Current.MainPage.Height / 8;
 
-            var itemBase = ContentManager.GetItemBase();
-            foreach (int index in itemBase[name].Keys)
+            var itemStorage = ContentManager.GetSelectedStorage(name);
+            var storageGrid = itemStorage.Grid;
+            storageGrid.HorizontalOptions = LayoutOptions.CenterAndExpand;
+            storageGrid.WidthRequest = Application.Current.MainPage.Width * .8;
+            storageGrid.HeightRequest = 7 * Application.Current.MainPage.Height / 8;
+
+            foreach (var cell in itemStorage.GetGridCells())
             {
-                foreach (var button in itemBase[name][index].Keys)
+                ImageButton button = cell.GetButton();
+                var grid = cell.GetItemGrid();
+                ScrollView gridContainer = new ScrollView() { Content = grid };
+                viewOverlay.Children.Add(gridContainer, AbsoluteLayout.GetLayoutBounds(backgroundCell), AbsoluteLayout.GetLayoutFlags(backgroundCell));
+                button.Clicked += (obj, args) =>
+                    {
+                        viewOverlay.IsVisible = true;
+                        currentGrid = grid;
+                        grid.IsVisible = true;
+                    };
+                Console.WriteLine("CabinetView 130 View item grid children: " + grid.Children.Count);
+                foreach(var child in grid.Children)
                 {
-                    var grid = GetItemGrid(itemBase[name][index][button]);
-                    ScrollView gridContainer = new ScrollView() { Content = grid };
-                    viewOverlay.Children.Add(grid, AbsoluteLayout.GetLayoutBounds(backgroundCell), AbsoluteLayout.GetLayoutFlags(backgroundCell));
-                    button.Clicked += (obj, args) =>
-                        {
-                            viewOverlay.IsVisible = true;
-                            currentGrid = grid;
-                            grid.IsVisible = true;
-                        };
+                    child.IsVisible = true;
                 }
             }
             Content = new AbsoluteLayout()
@@ -139,7 +144,7 @@ namespace ZestyKitchenHelper
                         {
                             returnButton,
                             storageLabel,
-                            storage,
+                            storageGrid,
                         }
                     },
                     viewOverlay
@@ -213,13 +218,13 @@ namespace ZestyKitchenHelper
                         removedList.Remove(itemInstance);
                         cellItemGrid.SetGridChildrenList(removedList);
                         NextPresetPage(index);
-                        ContentManager.GetInfoBase()[storageName][item.ParentCellIndex].Children.Remove(item);
-                        ContentManager.GetItemBase()[storageName][item.ParentCellIndex][item.ParentButton].Remove(item);
+                       // ContentManager.GetInfoBase()[storageName][item.ParentCellIndex].Children.Remove(item);
+                       // ContentManager.GetItemBase()[storageName][item.ParentCellIndex][item.ParentButton].Remove(item);
                         ContentManager.MetaItemBase.Remove(item.ItemData.ID);
                         string itemInfo, rowInfo;
-                        ContentManager.SetLocalCabinet(item.StorageName, out rowInfo, out itemInfo);
-                        saveStorageLocalEvent?.Invoke(item.StorageName, rowInfo, itemInfo);
-                        saveStorageBaseEvent?.Invoke(item.StorageName, rowInfo, itemInfo);
+                       // ContentManager.SetLocalCabinet(item.StorageName, out rowInfo, out itemInfo);
+                       // saveStorageLocalEvent?.Invoke(item.StorageName, rowInfo, itemInfo);
+                       // saveStorageBaseEvent?.Invoke(item.StorageName, rowInfo, itemInfo);
                         deleteItemLocalEvent?.Invoke(item.ItemData); 
                         deleteItemBaseEvent?.Invoke(item.ItemData);
                         item.StorageName = string.Empty;

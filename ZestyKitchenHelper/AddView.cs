@@ -422,11 +422,13 @@ namespace ZestyKitchenHelper
             {
                 List<ItemLayout> newItemLayouts = new List<ItemLayout>();
                 List<ItemLayout> newItemLayoutsCopy = new List<ItemLayout>();
+                List<ItemLayout> newItemLayoutsCopy2 = new List<ItemLayout>();
 
-                SaveInput(item, newItemLayouts, newItemLayoutsCopy);
+                SaveInput(item, newItemLayouts, newItemLayoutsCopy, newItemLayoutsCopy2);
 
                 if (partialUnplacedGrid != null)
-                    GridManager.AddGridItem(partialUnplacedGrid, newItemLayoutsCopy, false);
+                    GridManager.AddGridItem(partialUnplacedGrid, newItemLayoutsCopy2, false);
+
                 baseUnplacedEvent?.Invoke(item);
                 localUnplacedEvent?.Invoke(item);
                 resetForm();
@@ -437,8 +439,8 @@ namespace ZestyKitchenHelper
             return layout;
         }
  
-
-        private static void SaveInput(Item item, List<ItemLayout> newItemLayouts, List<ItemLayout> newItemLayoutsCopy)
+        // First copy for unplacedGrid, second for metaGrid, third is optional for partial grid
+        private static void SaveInput(Item item, List<ItemLayout> newItemLayouts, List<ItemLayout> newItemLayoutsCopy, List<ItemLayout> newItemLayoutsCopy2 = null)
         {
             item.SetDaysUntilExpiration();
             newItem.Add(item);
@@ -459,16 +461,24 @@ namespace ZestyKitchenHelper
                     .AddTitle()
                     .AddInfoIcon();
 
+                ItemLayout itemLayoutCopy2 = new ItemLayout(100, 100, _item)
+                    .AddMainImage()
+                    .AddAmountMark()
+                    .AddExpirationMark()
+                    .AddTitle()
+                    .AddInfoIcon();
+
                 newItemLayouts.Add(itemLayout);
                 newItemLayoutsCopy.Add(itemLayoutCopy);
+                if(newItemLayoutsCopy2 != null) newItemLayoutsCopy2.Add(itemLayoutCopy2);
                 ContentManager.MetaItemBase.Add(_item.ID, itemLayout);
                 ContentManager.UnplacedItemBase.Add(_item.ID, itemLayoutCopy);
             }
-            Console.WriteLine("AddView 564: new item length = " + newItemLayouts.Count);
 
 
-            GridManager.AddGridItem(GridManager.GetGrid(ContentManager.unplacedGridName), newItemLayoutsCopy, false);
-            GridManager.AddGridItem(GridManager.GetGrid(ContentManager.metaGridName), newItemLayouts, false);       
+            GridManager.AddGridItem(GridManager.GetGrid(ContentManager.unplacedGridName), newItemLayouts, false);
+            GridManager.AddGridItem(GridManager.GetGrid(ContentManager.metaGridName), newItemLayoutsCopy,  false);
+            Console.WriteLine("AddView 471 unplaced grid children count " + GridManager.GetGrid(ContentManager.unplacedGridName).Children.Count);
         }
     }
 }

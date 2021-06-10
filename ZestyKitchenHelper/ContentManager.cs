@@ -46,8 +46,9 @@ namespace ZestyKitchenHelper
 
         public static PageController pageController = new PageController();
         public static SelectionPage selectionPage;
-        public static Dictionary<string, Dictionary<int, AbsoluteLayout>> cabinetInfo = new Dictionary<string, Dictionary<int, AbsoluteLayout>>();
-        public static Dictionary<string, Dictionary<int, AbsoluteLayout>> fridgeInfo = new Dictionary<string, Dictionary<int, AbsoluteLayout>>();
+
+        public static Dictionary<string, Cabinet> CabinetMetaBase = new Dictionary<string, Cabinet>();
+        public static Dictionary<string, Fridge> FridgeMetaBase = new Dictionary<string, Fridge>();
 
         public static void InitializeApp()
         {
@@ -57,50 +58,51 @@ namespace ZestyKitchenHelper
             LocalStorageController.InitializeLocalDataBase();
 
             GridManager.InitializeGrid(metaGridName, 9, 4, GridLength.Auto, GridLength.Star);
+           
             GridManager.InitializeGrid(unplacedGridName, 0, 4, GridLength.Star, GridLength.Star);
+            GridManager.GetGrid(unplacedGridName).ChildRemoved += (o, v) => Console.WriteLine("Unplaced Grid Child Removed!");
         }
 
         public static Layout<View> GetStorageView(string name)
         {
-            var itemBase = storageSelection == StorageSelection.cabinet ? cabinetInfo : fridgeInfo;
-            AbsoluteLayout setLayout (){
-                var layout = new AbsoluteLayout() {  };
-                foreach (var row in itemBase[name].Values)
-                {
-                    layout.Children.Add(row);
-                }
-                return layout;
-            }
-
-            return setLayout();
+            if (storageSelection == StorageSelection.cabinet)
+                return GetCabinetView(name);
+            else
+                return GetFridgeView(name);
         }
         public static Layout<View> GetFridgeView(string name)
         {
-            AbsoluteLayout setLayout()
-            {
-                var layout = new AbsoluteLayout() { };
-                foreach (var row in fridgeInfo[name].Values)
-                {
-                    layout.Children.Add(row);
-                }
-                return layout;
-            }
-            return setLayout();
+            return FridgeMetaBase[name].Grid;
         }
         public static Layout<View> GetCabinetView(string name)
         {
-            AbsoluteLayout setLayout()
-            {
-                var layout = new AbsoluteLayout() { };
-                foreach (var row in cabinetInfo[name].Values)
-                {
-                    layout.Children.Add(row);
-                }
-                return layout;
-            }
-            return setLayout();
+            return CabinetMetaBase[name].Grid;
         }
+        public static IStorage GetSelectedStorage(string name)
+        {
+            if(storageSelection == StorageSelection.cabinet && CabinetMetaBase.ContainsKey(name))
+            {
+                return CabinetMetaBase[name];
+            }
+            else if (storageSelection == StorageSelection.fridge && FridgeMetaBase.ContainsKey(name))
+            {
+                return FridgeMetaBase[name];
+            }
 
+            return null;
+        }
+        public static void AddSelectedStorage(string name, IStorage storage)
+        {
+            if (storageSelection == StorageSelection.cabinet)
+            {
+                CabinetMetaBase.Add(name, (Cabinet)storage);
+            }
+            else
+            {
+                FridgeMetaBase.Add(name, (Fridge)storage);
+            }
+        }
+        /*
         public static void SetLocalCabinet(string name, out string rowInfo, out string itemInfo)
         {
             var itemContent = cabinetItemBase[name];
@@ -474,7 +476,9 @@ namespace ZestyKitchenHelper
             }
         }
 
+        */
 
+        /*
         public static Dictionary<int, List<ImageButton>> GetContactViews(string cabinetName)
         {
             Dictionary<int, List<ImageButton>> dict = new Dictionary<int, List<ImageButton>>();
@@ -483,10 +487,8 @@ namespace ZestyKitchenHelper
                 dict.Add(index, GetItemBase()[cabinetName][index].Keys.ToList());
             }
             return dict;
-        }
-        // string: cabinet name, int: cell index, ImageButton: button in cell, List of ItemLayout: list of item
-        public static Dictionary<string, Dictionary<int, Dictionary<ImageButton, List<ItemLayout>>>> cabinetItemBase = new Dictionary<string, Dictionary<int, Dictionary<ImageButton, List<ItemLayout>>>>();
-        public static Dictionary<string, Dictionary<int, Dictionary<ImageButton, List<ItemLayout>>>> fridgeItemBase = new Dictionary<string, Dictionary<int, Dictionary<ImageButton, List<ItemLayout>>>>();
+        }*/
+       
 
         public static readonly Dictionary<string, IconLayout> PresetIcons = new Dictionary<string, IconLayout>()
         { 
@@ -525,16 +527,12 @@ namespace ZestyKitchenHelper
             {"potato", $"Potatoes last 3 weeks in pantry (until {DateCalculator.GetDateIn(21)}) and 2 months in fridge (until {DateCalculator.GetDateIn(60)})." },
             {"potatoe", $"Potatoes last 3 weeks in pantry (until {DateCalculator.GetDateIn(21)}) and 2 months in fridge (until {DateCalculator.GetDateIn(60)})." },
         };
+        /*
         public static Dictionary<string, Dictionary<int, AbsoluteLayout>> GetInfoBase()
         {
             return storageSelection == StorageSelection.fridge ? fridgeInfo : cabinetInfo;
-        }
-        public static Dictionary<string, Dictionary<int, Dictionary<ImageButton, List<ItemLayout>>>> GetItemBase()
-        {
-            return storageSelection == StorageSelection.fridge ? fridgeItemBase : cabinetItemBase;
-        }
+        }*/
 
-        public static Dictionary<string, Cabinet> CabinetMetaBase = new Dictionary<string, Cabinet>();
 
         public static Dictionary<int, ItemLayout> UnplacedItemBase = new Dictionary<int, ItemLayout>();
         public static Dictionary<int, ItemLayout> MetaItemBase = new Dictionary<int, ItemLayout>();
