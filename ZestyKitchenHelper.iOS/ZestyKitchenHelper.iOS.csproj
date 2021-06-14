@@ -133,4 +133,88 @@
       <Name>ZestyKitchenHelper</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\apple.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\blueberry.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\carrot.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\cereal.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\chocolate.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\cookie.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\cucumber.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\egg.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\grape.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\lemon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\Meat.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\onion.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\orange.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\potato.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\strawberry.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\tomato.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\watermelon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\add_new_content.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\back_arrow.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\pantry.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\fridge.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\transparent.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\add_new_item.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\cabinet_cell.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\fridge_cell.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\fridge_cell_divider.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\fridge_drawer_cell.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\fridge_side_cell.png" />
+  </ItemGroup>
 </Project>

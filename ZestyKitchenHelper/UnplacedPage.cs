@@ -26,6 +26,7 @@ namespace ZestyKitchenHelper
             metaGrid = GridManager.GetGrid(ContentManager.metaGridName); 
             var addForm = AddView.GetAddForm(localUnplacedEvent, baseUnplaceEvent, "", false);
             searchAllBar.Text = ContentManager.defaultSearchAllBarText;
+            searchAllBar.TextColor = Color.Black;
             searchAllBar.Focused += (obj, args) => searchAllBar.Text = "";
             searchAllBar.Unfocused += (obj, args) => { if (searchAllBar.Text.Length == 0) searchAllBar.Text = ContentManager.defaultSearchAllBarText; };
             searchAllBar.Unfocused += (obj, args) => ListSorter.OnSearchUnplacedGrid(metaGrid, searchAllBar.Text);

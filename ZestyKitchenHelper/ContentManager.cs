@@ -55,12 +55,11 @@ namespace ZestyKitchenHelper
             IDGenerator.InitializeIDGroup(itemStorageIdGenerator);
             IDGenerator.InitializeIDGroup(cabinetEditIdGenerator);
             IDGenerator.InitializeIDGroup(fridgeEditIdGenerator);
-            LocalStorageController.InitializeLocalDataBase();
+           // LocalStorageController.InitializeLocalDataBase();
 
             GridManager.InitializeGrid(metaGridName, 9, 4, GridLength.Auto, GridLength.Star);
            
             GridManager.InitializeGrid(unplacedGridName, 0, 4, GridLength.Star, GridLength.Star);
-            GridManager.GetGrid(unplacedGridName).ChildRemoved += (o, v) => Console.WriteLine("Unplaced Grid Child Removed!");
         }
 
         public static Layout<View> GetStorageView(string name)

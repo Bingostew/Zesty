@@ -30,7 +30,7 @@ namespace ZestyKitchenHelper.iOS
             var nativeView = renderer.NativeView;
 
             nativeView.SetNeedsLayout();
-
+            
             return nativeView;
         }
         public UIWindow window { get; set; }
@@ -50,8 +50,11 @@ namespace ZestyKitchenHelper.iOS
             global::Xamarin.Forms.Forms.Init();
             LoadApplication(new App());
 
+            UIApplication.SharedApplication.StatusBarHidden = true;
+
             return base.FinishedLaunching(app, options);
         }
+        /*
         public void GotoUnplacedPage(object obj, EventArgs args)
         {
             if (unplacedPage != null)
@@ -84,12 +87,12 @@ namespace ZestyKitchenHelper.iOS
                     new Action<Utility.Item>((i) => { })),need change screensize);
                 currentView = cabinetAddPage;
                 mainView.View = cabinetAddPage;
-            }*/
+            }
         }
 
         public void GotoViewPage(string name)
         {
-            /*
+            
             if (ContentManager.storageSelection == ContentManager.StorageSelection.fridge)
             {
 
@@ -99,7 +102,7 @@ namespace ZestyKitchenHelper.iOS
                 var cabinetViewPage = ConvertFormsToNative(new CabinetViewPage(name, (obj, args) => NavigateToSelection(ContentManager.StorageSelection.cabinet)), screensize);
                 currentView = cabinetViewPage;
                 mainView.View = cabinetViewPage;
-            }*/
+            }
         }
 
         private delegate void OnDestroyAction();
@@ -107,7 +110,7 @@ namespace ZestyKitchenHelper.iOS
 
         public void GotoStorageCreationPage(object obj, EventArgs args)
         {
-            /*
+            
             if (ContentManager.storageSelection == ContentManager.StorageSelection.cabinet)
             {
                 var cabinetEditPage = ConvertFormsToNative(new CabinetEditPage(true, () => NavigateToSelection(ContentManager.StorageSelection.cabinet)), screensize); ;
@@ -117,7 +120,7 @@ namespace ZestyKitchenHelper.iOS
             else
             {
                 
-            }*/
+            }
     // ActionBar.Hide();
         }
         private void AddNavigation(Xamarin.Forms.ImageButton fridge, Xamarin.Forms.ImageButton cabinet)
@@ -126,10 +129,10 @@ namespace ZestyKitchenHelper.iOS
             cabinet.Clicked += (obj, args) => NavigateToSelection(ContentManager.StorageSelection.cabinet);
         }
         private void NavigateToSelection(ContentManager.StorageSelection selection)
-        {/*
+        {
             ContentManager.storageSelection = selection;
-            ContentManager.singleSelectionPage = new SingleSelectionPage(GotoAddPage, GotoViewPage, GotoStorageCreationPage, GotoSelectionPage);*/
+            ContentManager.singleSelectionPage = new SingleSelectionPage(GotoAddPage, GotoViewPage, GotoStorageCreationPage, GotoSelectionPage);
         }
-
+    */
     }
 }

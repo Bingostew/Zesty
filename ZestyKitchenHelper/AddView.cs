@@ -357,7 +357,7 @@ namespace ZestyKitchenHelper
             List<View> numPadList = new List<View>();
             for (int i = 1; i < 10; i++)
             {
-                var button = new Button() { Text = i.ToString(), Margin = new Thickness(0) };
+                var button = new Button() { Text = i.ToString(), TextColor = Color.Black, Margin = new Thickness(0), BackgroundColor = Color.Gray };
                 int index = i;
                 button.Clicked += (obj, arg) => changeText(index.ToString());
                 numPadList.Add(button);
@@ -374,7 +374,7 @@ namespace ZestyKitchenHelper
             
             numPadGrid.OrganizeGrid(numPadList, GridOrganizer.OrganizeMode.HorizontalLeft);
 
-            var saveButton = new Button() { Text = "Done", BackgroundColor = Color.Blue };
+            var saveButton = new Button() { Text = "Done", BackgroundColor = Color.Blue, TextColor = Color.Black };
             var newFormButton = new Button() { BackgroundColor = Color.ForestGreen, Text = "Add" };
 
             AbsoluteLayout layout = new AbsoluteLayout()
