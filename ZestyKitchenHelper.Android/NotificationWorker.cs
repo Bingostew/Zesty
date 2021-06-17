@@ -76,7 +76,7 @@ namespace ZestyKitchenHelper.Droid
         }
         private async void SetItemList()
         {
-            itemList = await LocalStorageController.GetItemListAsync();
+            itemList = await LocalStorageController.GetTableListAsync<Item>();
         }
         public override Result DoWork()
         {
@@ -90,7 +90,7 @@ namespace ZestyKitchenHelper.Droid
                 { sender.ScheduleNotification("Zesty's Expiration Alert", "Your " + item.name + " expires in 3 days!"); item.threeDaysWarning = true; }
                 else if (item.daysUntilExp < 7 && !item.weekWarning)
                 { sender.ScheduleNotification("Zesty's Expiration Alert", "Your " + item.name + " expires in one week!"); item.weekWarning = true; }
-                LocalStorageController.UpdateItemAsync(item);
+                LocalStorageController.UpdateItem(item);
             }
             Console.WriteLine("item item weeeee " + itemList.Count);
             return Result.InvokeSuccess();

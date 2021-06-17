@@ -17,17 +17,6 @@ namespace ZestyKitchenHelper
             ContentManager.selectionPage = new SelectionPage();
             Content = ContentManager.selectionPage.Content;
         }
-        public void InitializeSingleSelectionPage(ContentManager.StorageSelection selection)
-        {
-            ContentManager.storageSelection = selection;
-            if (selection == ContentManager.StorageSelection.cabinet) {
-                Content = new SingleSelectionPage(LocalStorageController.DeleteFridgeAsync, FireBaseMediator.DeleteCabinet).Content;
-            }
-            else
-            {
-                Content = new SingleSelectionPage(LocalStorageController.DeleteCabinetAsync, FireBaseMediator.DeleteFridge).Content;
-            }
-        }
 
         public void ToMainSelectionPage()
         {
@@ -39,56 +28,45 @@ namespace ZestyKitchenHelper
             //ContentManager.singleSelectionPage.SetView();
             if (ContentManager.storageSelection == ContentManager.StorageSelection.cabinet)
             {
-                Content = new SingleSelectionPage(LocalStorageController.DeleteCabinetAsync, FireBaseMediator.DeleteCabinet).Content;
+                Content = new SingleSelectionPage(LocalStorageController.DeleteCabinet, FireBaseController.DeleteCabinet).Content;
             }
             else
             {
-                Content = new SingleSelectionPage(LocalStorageController.DeleteFridgeAsync, FireBaseMediator.DeleteFridge).Content;
+                Content = new SingleSelectionPage(LocalStorageController.DeleteFridge, FireBaseController.DeleteFridge).Content;
             }
         }
         public void ToUnplacedPage()
         {
-            Content = new UnplacedPage(FireBaseMediator.PutItem, LocalStorageController.SaveItemAsync,
-                LocalStorageController.DeleteItemAsync, FireBaseMediator.DeleteItem).Content;
+            Content = new UnplacedPage(FireBaseController.SaveItem, LocalStorageController.AddItem,
+                LocalStorageController.DeleteItem, FireBaseController.DeleteItem).Content;
         }
+        
         public void ToAddItemPage(string name)
         {
             if (ContentManager.storageSelection == ContentManager.StorageSelection.fridge)
             {
-                Content = new CabinetAddPage(name, LocalStorageController.SaveItemAsync, FireBaseMediator.PutItem,
-                LocalStorageController.SaveFridgeLocal, FireBaseMediator.SaveFridge).Content;
+                Content = new CabinetAddPage(name).Content;
             }
             else
             {
-                Content = new CabinetAddPage(name, LocalStorageController.SaveItemAsync, FireBaseMediator.PutItem,
-                LocalStorageController.SaveCabinetLocal, FireBaseMediator.SaveCabinet).Content;
+                Content = new CabinetAddPage(name).Content;
             }
         }
 
         public void ToViewItemPage(string name)
         {
-            if (ContentManager.storageSelection == ContentManager.StorageSelection.cabinet)
-            {
-                Content = new CabinetViewPage(name, LocalStorageController.DeleteItemAsync, FireBaseMediator.DeleteItem,
-                    LocalStorageController.UpdateItemAsync, FireBaseMediator.UpdateItem,
-                    LocalStorageController.SaveCabinetLocal, FireBaseMediator.SaveCabinet).Content;
-            }
-            else
-            {
-                Content = new CabinetViewPage(name, LocalStorageController.DeleteItemAsync, FireBaseMediator.DeleteItem,
-                    LocalStorageController.UpdateItemAsync, FireBaseMediator.UpdateItem,
-                    LocalStorageController.SaveFridgeLocal, FireBaseMediator.SaveFridge).Content;
-            }
+            Content = new CabinetViewPage(name, LocalStorageController.DeleteItem, FireBaseController.DeleteItem,
+                LocalStorageController.UpdateItem, FireBaseController.SaveItem).Content;
         }
         public void ToStorageCreationPage(bool newShelf, string name = "")
         {
             if (ContentManager.storageSelection == ContentManager.StorageSelection.cabinet)
             {
-                Content = new CabinetEditPage(newShelf, LocalStorageController.SaveCabinetLocal, FireBaseMediator.SaveCabinet, name).Content;
+                Content = new CabinetEditPage(newShelf, LocalStorageController.AddCabinet, FireBaseController.SaveCabinet, name).Content;
             }
             else
             {
-                Content = new FridgeEditPage(newShelf, LocalStorageController.SaveFridgeLocal, FireBaseMediator.SaveFridge, name).Content;
+                Content = new FridgeEditPage(newShelf, LocalStorageController.AddFridge, FireBaseController.SaveFridge, name).Content;
             }
         }
 

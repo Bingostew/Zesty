@@ -13,210 +13,149 @@ namespace ZestyKitchenHelper
 {
     public class FireBaseController
     {
-        FirebaseClient client = new FirebaseClient("https://istorage-1f60f.firebaseio.com/");
-        private const string baseChild = "Persons";
-        public static FirebaseObject<UserProfile> sessionUserProfile;
-        public async Task<List<UserProfile>> GetAllUsers()
+        static FirebaseClient client = new FirebaseClient("https://istorage-1f60f.firebaseio.com/");
+
+        private const string base_child = "Persons";
+        private const string item_list_key = "Item List";
+        private const string cabinet_list_key = "Cabinet List";
+        private const string fridge_list_key = "Fridge List";
+        private const string storage_cell_list_key = "Storage Cell List";
+
+        private static string EmailToPath(string email)
         {
-            return (await client.Child(baseChild).OnceAsync<UserProfile>()).
+            return email.Replace('.', ':');
+        }
+        public static async Task<List<UserProfile>> GetAllUsers()
+        {
+            return (await client.Child(base_child).OnceAsync<UserProfile>()).
                 Select(user => new UserProfile { Name = user.Object.Name, Email = user.Object.Email}).ToList();
         }
-        public async Task AddUser(string user, string email)
+        public static async Task AddUser(string user, string email)
         {
-            await client.Child(baseChild).PostAsync(new UserProfile() { Name = user, Email = email});
+            string emailPath = EmailToPath(email);
+            await client.Child(base_child).Child(emailPath).PutAsync(new UserProfile() { Name = user, Email = email });
+         //   await client.Child(base_child).Child(emailPath).PutAsync(item_list_key + ":");
+          //  await client.Child(base_child).Child(emailPath).PutAsync(cabinet_list_key);
+          //  await client.Child(base_child).Child(emailPath).PutAsync(fridge_list_key);
+          //  await client.Child(base_child).Child(emailPath).PutAsync(storage_cell_list_key);
         }
-        public async Task<bool> HasUser(string email)
+        public static async Task<bool> HasUser(string email)
         {
-            var user = (await client.Child(baseChild).OnceAsync<UserProfile>()).Where(a => a.Object.Email == email);
+            var user = (await client.Child(base_child).OnceAsync<UserProfile>()).Where(a => a.Object.Email == email);
             return user.Any();
         }
-        public async Task<UserProfile> GetUser(string email)
+        public static async Task<UserProfile> GetUser(string email)
         {
             var userList = await GetAllUsers();
-            await client.Child(baseChild).OnceAsync<UserProfile>();
+            await client.Child(base_child).OnceAsync<UserProfile>();
             var user = userList.Where(a => a.Email == email);
             if (user.Any()) { return user.FirstOrDefault(); }
             else { return null; }
         }
-        public async Task<FirebaseObject<UserProfile>> GetUserObject(string email)
+        public static async Task<FirebaseObject<UserProfile>> GetUserObject(string email)
         {  
-            var userList = await client.Child(baseChild).OnceAsync<UserProfile>();
+            var userList = await client.Child(base_child).OnceAsync<UserProfile>();
             var user = userList.Where(e => e.Object.Email == email);
             if (userList != null && userList.Count > 0) { return user.FirstOrDefault(); }
             else { return null; }
         }
 
         public static int i = 0;
-        public async Task UpdateUser(string email, string dataType, object data)
+        public static async Task UpdateUser(string dataType, object data, string key)
         {
-            if (sessionUserProfile != null) { await client.Child(baseChild).Child(sessionUserProfile.Key).Child(dataType).PostAsync(JsonConvert.SerializeObject(data)); }
+            if (ContentManager.sessionUserProfile != null) { await client.Child(base_child).Child(EmailToPath(ContentManager.sessionUserProfile.Email)).
+                    Child(dataType).Child(key).PutAsync(data); }
         }
-        public async Task UpdateUser(string email,UserProfile newProfile)
+        public static async Task UpdateUser(string dataType, object data, string key, string key2)
         {
-            if (sessionUserProfile != null) { await client.Child(baseChild).Child(sessionUserProfile.Key).PutAsync(newProfile); }
-        }
-        public async Task UpdateItem(string email, Item item)
-        {
-            var toUpdate = (await client.Child(baseChild).Child(sessionUserProfile.Key).Child("ItemList").OnceAsync<Item>()).Where(i => i.Object.ID == item.ID).FirstOrDefault();
-            if (toUpdate != null) { await client.Child(baseChild).Child(sessionUserProfile.Key).Child("ItemList").Child(toUpdate.Key).PutAsync(item); }
-        }
-        public async Task DeleteUserItem(string email, Item data)
-        {
-            var toDelete = (await client.Child(baseChild).Child(sessionUserProfile.Key).OnceAsync<Item>()).Where(i => i.Object.ID == data.ID);
-            if (toDelete.Any()) { await client.Child(baseChild).Child(sessionUserProfile.Key).Child(toDelete.FirstOrDefault().Key).DeleteAsync(); }
-        }
-
-        public async Task DeleteUserStorage(string email, Cabinet cabinet)
-        {
-            var toDelete = (await client.Child(baseChild).Child(sessionUserProfile.Key).OnceAsync<Cabinet>()).Where(i => i.Object.Name == cabinet.Name);
-            if (toDelete.Any()) { await client.Child(baseChild).Child(sessionUserProfile.Key).Child(toDelete.FirstOrDefault().Key).DeleteAsync(); }
-        }
-        public async Task DeleteUserStorage(string email, Fridge fridge)
-        {
-            var toDelete = (await client.Child(baseChild).Child(sessionUserProfile.Key).OnceAsync<Fridge>()).Where(i => i.Object.Name == fridge.Name);
-            if (toDelete.Any()) { await client.Child(baseChild).Child(sessionUserProfile.Key).Child(toDelete.FirstOrDefault().Key).DeleteAsync(); }
-        }
-        public async Task DeleteUser(string email)
-        {
-            await client.Child(baseChild).Child(sessionUserProfile.Key).DeleteAsync();
-        }
-        public async Task UpdateCabinet(string email, FirebaseObject<Cabinet> cabinet)
-        {
-            await client.Child(baseChild).Child(sessionUserProfile.Key).Child("CabinetList").Child(cabinet.Key).PutAsync(cabinet);
-        }
-        public async Task UpdateFridge(string email, FirebaseObject<Fridge> fridge)
-        {
-            await client.Child(baseChild).Child(sessionUserProfile.Key).Child("FridgeList").Child(fridge.Key).PutAsync(fridge);
-        }
-        public async Task<FirebaseObject<Cabinet>> GetUserCabinet(string email, string cabinetName)
-        {
-            return (await client.Child(baseChild).Child(sessionUserProfile.Key).Child("CabinetList").OnceAsync<Cabinet>()).Where(c => c.Object.Name == cabinetName).FirstOrDefault();
-        }
-        public async Task<FirebaseObject<Fridge>> GetUserFridge(string email, string fridgeName)
-        {
-            return (await client.Child(baseChild).Child(sessionUserProfile.Key).Child("FridgeList").OnceAsync<Fridge>()).Where(c => c.Object.Name == fridgeName).FirstOrDefault();
-        }
-
-        public async Task<List<Cabinet>> GetUserCabinetList(string email)
-        {
-            var firebaseList = (await client.Child(baseChild).Child(sessionUserProfile.Key).Child("CabinetList").OnceAsync<Cabinet>()).ToList();
-            List<Cabinet> list = new List<Cabinet>();
-            foreach(var cab in firebaseList)
+            if (ContentManager.sessionUserProfile != null)
             {
-                list.Add(cab.Object);
-            }
-            return list;
-        }
-        public async Task<List<Fridge>> GetUserFridgeList(string email)
-        {
-            var firebaseList = (await client.Child(baseChild).Child(sessionUserProfile.Key).Child("FridgeList").OnceAsync<Fridge>()).ToList();
-            List<Fridge> list = new List<Fridge>();
-            foreach (var cab in firebaseList)
-            {
-                list.Add(cab.Object);
-            }
-            return list;
-        }
-
-        public async Task<List<Item>> GetUserItemList(string email)
-        {
-            var firebaseList = (await client.Child(baseChild).Child(sessionUserProfile.Key).Child("ItemList").OnceAsync<Item>()).ToList();
-            List<Item> list = new List<Item>();
-            foreach (var item in firebaseList)
-            {
-                list.Add(item.Object);
-            }
-            return list;
-        }
-    }
-
-
-    public class FireBaseMediator 
-    {
-        public static FireBaseController fireBaseController = new FireBaseController();
-        public static async void PutItem(Utility.Item item) 
-        {
-            if (ContentManager.sessionUserName != null)
-            {
-                await fireBaseController.UpdateUser(ContentManager.sessionUserName, "ItemList", item);
+                await client.Child(base_child).Child(EmailToPath(ContentManager.sessionUserProfile.Email)).
+                    Child(dataType).Child(key).Child(key2).PutAsync(data);
             }
         }
 
+        public static async Task DeleteUserItem<T>(string dataType, string key, Func<FirebaseObject<T>, bool> predicate)
+        {
+            var toDelete = (await client.Child(base_child).Child(EmailToPath(ContentManager.sessionUserProfile.Email)).OnceAsync<T>()).Where(predicate);
+            if (ContentManager.sessionUserProfile != null && toDelete != null) 
+            { await client.Child(base_child).Child(EmailToPath(ContentManager.sessionUserProfile.Email)).Child(dataType).Child(key).DeleteAsync(); }
+        }
+
+        public async Task DeleteUser()
+        {
+            await client.Child(base_child).Child(EmailToPath(ContentManager.sessionUserProfile.Email)).DeleteAsync();
+        }
+
+        //-------------------------------- Methods to manipulate item, fridge, and cabinets
+        // Addition Methods
+        public static async void SaveItem(Item item)
+        {
+            await UpdateUser(item_list_key, item, item.ID.ToString());
+        }
+        public static async void SaveCabinet(string cabinetName)
+        {
+            Cabinet cabinet = ContentManager.CabinetMetaBase[cabinetName];
+            await UpdateUser(cabinet_list_key, cabinetName , cabinetName, "name");
+            await UpdateUser(cabinet_list_key, cabinet.ID, cabinetName, "id");
+
+            foreach (StorageCell cell in cabinet.GetGridCells())
+            {
+                await UpdateUser(storage_cell_list_key, cell, cell.MetaID.ToString());
+            }
+        }
+        public static async void SaveFridge(string fridgeName)
+        {
+            Fridge fridge = ContentManager.FridgeMetaBase[fridgeName];
+            await UpdateUser(cabinet_list_key, fridge, fridgeName);
+
+            foreach (StorageCell cell in fridge.GetGridCells())
+            {
+                await UpdateUser(storage_cell_list_key, cell, cell.MetaID.ToString());
+            }
+        }
+        // Deletion Methods
         public static async void DeleteItem(Item item)
         {
-            if (ContentManager.sessionUserName != null)
-            {
-                await fireBaseController.DeleteUserItem(ContentManager.sessionUserName, item);
-            }
+            await DeleteUserItem<Item>(item_list_key, item.ID.ToString(), i => i.Object.ID == item.ID);
+        }
+        public static async void DeleteCabinet(string cabinetName)
+        {
+            await DeleteUserItem<Cabinet>(cabinet_list_key, cabinetName, i => i.Object.Name == cabinetName);
+        }
+        public static async void DeleteFridge(string fridgeName)
+        {
+            await DeleteUserItem<Fridge>(fridge_list_key, fridgeName, i => i.Object.Name == fridgeName);
         }
 
-        public static async void PutCabinet(Utility.Cabinet cabinet)
+        // Retrieval methods
+        public static Task<IReadOnlyCollection<FirebaseObject<Cabinet>>> GetCabinets()
         {
-            if (ContentManager.sessionUserName != null)
-            {
-                var tryCabinet = await fireBaseController.GetUserCabinet(ContentManager.sessionUserName, cabinet.Name);
-                if (tryCabinet != null)
-                {
-                    await fireBaseController.UpdateCabinet(ContentManager.sessionUserName, tryCabinet);
-                }
-                else
-                {
-                    await fireBaseController.UpdateUser(ContentManager.sessionUserName, "CabinetList", cabinet);
-                }
-            }
+            var query = client.Child(base_child).Child(EmailToPath(ContentManager.sessionUserProfile.Email)).Child(cabinet_list_key);
+            if (query != null)
+                return query.OnceAsync<Cabinet>();
+            return null;
         }
-
-        public static async void PutFridge(Utility.Fridge fridge)
+        public static Task<IReadOnlyCollection<FirebaseObject<Fridge>>> GetFridges()
         {
-            if (ContentManager.sessionUserName != null)
-            {
-                var tryFridge = await fireBaseController.GetUserFridge(ContentManager.sessionUserName, fridge.Name);
-                if (tryFridge != null)
-                {
-                    await fireBaseController.UpdateFridge(ContentManager.sessionUserName, tryFridge);
-                }
-                else
-                {
-                    await fireBaseController.UpdateUser(ContentManager.sessionUserName, "FridgeList", fridge);
-                }
-            }
+            var query = client.Child(base_child).Child(EmailToPath(ContentManager.sessionUserProfile.Email)).Child(fridge_list_key);
+            if (query != null) 
+                return query.OnceAsync<Fridge>();
+            return null;
         }
-        public static async void DeleteCabinet(string name)
+        public static Task<IReadOnlyCollection<FirebaseObject<Item>>> GetItems()
         {
-            if (ContentManager.sessionUserName != null)
-            {
-                await fireBaseController.DeleteUserStorage(ContentManager.sessionUserName, (await fireBaseController.GetUserCabinet(ContentManager.sessionUserName, name)).Object);
-            }
+            var query = client.Child(base_child).Child(EmailToPath(ContentManager.sessionUserProfile.Email)).Child(item_list_key);
+            if (query != null)
+                return query.OnceAsync<Item>();
+            return null;
         }
-        public static async void DeleteFridge(string name)
+        public static Task<IReadOnlyCollection<FirebaseObject<StorageCell>>> GetStorageCells()
         {
-            if (ContentManager.sessionUserName != null)
-            {
-                await fireBaseController.DeleteUserStorage(ContentManager.sessionUserName, (await fireBaseController.GetUserFridge(ContentManager.sessionUserName, name)).Object);
-            }
-        }
-        public static async void UpdateItem(Item item)
-        {
-            if (ContentManager.sessionUserName != null)
-            {
-                await fireBaseController.UpdateItem(ContentManager.sessionUserName, item);
-            }
-        }
-
-        public static void SaveCabinet(string name, Xamarin.Forms.Grid grid)
-        {
-            if (ContentManager.sessionUserName != null)
-            {
-                PutCabinet(new Cabinet().SetCabinet(name, grid));
-            }
-        }
-        public static void SaveFridge(string name, Xamarin.Forms.Grid grid)
-        {
-            if (ContentManager.sessionUserName != null)
-            {
-                PutFridge(new Fridge().SetFridge(name, grid));
-            }
+            var query = client.Child(base_child).Child(EmailToPath(ContentManager.sessionUserProfile.Email)).Child(storage_cell_list_key);
+            if (query != null)
+                return query.OnceAsync<StorageCell>();
+            return null;
         }
     }
-
 }

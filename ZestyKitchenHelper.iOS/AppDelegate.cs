@@ -50,8 +50,8 @@ namespace ZestyKitchenHelper.iOS
             global::Xamarin.Forms.Forms.Init();
             LoadApplication(new App());
 
-            UIApplication.SharedApplication.StatusBarHidden = true;
-
+            UIApplication.SharedApplication.StatusBarHidden = false;
+            
             return base.FinishedLaunching(app, options);
         }
         /*

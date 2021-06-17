@@ -14,9 +14,10 @@ namespace ZestyKitchenHelper
 {
     public class ContentManager
     {
-        public static string sessionUserName;
+        public static UserProfile sessionUserProfile;
+        public static bool isUserNew;
 
-        public const string cabinetIcon = "cabinet_cell.png";
+        public const string cabinetCellIcon = "cabinet_cell.png";
         public const string cabinetLeftIcon = "cabinet_divider_left.png";
         public const string cabinetMiddleIcon = "cabinet_divider_middle.png";
         public const string cabinetRightIcon = "cabinet_divider_right.png";
@@ -41,6 +42,7 @@ namespace ZestyKitchenHelper
         public static string pUnplacedGridName = "Partial Unplaced Grid";
 
         public static string itemStorageIdGenerator = "ItemId";
+        public static string storageCellIdGenerator = "StorageCell";
         public static string cabinetEditIdGenerator = "Cabinet";
         public static string fridgeEditIdGenerator = "Fridge";
 
@@ -49,17 +51,65 @@ namespace ZestyKitchenHelper
 
         public static Dictionary<string, Cabinet> CabinetMetaBase = new Dictionary<string, Cabinet>();
         public static Dictionary<string, Fridge> FridgeMetaBase = new Dictionary<string, Fridge>();
-
-        public static void InitializeApp()
+        public static async void InitializeApp()
         {
+            // Initialize ID Groups
             IDGenerator.InitializeIDGroup(itemStorageIdGenerator);
             IDGenerator.InitializeIDGroup(cabinetEditIdGenerator);
             IDGenerator.InitializeIDGroup(fridgeEditIdGenerator);
-           // LocalStorageController.InitializeLocalDataBase();
+            IDGenerator.InitializeIDGroup(storageCellIdGenerator);
+            //LocalStorageController.ResetDatabase(); // WARNING: FOR TESTING PURPOSES ONLY
+            LocalStorageController.InitializeLocalDataBase();
 
+            // Initialize Important Grids
             GridManager.InitializeGrid(metaGridName, 9, 4, GridLength.Auto, GridLength.Star);
-           
             GridManager.InitializeGrid(unplacedGridName, 0, 4, GridLength.Star, GridLength.Star);
+
+            // Load saved data
+            List<Cabinet> localCabinets = await LocalStorageController.GetTableListAsync<Cabinet>();
+            List<Fridge> localFridges = await LocalStorageController.GetTableListAsync<Fridge>();
+            List<StorageCell> localStorageCells = await LocalStorageController.GetTableListAsync<StorageCell>();
+            List<Item> localItems = await LocalStorageController.GetTableListAsync<Item>();
+            List<Cabinet> baseCabinets = new List<Cabinet>();
+            List<Fridge> baseFridges = new List<Fridge>();
+            List<StorageCell> baseStorageCells = new List<StorageCell>();
+            List<Item> baseItems = new List<Item>();
+            if (sessionUserProfile != null && !isUserNew)
+            {
+                // Populating list with firebase data 
+                baseCabinets = (await FireBaseController.GetCabinets()).ToList().ConvertAll(o => o.Object);
+                baseFridges = (await FireBaseController.GetFridges()).ToList().ConvertAll(o => o.Object);
+                baseItems = (await FireBaseController.GetItems()).ToList().ConvertAll(o => o.Object);
+                baseStorageCells = (await FireBaseController.GetStorageCells()).ToList().ConvertAll(o => o.Object);
+
+                // Load with cloud data
+                ContentLoader.LoadItems(baseItems);
+                ContentLoader.LoadCabinets(baseCabinets, baseStorageCells, baseItems);
+            }
+            else
+            {
+                // Load with local data
+                ContentLoader.LoadItems(localItems);
+                ContentLoader.LoadCabinets(localCabinets, localStorageCells, localItems);
+            }
+
+            if (sessionUserProfile != null)
+            {
+                // Updating local data with firebase data
+                // -----Logic: In a firebase list, select all item that does not exist in the local list. 
+                // -----Hence check for ID similarities in both list, if the given item ID in firebase does not match any item ID in local list, add to listDiff
+                List<Item> itemListDiff = baseItems.Where(i => !localItems.Any(j => i.ID == j.ID)).ToList();
+                List<Cabinet> cabinetListDiff = baseCabinets.Where(i => !localCabinets.Any(j => i.ID == j.ID)).ToList();
+                List<Fridge> fridgeListDiff = baseFridges.Where(i => !localFridges.Any(j => i.ID == j.ID)).ToList();
+               // List<StorageCell> storageCellListDiff = baseStorageCells.Where(i => !localStorageCells.Any(j => i.MetaID == j.MetaID)).ToList();
+
+                // TODO: actually updating local list.
+                cabinetListDiff.ForEach(c => LocalStorageController.AddCabinet(c.Name));
+                fridgeListDiff.ForEach(f => LocalStorageController.AddFridge(f.Name));
+                itemListDiff.ForEach(i => LocalStorageController.AddItem(i));
+
+                baseItems.ForEach(i => LocalStorageController.UpdateItem(i));
+            }
         }
 
         public static Layout<View> GetStorageView(string name)
@@ -526,11 +576,6 @@ namespace ZestyKitchenHelper
             {"potato", $"Potatoes last 3 weeks in pantry (until {DateCalculator.GetDateIn(21)}) and 2 months in fridge (until {DateCalculator.GetDateIn(60)})." },
             {"potatoe", $"Potatoes last 3 weeks in pantry (until {DateCalculator.GetDateIn(21)}) and 2 months in fridge (until {DateCalculator.GetDateIn(60)})." },
         };
-        /*
-        public static Dictionary<string, Dictionary<int, AbsoluteLayout>> GetInfoBase()
-        {
-            return storageSelection == StorageSelection.fridge ? fridgeInfo : cabinetInfo;
-        }*/
 
 
         public static Dictionary<int, ItemLayout> UnplacedItemBase = new Dictionary<int, ItemLayout>();

@@ -24,6 +24,11 @@ namespace Utility
     public struct Vector2D<T> where T : IComparable
     {
         public T X, Y;
+        /// <summary>
+        /// Creates a vector of a comparable type
+        /// </summary>
+        /// <param name="x">First value of vector</param>
+        /// <param name="y">Second value of vector</param>
         public Vector2D(T x, T y)
         {
             X = x; Y = y;
@@ -57,30 +62,107 @@ namespace Utility
             idBase[groupName].Add(newId);
             return newId;
         }
+        /// <summary>
+        /// Forces ID Generator to skip over said ID for the said group.
+        /// </summary>
+        /// <param name="groupName"></param>
+        /// <param name="id"> ID to skip over.</param>
+        /// <returns></returns>
+        public static void SkipID(string groupName, int id)
+        {
+            if(!idBase[groupName].Contains(id))
+                idBase[groupName].Add(id);
+        }
     }
+
+    #region Equality Comparers
+    public class ItemEqualityComparer : IEqualityComparer<Item>
+    {
+        public bool Equals(Item item1, Item item2)
+        {
+            return (item1.ID == item2.ID) || (item1 == null && item2 == null);
+        }
+
+        public int GetHashCode(Item item)
+        {
+            return item.ID;
+        }
+    }
+
+    public class CabinetEqualityComparer : IEqualityComparer<Cabinet>
+    {
+        public bool Equals(Cabinet storage1, Cabinet storage2)
+        {
+            return (storage1.ID == storage2.ID) || (storage1 == null && storage2 == null);
+        }
+
+        public int GetHashCode(Cabinet storage)
+        {
+            return storage.ID;
+        }
+    }
+
+    public class FridgeEqualityComparer : IEqualityComparer<Fridge>
+    {
+        public bool Equals(Fridge storage1, Fridge storage2)
+        { 
+            return (storage1.ID == storage2.ID) || (storage1 == null && storage2 == null);
+        }
+
+        public int GetHashCode(Fridge storage)
+        {
+            return storage.ID;
+        }
+    }
+
+    public class StorageCellEqualityComparer : IEqualityComparer<StorageCell>
+    {
+        public bool Equals(StorageCell cell1, StorageCell cell2)
+        {
+            return (cell1.MetaID == cell2.MetaID) || (cell1 == null && cell2 == null);
+        }
+
+        public int GetHashCode(StorageCell cell)
+        {
+            return cell.MetaID;
+        }
+    }
+    #endregion
 
     [Table("Item")]
     public class Item
     {
-        public static int IDIterator = 0;
-        [Column("Expiration")]
-        public int expYear { get; set; }
+        [PrimaryKey]
+        public int ID { get; set; }
 
+        [Column("Expiration Year")]
+        public int expYear { get; set; }
+        [Column("Expiration Month")]
         public int expMonth { get; set; }
+        [Column("Expiration Day")]
         public int expDay { get; set; }
+        [Column("Expiration DUE")]
         public int daysUntilExp { get; set; }
 
-        [Column("Warnings")]
+        [Column("Week Warning")]
         public bool weekWarning { get; set; }
+        [Column("Three Days Warning")]
         public bool threeDaysWarning { get; set; }
+        [Column("One Day Warning")]
         public bool oneDayWarning { get; set; }
-        [PrimaryKey]
-        [Column("Main")]
-        public int ID { get; set; }
+        [Column("Amount")]
         public int amount { get; set; }
+        [Column("Name")]
         public string name { get; set; }
+        [Column("Icon")]
         public string icon { get; set; }
+        [Column("Stored")]
         public bool stored { get; set; }
+
+        [Column("Storage Name")]
+        public string StorageName { get; set; }
+        [Column("Storage Cell Index")]
+        public int StorageCellIndex { get; set; }
         public Item SetItem(int expYr, int expMth, int expD, int quantity, string productName, string image)
         {
             ID = IDGenerator.GetID(ContentManager.itemStorageIdGenerator);
@@ -92,36 +174,66 @@ namespace Utility
             oneDayWarning = false;
             stored = false;
             SetDaysUntilExpiration();
-            IDIterator++;
             return this;
         }
         public void SetDaysUntilExpiration()
         {
             daysUntilExp = DateCalculator.SubtractDate(expYear, expMonth, expDay);
         }
-        public void SetStorage()
+        public void SetStorage(string storageName, int storageCellIndex)
         {
+            StorageName = storageName;
+            StorageCellIndex = storageCellIndex;
             stored = true;
         }
     }
-
+    [Table("Storage Cell")]
     public class StorageCell
     {
-        private Grid Grid { get; set; }
+        [PrimaryKey]
+        public int MetaID { get; set; }
+        [Column("Index")]
         public int Index { get; set; }
-        public Vector2D<int> Position { get; set; }
-        private int ColumnSpan { get; set; }
-        private int RowSpan { get; set; }
+        [Column("Storage Name")]
+        public string StorageName { get; set; }
+        [Column("X")]
+        public int X { get; set; }
+        [Column("Y")]
+        public int Y { get; set; }
+        [Column("Column Span")]
+        public int ColumnSpan { get; set; }
+        [Column("Row Span")]
+        public int RowSpan { get; set; }
+
+        private Vector2D<int> Position;
+        private Grid Grid = new Grid();
         private Image background;
         private ImageButton button;
 
-        public StorageCell(Vector2D<int> position, int index, int columnSpan = 1, int rowSpan = 1)
+        public StorageCell SetStorageCell(Vector2D<int> position, int index, string storageName, int columnSpan = 1, int rowSpan = 1)
         {
             Position = position;
             ColumnSpan = columnSpan;
+            StorageName = storageName;
             RowSpan = rowSpan;
             Index = index;
             Grid = GridManager.InitializeGrid(2, 5, GridLength.Star, GridLength.Star);
+
+            MetaID = IDGenerator.GetID(ContentManager.storageCellIdGenerator);
+            X = position.X; Y = position.Y;
+
+            return this;
+        }
+
+        public void SetPosition(Vector2D<int> position)
+        {
+            Position = position;
+            X = position.X; Y = position.Y;
+        }
+
+        public Vector2D<int> GetPosition()
+        {
+            return Position;
         }
 
         public void SetColumnSpan(int columnSpan)
@@ -142,15 +254,7 @@ namespace Utility
             Grid.SetRowSpan(button, rowSpan);
         }
 
-        public int GetColumnSpan()
-        {
-            return ColumnSpan;
-        }
 
-        public int GetRowSpan()
-        {
-            return RowSpan;
-        }
         public List<View> GetChildren()
         {
             return Grid.Children.ToList();
@@ -189,6 +293,8 @@ namespace Utility
 
     public interface IStorage
     {
+        int ID { get; set; }
+        [Ignore]
         Grid Grid { get; set; }
         void AddGridCell(int ID, StorageCell cell);
         void RemoveGridCell(int ID);
@@ -204,26 +310,27 @@ namespace Utility
         List<StorageCell> GetGridCells();
     }
 
+
     [Table("Cabinet")]
     public class Cabinet : IStorage
     {
-        [PrimaryKey]
         [Column("Name")]
         public string Name { get; set; }
+        [Ignore]
         public Grid Grid { get; set; }
+        [PrimaryKey, Column("ID")]
+        public int ID { get; set; }
 
         // Matches the grid position of each cell to the cell ID.
         private Dictionary<int, StorageCell> gridCells = new Dictionary<int, StorageCell>();
 
-        public Cabinet(string name, Grid grid)
+        public Cabinet SetCabinet(string name, Grid grid, int id)
         {
             Name = name;
+            ID = id;
             Grid = grid;
+            return this;
         }
-
-        // Temporary constructor
-        public Cabinet()
-        { }
 
         public void AddGridCell(int ID, StorageCell cell)
         {
@@ -242,7 +349,7 @@ namespace Utility
                 var cell = gridCells[ID];
                 cell.AddUI(background, button);
 
-                GridManager.AddGridItemAtPosition(Grid, new List<View>() { background, button }, cell.Position);
+                GridManager.AddGridItemAtPosition(Grid, new List<View>() { background, button }, cell.GetPosition());
             }
         }
 
@@ -266,32 +373,29 @@ namespace Utility
         {
             return gridCells.Keys.ToList();
         }
-
-        public Cabinet SetCabinet(string name, Grid grid)
-        {
-            Grid = grid;
-            Name = name;
-            return this;
-        }
     }
 
     [Table("Fridge")]
-    public class Fridge : View, IStorage
+    public class Fridge : IStorage
     {
         [PrimaryKey]
-        [Column("Name")]
         public string Name { get; set; }
+
+        [Ignore]
         public Grid Grid { get; set; }
+
+        public int ID { get; set; }
         // Matches the grid position of each cell to the cell ID.
         private Dictionary<int, StorageCell> gridCells = new Dictionary<int, StorageCell>();
-        public Fridge(string name, Grid grid)
+
+        //TEMPORARY
+        public Fridge SetFridge(string name, Grid grid)
         {
             Name = name;
             Grid = grid;
+
+            return this;
         }
-
-        public Fridge() { }
-
         public void AddGridCell(int ID, StorageCell cell)
         {
             gridCells.Add(ID, cell);
@@ -308,7 +412,7 @@ namespace Utility
             {
                 var cell = gridCells[ID];
                 cell.AddUI(background, button);
-                GridManager.AddGridItemAtPosition(Grid, new List<View>() { background, cell.GetItemGrid(), button }, cell.Position);
+                GridManager.AddGridItemAtPosition(Grid, new List<View>() { background, cell.GetItemGrid(), button }, cell.GetPosition());
             }
         }
 
@@ -319,7 +423,7 @@ namespace Utility
                 var cell = gridCells[ID];
                 cell.AddItem(items);
 
-                GridManager.AddGridItemAtPosition(Grid, items, cell.Position);
+                GridManager.AddGridItemAtPosition(Grid, items, cell.GetPosition());
             }
         }
 
@@ -336,15 +440,6 @@ namespace Utility
         public List<int> GetGridIDs()
         {
             return gridCells.Keys.ToList();
-        }
-
-        //TEMPORARY
-        public Fridge SetFridge(string name, Grid grid)
-        {
-            Name = name;
-            Grid = grid;
-
-            return this;
         }
     }
     public static class PositionExtention

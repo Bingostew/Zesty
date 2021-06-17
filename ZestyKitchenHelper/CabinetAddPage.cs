@@ -15,19 +15,16 @@ namespace ZestyKitchenHelper
         AbsoluteLayout addForm;
         static Grid storageGrid;
         private static string storageName;
-        static Action<string, Grid> saveLocalItemToShelfEvent, saveBaseItemToShelfEvent;
         const int unplacedGridRows = 2;
         const int unplacedGridColumns = 4;
         private static int gridFootIndex;
         private static Grid unplacedGrid, partialUnplacedGrid;
 
-        public CabinetAddPage(string _storageName, Action<Item> saveLocalItemEvent, Action<Item> saveBaseItemEvent,
-            Action<string, Grid> _saveLocalItemToShelfEvent, Action<string, Grid> _saveBaseItemToShelfEvent)
+        Action<Item> updateLocalItemEvent;
+
+        public CabinetAddPage(string _storageName)
         {
-            Console.WriteLine("Cabinet Add Page 30 New add page");
             storageName = _storageName;
-            saveLocalItemToShelfEvent = _saveLocalItemToShelfEvent;
-            saveBaseItemToShelfEvent = _saveBaseItemToShelfEvent;
 
             //-- set up storage view
             var name = new Label() { Text = _storageName, FontSize = 30, TextColor = Color.Black };
@@ -57,7 +54,7 @@ namespace ZestyKitchenHelper
                                 .AddInfoIcon();
             }
             , true);
-            addForm = AddView.GetAddForm(saveLocalItemEvent, saveBaseItemEvent, storageName, true, partialUnplacedGrid);
+            addForm = AddView.GetAddForm(LocalStorageController.AddItem, FireBaseController.SaveItem, storageName, true, partialUnplacedGrid);
 
             var backButton = new ImageButton() { Source = ContentManager.backButton, Aspect = Aspect.Fill, BackgroundColor = Color.Transparent };
             backButton.Clicked += (o, a) =>
@@ -163,8 +160,7 @@ namespace ZestyKitchenHelper
             itemLayout.IsVisible = false;
             itemLayout.ItemData.stored = true;
 
-            itemLayout.StorageName = name;
-            itemLayout.StorageIndex = cellIndex;
+            itemLayout.ItemData.SetStorage(name, cellIndex);
             itemLayout.SetMarkingVisibility(false);
             ContentManager.UnplacedItemBase.Remove(itemLayout.ItemData.ID);
 
@@ -179,18 +175,8 @@ namespace ZestyKitchenHelper
 
             storage.AddGridItems(cellIndex, new List<View>() { itemLayout });
 
-   
-            
-            string rowInfo, rowItems;
-            /*
-            if(ContentManager.storageSelection == ContentManager.StorageSelection.fridge)
-                ContentManager.SetLocalFridge(name, out rowInfo, out rowItems);
-            else
-                ContentManager.SetLocalCabinet(name, out rowInfo, out rowItems);
-            */
-
-            //saveLocalItemToShelfEvent(name, storage.Grid);
-            //saveBaseItemToShelfEvent(name, storage.Grid);
+            LocalStorageController.UpdateItem(itemLayout.ItemData);
+            FireBaseController.SaveItem(itemLayout.ItemData);
         }
     }
 }

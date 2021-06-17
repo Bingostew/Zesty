@@ -15,7 +15,7 @@ namespace ZestyKitchenHelper
 
         protected override void OnStart()
         {
-            ContentManager.InitializeApp();
+         //   ContentManager.InitializeApp();
         }
 
         protected override void OnSleep()

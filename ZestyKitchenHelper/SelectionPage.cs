@@ -81,9 +81,9 @@ namespace ZestyKitchenHelper
             }
 
             cabinetButton.Clicked += (obj, args) => SetSelection(ContentManager.StorageSelection.cabinet);
-            cabinetButton.Clicked += (obj, args) => ContentManager.pageController.InitializeSingleSelectionPage(ContentManager.StorageSelection.cabinet);
+            cabinetButton.Clicked += (obj, args) => ContentManager.pageController.ToSingleSelectionPage();
             fridgeButton.Clicked += (obj, args) => SetSelection(ContentManager.StorageSelection.fridge);
-            fridgeButton.Clicked += (obj, args) => ContentManager.pageController.InitializeSingleSelectionPage(ContentManager.StorageSelection.fridge);
+            fridgeButton.Clicked += (obj, args) => ContentManager.pageController.ToSingleSelectionPage();
             addUnplaceButton.Clicked += (o,a) => ContentManager.pageController.ToUnplacedPage();
             Content = grid;
         }

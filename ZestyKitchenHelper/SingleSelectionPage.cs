@@ -157,8 +157,8 @@ namespace ZestyKitchenHelper
                                 }
                             }
                         }
-                        deleteStorageBase.Invoke(key);
-                        deleteStorageLocal.Invoke(key);
+                        deleteStorageBase?.Invoke(key);
+                        deleteStorageLocal?.Invoke(key);
                         itemBase.Remove(key);
                         foreach (var child in mainGridChildren[key])
                         {

@@ -16,17 +16,13 @@ namespace ZestyKitchenHelper
         private string storageName;
         private Dictionary<int, Grid> expandedViews = new Dictionary<int, Grid>();
         Action<Item> deleteItemLocalEvent, deleteItemBaseEvent, updateItemLocalEvent, updateItemBaseEvent;
-        Action<string, Grid> saveStorageLocalEvent, saveStorageBaseEvent;
-        public CabinetViewPage(string name, Action<Item> deleteItemLocal, Action<Item> deleteItemBase, Action<Item> updateItemLocal, Action<Item> updateItemBase,
-            Action<string, Grid> _saveStorageLocalEvent, Action<string, Grid> _saveStorageBaseEvent)
+        public CabinetViewPage(string name, Action<Item> deleteItemLocal, Action<Item> deleteItemBase, Action<Item> updateItemLocal, Action<Item> updateItemBase)
         {
-            saveStorageBaseEvent = _saveStorageBaseEvent;
-            saveStorageLocalEvent = _saveStorageLocalEvent;
             updateItemLocalEvent = updateItemLocal;
             updateItemBaseEvent = updateItemBase;
             deleteItemBaseEvent = deleteItemBase;
             deleteItemLocalEvent = deleteItemLocal;
-            var backgroundImage = ContentManager.storageSelection == ContentManager.StorageSelection.fridge ? ContentManager.fridgeIcon : ContentManager.cabinetIcon;
+            var backgroundImage = ContentManager.storageSelection == ContentManager.StorageSelection.fridge ? ContentManager.fridgeIcon : ContentManager.cabinetCellIcon;
             storageName = name;
             Image backgroundCell = new Image()
             { Source = backgroundImage, Aspect = Aspect.Fill };
@@ -227,7 +223,7 @@ namespace ZestyKitchenHelper
                        // saveStorageBaseEvent?.Invoke(item.StorageName, rowInfo, itemInfo);
                         deleteItemLocalEvent?.Invoke(item.ItemData); 
                         deleteItemBaseEvent?.Invoke(item.ItemData);
-                        item.StorageName = string.Empty;
+                        item.ItemData.SetStorage(string.Empty, 0); 
                     }
                 };
             }

@@ -10,7 +10,7 @@ namespace ZestyKitchenHelper
     {
         Func<string,Layout<View>> storageAction;
         string storageName;
-        ImageButton parentButton;
+
         Label locationLabel;
         StackLayout pageContainer;
         public bool cabinetBinded;
@@ -37,10 +37,9 @@ namespace ZestyKitchenHelper
             Content = pageContainer;
         }
 
-        public void BindCabinetInfo(ImageButton _parentButton, Func<string, Layout<View>> getStorageAction, string _storageName)
+        public void BindCabinetInfo(Func<string, Layout<View>> getStorageAction, string _storageName)
         {
             storageAction = getStorageAction;
-            parentButton = _parentButton;
             storageName = _storageName;
             cabinetBinded = true;
        }

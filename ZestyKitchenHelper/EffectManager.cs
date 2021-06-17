@@ -27,7 +27,6 @@ namespace ZestyKitchenHelper
                 itemIcon.TranslationY = 0;
             }
 
-
             if (args.IsInContact)
             {
                 foreach (StorageCell cell in itemStorage.GetGridCells())
@@ -39,7 +38,7 @@ namespace ZestyKitchenHelper
                 {
                     args.ContactView[0].RemoveEffect(typeof(ImageTint));
                    
-                    itemIcon.BindCabinetInfo(args.ContactView[0].TranslationX, args.ContactIndex[0], args.ContactView[0] as ImageButton, currentStorageName, ContentManager.GetStorageView);
+                    itemIcon.SetStoragePointer(ContentManager.GetStorageView);
                     updateShelf(currentStorageName, itemIcon, args.ContactIndex[0]);
                 }
             }

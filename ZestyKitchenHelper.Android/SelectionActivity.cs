@@ -44,14 +44,13 @@ namespace ZestyKitchenHelper.Droid
          AndroidX.Fragment.App.Fragment selectionFrag;
         AndroidX.Fragment.App.Fragment viewFrag;
         AndroidX.Fragment.App.Fragment unplacedFrag;
-
          AndroidX.Fragment.App.FragmentManager manager;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
             manager = SupportFragmentManager;
             base.OnCreate(savedInstanceState);
-            Console.WriteLine("oncreate");
+            Console.WriteLine(" Selection Activity 54 oncreate");
             mainSelectionFrag = ContentManager.pageController.CreateSupportFragment(this);
             manager.BeginTransaction().Replace(Android.Resource.Id.Content, mainSelectionFrag).Commit();
 
@@ -86,7 +85,7 @@ namespace ZestyKitchenHelper.Droid
 
         private async void GetUserEvent()
         {
-            var user = await FireBaseMediator.fireBaseController.GetUser(ContentManager.sessionUserName);
+            var user = await FireBaseController.GetUser(ContentManager.sessionUserProfile.Name);
             if (user != null)
             {
 

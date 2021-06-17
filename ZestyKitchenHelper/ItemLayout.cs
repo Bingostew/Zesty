@@ -19,11 +19,6 @@ namespace ZestyKitchenHelper
         private double width, height;
 
         public Item ItemData;
-        public int ParentCellIndex { get; set; }
-        public string StorageName { get; set; }
-        public int StorageIndex { get; set; }
-        public double DefaultTranslationX { get; set; }
-        public ImageButton ParentButton { get; set; }
         /// <summary>
         /// Default parameter- Must set the ItemProperty binding manually
         /// </summary>
@@ -50,12 +45,8 @@ namespace ZestyKitchenHelper
 
         }
 
-        public void BindCabinetInfo(double defaultTransX, int parentCellIndex, ImageButton parentButton, string storageName, Func<string, Layout<View>> storagePointer)
+        public void SetStoragePointer(Func<string, Layout<View>> storagePointer)
         {
-            ParentCellIndex = parentCellIndex;
-            DefaultTranslationX = defaultTransX;
-            ParentButton = parentButton;
-            StorageName = storageName;
             storageEvent = storagePointer;
         }
         protected override void LayoutChildren(double x, double y, double width, double height)
@@ -181,7 +172,7 @@ namespace ZestyKitchenHelper
             {
                 InfoPage infoPage = new InfoPage(ItemData);
                 ContentManager.pageController.ToInfoPage(infoPage);
-                if(StorageName != null) { infoPage.BindCabinetInfo(ParentButton, storageEvent, StorageName); }
+                if(ItemData.StorageName != null) { infoPage.BindCabinetInfo(storageEvent, ItemData.StorageName); }
                 infoPage.SetCabinetView(); 
             };
             return this;
