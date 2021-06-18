@@ -106,7 +106,7 @@ namespace ZestyKitchenHelper
             returnButton.Clicked += (o,a) => ContentManager.pageController.ToSingleSelectionPage();
 
             var itemStorage = ContentManager.GetSelectedStorage(name);
-            var storageGrid = itemStorage.Grid;
+            var storageGrid = itemStorage.MainGrid;
             storageGrid.HorizontalOptions = LayoutOptions.CenterAndExpand;
             storageGrid.WidthRequest = Application.Current.MainPage.Width * .8;
             storageGrid.HeightRequest = 7 * Application.Current.MainPage.Height / 8;

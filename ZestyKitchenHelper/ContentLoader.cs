@@ -65,7 +65,7 @@ namespace ZestyKitchenHelper
                     // Check if cell belongs to the given cabinet
                     if (cell.StorageName == cabinet.Name)
                     {
-                        cell.SetStorageCell(new Vector2D<int>(cell.X, cell.Y), cell.Index, cell.StorageName, cell.ColumnSpan, cell.RowSpan);
+                        cell.SetStorageCell(new Vector2D<int>(cell.X, cell.Y), cell.Index, cell.StorageName, cabinetGrid, "", cell.ColumnSpan, cell.RowSpan);
 
                         Console.WriteLine("ContentLoader 78 cabinet name: " + cabinet.Name + " cell storage: " + cell.StorageName + " cell index: " + cell.Index);
                         // Add cell to storage children dictionary
@@ -90,6 +90,67 @@ namespace ZestyKitchenHelper
                         Image background = new Image() { Source = ContentManager.cabinetCellIcon, Aspect = Aspect.Fill };
                         ImageButton transparentButton = new ImageButton() { Source = ContentManager.transIcon, BackgroundColor = Color.Transparent, Aspect = Aspect.Fill };
                         cabinet.AddGridCellUI(cell.Index, background, transparentButton);
+
+                        // Set row and column span of cell
+                        cell.SetRowSpan(cell.RowSpan);
+                        cell.SetColumnSpan(cell.ColumnSpan);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Set up fridges when starting application. Must call after LoadItems().
+        /// </summary>
+        /// <param name="fridges"> List of all stored fridges</param>
+        /// <param name="storageCells">List of all stored storage cells.</param>
+        /// <param name="items">List of all stored items.</param>
+        public static void LoadFridges(List<Fridge> fridges, List<StorageCell> storageCells, List<Item> items)
+        {
+            foreach (Fridge fridge in fridges)
+            {
+                ContentManager.FridgeMetaBase.Add(fridge.Name, fridge);
+                // Set the cabinet's grid
+                Grid fridgeMainGrid = new Grid() { RowSpacing = 0, ColumnSpacing = 0 };
+                Grid fridgeLeftGrid = new Grid() { RowSpacing = 0, ColumnSpacing = 0 };
+                Grid fridgeRightGrid = new Grid() { RowSpacing = 0, ColumnSpacing = 0 };
+                fridge.SetFridge(fridge.Name, fridgeMainGrid, fridgeLeftGrid, fridgeRightGrid, fridge.ID);
+
+                // Record cabinet ID 
+                IDGenerator.SkipID(ContentManager.fridgeEditIdGenerator, fridge.ID);
+
+                foreach (StorageCell cell in storageCells)
+                {
+                    // Record cell ID.
+                    IDGenerator.SkipID(ContentManager.storageCellIdGenerator, cell.MetaID);
+                    // Check if cell belongs to the given cabinet
+                    if (cell.StorageName == fridge.Name)
+                    {
+                        Grid cellParentGrid = cell.GridType == "Left" ? fridgeLeftGrid : cell.GridType == "Right" ? fridgeRightGrid : fridgeMainGrid;
+                        cell.SetStorageCell(new Vector2D<int>(cell.X, cell.Y), cell.Index, cell.StorageName, cellParentGrid, cell.GridType, cell.ColumnSpan, cell.RowSpan);
+
+                        // Add cell to storage children dictionary
+                        fridge.AddGridCell(cell.Index, cell);
+
+                        List<View> cellChildren = new List<View>();
+                        // Add items to gridcells
+                        foreach (Item item in items)
+                        {
+                            //  Console.WriteLine("ContentLoader 78 item storage: " + item.StorageName);
+                            // Check if item belongs to both the storage and the cell
+                            if (item.StorageName == fridge.Name && item.StorageCellIndex == cell.Index)
+                            {
+                                // Adds to the list of children, will be used to populate grid later.
+                                ItemLayout itemLayout = ContentManager.MetaItemBase[item.ID];
+                                cellChildren.Add(itemLayout);
+                            }
+                        }
+                        fridge.AddGridItems(cell.Index, cellChildren);
+
+                        // set UI for each cell
+                        Image background = new Image() { Source = ContentManager.fridgeIcon, Aspect = Aspect.Fill };
+                        ImageButton transparentButton = new ImageButton() { Source = ContentManager.transIcon, BackgroundColor = Color.Transparent, Aspect = Aspect.Fill };
+                        fridge.AddGridCellUI(cell.Index, background, transparentButton);
 
                         // Set row and column span of cell
                         cell.SetRowSpan(cell.RowSpan);

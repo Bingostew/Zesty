@@ -13,7 +13,7 @@ namespace ZestyKitchenHelper
     {
         AbsoluteLayout pageContainer;
         AbsoluteLayout addForm;
-        static Grid storageGrid;
+        static View storageView;
         private static string storageName;
         const int unplacedGridRows = 2;
         const int unplacedGridColumns = 4;
@@ -28,10 +28,10 @@ namespace ZestyKitchenHelper
 
             //-- set up storage view
             var name = new Label() { Text = _storageName, FontSize = 30, TextColor = Color.Black };
-            storageGrid = ContentManager.GetSelectedStorage(storageName).Grid;
-            storageGrid.WidthRequest = Application.Current.MainPage.Width * .8;
-            storageGrid.HeightRequest = 5 * Application.Current.MainPage.Height / 8;
-            storageGrid.VerticalOptions = LayoutOptions.EndAndExpand;
+            storageView = ContentManager.GetStorageView(storageName);
+            storageView.WidthRequest = Application.Current.MainPage.Width * .8;
+            storageView.HeightRequest = 5 * Application.Current.MainPage.Height / 8;
+            storageView.VerticalOptions = LayoutOptions.EndAndExpand;
 
             //-- set up unplaced grid
             unplacedGrid = GridManager.GetGrid(ContentManager.unplacedGridName);
@@ -138,7 +138,7 @@ namespace ZestyKitchenHelper
             pageContainer = new AbsoluteLayout();
             pageContainer.BackgroundColor = Color.Wheat;
             pageContainer.Children.Add(infoGrid, new Rectangle(0, 0, 1, .1), AbsoluteLayoutFlags.All);
-            pageContainer.Children.Add(storageGrid, new Rectangle(.5, .9, .8, .5), AbsoluteLayoutFlags.All);
+            pageContainer.Children.Add(storageView, new Rectangle(.5, .9, .8, .5), AbsoluteLayoutFlags.All);
             pageContainer.Children.Add(gridPageSelectGrid, new Rectangle(0, .07, 1, .1), AbsoluteLayoutFlags.All);
             pageContainer.Children.Add(partialUnplacedGrid, new Rectangle(0, .25, 1, .3), AbsoluteLayoutFlags.All);
 

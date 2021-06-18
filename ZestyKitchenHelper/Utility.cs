@@ -204,19 +204,35 @@ namespace Utility
         public int ColumnSpan { get; set; }
         [Column("Row Span")]
         public int RowSpan { get; set; }
-
+        [Column("Grid")]
+        public string GridType { get; set; } // Only applies to fridge
+        [Ignore]
+        public Grid ParentGrid { get; set; } // Only applies to fridge
         private Vector2D<int> Position;
         private Grid Grid = new Grid();
         private Image background;
         private ImageButton button;
 
-        public StorageCell SetStorageCell(Vector2D<int> position, int index, string storageName, int columnSpan = 1, int rowSpan = 1)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="position">Position in the parent grid (left, top).</param>
+        /// <param name="index">Index in the IStorage storage cell dictionary.</param>
+        /// <param name="storageName">Name of storage the cell belongs in.</param>
+        /// <param name="parentGrid">The parent grid. Only applies to fridge.</param>
+        /// <param name="gridType">The type of grid. Left, Main, or Right. Only applies to fridge.</param>
+        /// <param name="columnSpan">Column span of cell in the parent grid.</param>
+        /// <param name="rowSpan">Row span of cell in the parent grid.</param>
+        /// <returns></returns>
+        public StorageCell SetStorageCell(Vector2D<int> position, int index, string storageName, Grid parentGrid, string gridType = "", int columnSpan = 1, int rowSpan = 1)
         {
             Position = position;
             ColumnSpan = columnSpan;
             StorageName = storageName;
             RowSpan = rowSpan;
             Index = index;
+            ParentGrid = parentGrid;
+            GridType = gridType;
             Grid = GridManager.InitializeGrid(2, 5, GridLength.Star, GridLength.Star);
 
             MetaID = IDGenerator.GetID(ContentManager.storageCellIdGenerator);
@@ -259,10 +275,6 @@ namespace Utility
         {
             return Grid.Children.ToList();
         }
-        public void SetChildren(List<View> newChildren)
-        {
-            GridManager.AddGridItem(Grid, newChildren, true);
-        }
 
         public int GetChildrenCount()
         {
@@ -295,7 +307,7 @@ namespace Utility
     {
         int ID { get; set; }
         [Ignore]
-        Grid Grid { get; set; }
+        Grid MainGrid { get; set; }
         void AddGridCell(int ID, StorageCell cell);
         void RemoveGridCell(int ID);
         void AddGridCellUI(int ID, Image background, ImageButton button);
@@ -317,7 +329,7 @@ namespace Utility
         [Column("Name")]
         public string Name { get; set; }
         [Ignore]
-        public Grid Grid { get; set; }
+        public Grid MainGrid { get; set; }
         [PrimaryKey, Column("ID")]
         public int ID { get; set; }
 
@@ -328,7 +340,7 @@ namespace Utility
         {
             Name = name;
             ID = id;
-            Grid = grid;
+            MainGrid = grid;
             return this;
         }
 
@@ -349,7 +361,7 @@ namespace Utility
                 var cell = gridCells[ID];
                 cell.AddUI(background, button);
 
-                GridManager.AddGridItemAtPosition(Grid, new List<View>() { background, button }, cell.GetPosition());
+                GridManager.AddGridItemAtPosition(MainGrid, new List<View>() { background, button }, cell.GetPosition());
             }
         }
 
@@ -378,22 +390,28 @@ namespace Utility
     [Table("Fridge")]
     public class Fridge : IStorage
     {
-        [PrimaryKey]
+        [Column("Name")]
         public string Name { get; set; }
 
         [Ignore]
-        public Grid Grid { get; set; }
-
+        public Grid MainGrid { get; set; }
+        [Ignore]
+        public Grid LeftGrid { get; set; }
+        [Ignore]
+        public Grid RightGrid { get; set; }
+        [PrimaryKey, Column("ID")]
         public int ID { get; set; }
         // Matches the grid position of each cell to the cell ID.
         private Dictionary<int, StorageCell> gridCells = new Dictionary<int, StorageCell>();
 
         //TEMPORARY
-        public Fridge SetFridge(string name, Grid grid)
+        public Fridge SetFridge(string name, Grid mainGrid, Grid leftGrid, Grid rightGrid, int id)
         {
             Name = name;
-            Grid = grid;
-
+            MainGrid = mainGrid;
+            LeftGrid = leftGrid;
+            RightGrid = rightGrid;
+            ID = id;
             return this;
         }
         public void AddGridCell(int ID, StorageCell cell)
@@ -412,7 +430,7 @@ namespace Utility
             {
                 var cell = gridCells[ID];
                 cell.AddUI(background, button);
-                GridManager.AddGridItemAtPosition(Grid, new List<View>() { background, cell.GetItemGrid(), button }, cell.GetPosition());
+                GridManager.AddGridItemAtPosition(cell.ParentGrid, new List<View>() { background, button }, cell.GetPosition());
             }
         }
 
@@ -423,7 +441,7 @@ namespace Utility
                 var cell = gridCells[ID];
                 cell.AddItem(items);
 
-                GridManager.AddGridItemAtPosition(Grid, items, cell.GetPosition());
+                GridManager.AddGridItemAtPosition(cell.ParentGrid, items, cell.GetPosition());
             }
         }
 

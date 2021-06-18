@@ -58,7 +58,7 @@ namespace ZestyKitchenHelper
             IDGenerator.InitializeIDGroup(cabinetEditIdGenerator);
             IDGenerator.InitializeIDGroup(fridgeEditIdGenerator);
             IDGenerator.InitializeIDGroup(storageCellIdGenerator);
-            //LocalStorageController.ResetDatabase(); // WARNING: FOR TESTING PURPOSES ONLY
+          //  LocalStorageController.ResetDatabase(); // WARNING: FOR TESTING PURPOSES ONLY
             LocalStorageController.InitializeLocalDataBase();
 
             // Initialize Important Grids
@@ -85,12 +85,14 @@ namespace ZestyKitchenHelper
                 // Load with cloud data
                 ContentLoader.LoadItems(baseItems);
                 ContentLoader.LoadCabinets(baseCabinets, baseStorageCells, baseItems);
+                ContentLoader.LoadFridges(baseFridges, baseStorageCells, baseItems);
             }
             else
             {
                 // Load with local data
                 ContentLoader.LoadItems(localItems);
                 ContentLoader.LoadCabinets(localCabinets, localStorageCells, localItems);
+                ContentLoader.LoadFridges(localFridges, localStorageCells, localItems);
             }
 
             if (sessionUserProfile != null)
@@ -103,7 +105,7 @@ namespace ZestyKitchenHelper
                 List<Fridge> fridgeListDiff = baseFridges.Where(i => !localFridges.Any(j => i.ID == j.ID)).ToList();
                // List<StorageCell> storageCellListDiff = baseStorageCells.Where(i => !localStorageCells.Any(j => i.MetaID == j.MetaID)).ToList();
 
-                // TODO: actually updating local list.
+                //actually updating local list.
                 cabinetListDiff.ForEach(c => LocalStorageController.AddCabinet(c.Name));
                 fridgeListDiff.ForEach(f => LocalStorageController.AddFridge(f.Name));
                 itemListDiff.ForEach(i => LocalStorageController.AddItem(i));
@@ -111,7 +113,11 @@ namespace ZestyKitchenHelper
                 baseItems.ForEach(i => LocalStorageController.UpdateItem(i));
             }
         }
-
+        /// <summary>
+        /// Calls GetFridgeView or GetCabinetView depending on whether the user entered the cabinet or fridge selection page.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public static Layout<View> GetStorageView(string name)
         {
             if (storageSelection == StorageSelection.cabinet)
@@ -119,14 +125,44 @@ namespace ZestyKitchenHelper
             else
                 return GetFridgeView(name);
         }
+        /// <summary>
+        /// Retrieves the grids that make up the fridge's layout
+        /// </summary>
+        /// <param name="name">name of fridge.</param>
+        /// <returns></returns>
         public static Layout<View> GetFridgeView(string name)
         {
-            return FridgeMetaBase[name].Grid;
+            Grid gridContainer = new Grid()
+            {
+                ColumnDefinitions =
+                {
+                    new ColumnDefinition(){Width = GridLength.Star },
+                    new ColumnDefinition(){Width = new GridLength(2, GridUnitType.Star) },
+                    new ColumnDefinition(){Width = GridLength.Star }
+                }
+            };
+            Fridge fridge = FridgeMetaBase[name];
+
+            gridContainer.Children.Add(fridge.LeftGrid, 0, 0);
+            gridContainer.Children.Add(fridge.MainGrid, 1, 0);
+            gridContainer.Children.Add(fridge.RightGrid, 2, 0);
+
+            return gridContainer;
         }
+        /// <summary>
+        /// Retrieves the grid that makes up the cabinet layout.
+        /// </summary>
+        /// <param name="name">name of cabinet.</param>
+        /// <returns></returns>
         public static Layout<View> GetCabinetView(string name)
         {
-            return CabinetMetaBase[name].Grid;
+            return CabinetMetaBase[name].MainGrid;
         }
+        /// <summary>
+        /// Retreives the IStorage storage by name, depending on whether user selected to enter the cabinet or fridge selection pages.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public static IStorage GetSelectedStorage(string name)
         {
             if(storageSelection == StorageSelection.cabinet && CabinetMetaBase.ContainsKey(name))
@@ -140,6 +176,7 @@ namespace ZestyKitchenHelper
 
             return null;
         }
+
         public static void AddSelectedStorage(string name, IStorage storage)
         {
             if (storageSelection == StorageSelection.cabinet)
