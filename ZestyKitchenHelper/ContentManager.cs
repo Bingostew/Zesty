@@ -21,30 +21,32 @@ namespace ZestyKitchenHelper
         public const string cabinetLeftIcon = "cabinet_divider_left.png";
         public const string cabinetMiddleIcon = "cabinet_divider_middle.png";
         public const string cabinetRightIcon = "cabinet_divider_right.png";
-        public static string safeIcon = "swan.JPG";
-        public static string addIcon = "add_new_content.png";
-        public static string addItemIcon = "add_new_item.png";
-        public static string subdivideIcon = "swan.JPG";
-        public static string transIcon = "transparent.png";
-        public static string fridgeIcon = "fridge_cell.png";
-        public static string fridgeSideIcon = "fridge_side_cell.png";
-        public static string fridgeDividerIcon = "fridge_cell_divider.png";
-        public static string deleteCellIcon = "delete_cell_button.png";
-        public static string backButton = "back_arrow.png";
-        public static string pantryIcon = "pantry.png";
-        public static string refridgeIcon = "fridge.png";
-        public static string countIcon = "small_arrow.png";
+        public const string safeIcon = "swan.JPG";
+        public const string addIcon = "add_new_content.png";
+        public const string addItemIcon = "add_new_item.png";
+        public const string subdivideIcon = "swan.JPG";
+        public const string transIcon = "transparent.png";
+        public const string fridgeIcon = "fridge_cell.png";
+        public const string fridgeSideIcon = "fridge_side_cell.png";
+        public const string fridgeDividerIcon = "fridge_cell_divider.png";
+        public const string deleteCellIcon = "delete_cell_button.png";
+        public const string backButton = "back_arrow.png";
+        public const string pantryIcon = "pantry.png";
+        public const string refridgeIcon = "fridge.png";
+        public const string countIcon = "small_arrow.png";
 
         public const string defaultSearchAllBarText = "Search item...";
+        
+        public const string cabinetStorageType = "Cabinet";
+        public const string fridgeStorageType = "Fridge";
+        public const string metaGridName = "Meta Grid";
+        public const string unplacedGridName = "Unplaced Grid";
+        public const string pUnplacedGridName = "Partial Unplaced Grid";
 
-        public static string metaGridName = "Meta Grid";
-        public static string unplacedGridName = "Unplaced Grid";
-        public static string pUnplacedGridName = "Partial Unplaced Grid";
-
-        public static string itemStorageIdGenerator = "ItemId";
-        public static string storageCellIdGenerator = "StorageCell";
-        public static string cabinetEditIdGenerator = "Cabinet";
-        public static string fridgeEditIdGenerator = "Fridge";
+        public const string itemStorageIdGenerator = "ItemId";
+        public const string storageCellIdGenerator = "StorageCell";
+        public const string cabinetEditIdGenerator = "Cabinet";
+        public const string fridgeEditIdGenerator = "Fridge";
 
         public static PageController pageController = new PageController();
         public static SelectionPage selectionPage;
@@ -58,7 +60,7 @@ namespace ZestyKitchenHelper
             IDGenerator.InitializeIDGroup(cabinetEditIdGenerator);
             IDGenerator.InitializeIDGroup(fridgeEditIdGenerator);
             IDGenerator.InitializeIDGroup(storageCellIdGenerator);
-          //  LocalStorageController.ResetDatabase(); // WARNING: FOR TESTING PURPOSES ONLY
+            LocalStorageController.ResetDatabase(); // WARNING: FOR TESTING PURPOSES ONLY
             LocalStorageController.InitializeLocalDataBase();
 
             // Initialize Important Grids
@@ -112,6 +114,14 @@ namespace ZestyKitchenHelper
 
                 baseItems.ForEach(i => LocalStorageController.UpdateItem(i));
             }
+        }
+        /// <summary>
+        /// Returns the string that represents the storage the current user is in.
+        /// </summary>
+        /// <returns></returns>
+        public static string GetStorageType()
+        {
+            return storageSelection == StorageSelection.cabinet ? cabinetStorageType : fridgeStorageType;
         }
         /// <summary>
         /// Calls GetFridgeView or GetCabinetView depending on whether the user entered the cabinet or fridge selection page.

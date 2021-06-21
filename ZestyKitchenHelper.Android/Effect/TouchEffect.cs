@@ -139,6 +139,7 @@ namespace ZestyKitchenHelper.Droid.Effects
                     if (contactRect.IntersectsWith(controlRect))
                     {
                         isInContact = true;
+
                         contactIndexes.Add(cell.Index);
                         contactViews.Add(child);
                     }

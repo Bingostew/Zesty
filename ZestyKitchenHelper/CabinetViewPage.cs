@@ -16,7 +16,11 @@ namespace ZestyKitchenHelper
         private string storageName;
         private Dictionary<int, Grid> expandedViews = new Dictionary<int, Grid>();
         Action<Item> deleteItemLocalEvent, deleteItemBaseEvent, updateItemLocalEvent, updateItemBaseEvent;
-        public CabinetViewPage(string name, Action<Item> deleteItemLocal, Action<Item> deleteItemBase, Action<Item> updateItemLocal, Action<Item> updateItemBase)
+        
+        // If directSelectIndex is > -1, then the cell with this index will be displayed immediately after user enters the view.
+        // DirectSelectStorageType is either "Cabinet" or "Fridge".
+        public CabinetViewPage(string name, Action<Item> deleteItemLocal, Action<Item> deleteItemBase, Action<Item> updateItemLocal, Action<Item> updateItemBase, 
+            int directSelectIndex = -1, string directSelectStorageType = "")
         {
             updateItemLocalEvent = updateItemLocal;
             updateItemBaseEvent = updateItemBase;
@@ -43,8 +47,8 @@ namespace ZestyKitchenHelper
             {
                 switch (sortSelector.SelectedItem)
                 {
-                    case expIndicatorString: GridOrganizer.SortItemGrid(currentGrid, GridOrganizer.SortingType.Expiration_Close); break;
-                    case alphaIndicatorString: GridOrganizer.SortItemGrid(currentGrid, GridOrganizer.SortingType.A_Z); break;
+                    case expIndicatorString: GridOrganizer.SortItemGrid(currentGrid, GridOrganizer.ItemSortingMode.Expiration_Close); break;
+                    case alphaIndicatorString: GridOrganizer.SortItemGrid(currentGrid, GridOrganizer.ItemSortingMode.A_Z); break;
                 }
 
             };
@@ -105,13 +109,13 @@ namespace ZestyKitchenHelper
             var returnButton = new ImageButton() { Source = ContentManager.backButton, BackgroundColor = Color.Transparent, WidthRequest = 100, HeightRequest = 100 };
             returnButton.Clicked += (o,a) => ContentManager.pageController.ToSingleSelectionPage();
 
-            var itemStorage = ContentManager.GetSelectedStorage(name);
-            var storageGrid = itemStorage.MainGrid;
-            storageGrid.HorizontalOptions = LayoutOptions.CenterAndExpand;
-            storageGrid.WidthRequest = Application.Current.MainPage.Width * .8;
-            storageGrid.HeightRequest = 7 * Application.Current.MainPage.Height / 8;
+            var storageView = ContentManager.GetStorageView(name);
 
-            foreach (var cell in itemStorage.GetGridCells())
+            storageView.HorizontalOptions = LayoutOptions.CenterAndExpand;
+            storageView.WidthRequest = Application.Current.MainPage.Width * .8;
+            storageView.HeightRequest = 7 * Application.Current.MainPage.Height / 8;
+
+            foreach (var cell in ContentManager.GetSelectedStorage(name).GetGridCells())
             {
                 ImageButton button = cell.GetButton();
                 var grid = cell.GetItemGrid();
@@ -123,12 +127,24 @@ namespace ZestyKitchenHelper
                         currentGrid = grid;
                         grid.IsVisible = true;
                     };
-                Console.WriteLine("CabinetView 130 View item grid children: " + grid.Children.Count);
+  
                 foreach(var child in grid.Children)
                 {
                     child.IsVisible = true;
                 }
             }
+            Console.WriteLine("Cabinet View 136 " + directSelectIndex);
+            // Set direct view of cell
+            if (directSelectIndex >= 0)
+            {
+               Console.WriteLine("CabinetView 140 View item grid children: overlayed");
+                viewOverlay.IsVisible = true;
+                IStorage storage = directSelectStorageType == ContentManager.cabinetStorageType ? ContentManager.CabinetMetaBase[name] : (IStorage)ContentManager.FridgeMetaBase[name];
+                currentGrid = storage.GetGridCell(directSelectIndex).GetItemGrid();
+                storage.GetGridCell(directSelectIndex).GetItemGrid().IsVisible = true;
+
+            }
+
             Content = new AbsoluteLayout()
             {
                 Children =
@@ -140,7 +156,7 @@ namespace ZestyKitchenHelper
                         {
                             returnButton,
                             storageLabel,
-                            storageGrid,
+                            storageView,
                         }
                     },
                     viewOverlay
@@ -199,7 +215,7 @@ namespace ZestyKitchenHelper
             
                 itemInstance.deleteButton.Clicked += (obj, args) =>
                 {
-                    if (itemInstance.ItemData.amount > 1)
+                    if (itemInstance.ItemData.Amount > 1)
                     {
                         item.SubtractAmount();
                         itemInstance.amountLabel.Text = item.amountLabel.Text;
@@ -223,7 +239,7 @@ namespace ZestyKitchenHelper
                        // saveStorageBaseEvent?.Invoke(item.StorageName, rowInfo, itemInfo);
                         deleteItemLocalEvent?.Invoke(item.ItemData); 
                         deleteItemBaseEvent?.Invoke(item.ItemData);
-                        item.ItemData.SetStorage(string.Empty, 0); 
+                        item.ItemData.SetStorage(string.Empty, 0, ContentManager.GetStorageType()); 
                     }
                 };
             }

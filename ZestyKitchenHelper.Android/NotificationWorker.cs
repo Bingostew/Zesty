@@ -85,11 +85,11 @@ namespace ZestyKitchenHelper.Droid
             {
                 item.SetDaysUntilExpiration();
                 if (item.daysUntilExp < 1 && !item.oneDayWarning)
-                { sender.ScheduleNotification("Zesty's Expiration Alert", "Your " + item.name + " expires in 1 day!"); item.oneDayWarning = true; }
+                { sender.ScheduleNotification("Zesty's Expiration Alert", "Your " + item.Name + " expires in 1 day!"); item.oneDayWarning = true; }
                 else if (item.daysUntilExp < 3 && !item.threeDaysWarning)
-                { sender.ScheduleNotification("Zesty's Expiration Alert", "Your " + item.name + " expires in 3 days!"); item.threeDaysWarning = true; }
+                { sender.ScheduleNotification("Zesty's Expiration Alert", "Your " + item.Name + " expires in 3 days!"); item.threeDaysWarning = true; }
                 else if (item.daysUntilExp < 7 && !item.weekWarning)
-                { sender.ScheduleNotification("Zesty's Expiration Alert", "Your " + item.name + " expires in one week!"); item.weekWarning = true; }
+                { sender.ScheduleNotification("Zesty's Expiration Alert", "Your " + item.Name + " expires in one week!"); item.weekWarning = true; }
                 LocalStorageController.UpdateItem(item);
             }
             Console.WriteLine("item item weeeee " + itemList.Count);

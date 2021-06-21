@@ -12,15 +12,13 @@ namespace ZestyKitchenHelper
     public class CabinetAddPage : ContentPage
     {
         AbsoluteLayout pageContainer;
-        AbsoluteLayout addForm;
+        CarouselView addForm;
         static View storageView;
         private static string storageName;
         const int unplacedGridRows = 2;
         const int unplacedGridColumns = 4;
         private static int gridFootIndex;
         private static Grid unplacedGrid, partialUnplacedGrid;
-
-        Action<Item> updateLocalItemEvent;
 
         public CabinetAddPage(string _storageName)
         {
@@ -39,12 +37,11 @@ namespace ZestyKitchenHelper
             // add listener to set TouchEffect for each new item added. If grid already exist
             partialUnplacedGrid.ChildAdded += (o, v) =>
             {
-                Console.WriteLine("CabinetAddPage 47 child added ");
                 EffectManager.UpdateScreenTouchBounds(v.Element as ItemLayout, storageName, UpdateShelf);
             };
-
+            Console.WriteLine("CabinetAddPage 42 Unplaced children length " + unplacedGrid.Children.Count);
             // initialize grid by constraining UnplacedGrid
-            partialUnplacedGrid = GridManager.ConstrainGrid(unplacedGrid, 0, 8, partialUnplacedGrid, (v) =>
+            partialUnplacedGrid = GridManager.ConstrainGrid(GridManager.GetGrid(ContentManager.unplacedGridName), 0, 8, partialUnplacedGrid, (v) =>
             {
                 return new ItemLayout(50, 50, (v as ItemLayout).ItemData)
                                 .AddMainImage()
@@ -114,7 +111,7 @@ namespace ZestyKitchenHelper
                     var match = 0;
                     for (int i = 0; i < text.Length; i++)
                     {
-                        if (i < item.ItemData.name.Length && string.Equals(text[i].ToString(), item.ItemData.name[i].ToString(), StringComparison.OrdinalIgnoreCase))
+                        if (i < item.ItemData.Name.Length && string.Equals(text[i].ToString(), item.ItemData.Name[i].ToString(), StringComparison.OrdinalIgnoreCase))
                         {
                             match++;
                         }
@@ -156,13 +153,20 @@ namespace ZestyKitchenHelper
 
 
         private async void UpdateShelf(string name, ItemLayout itemLayout, int cellIndex)
-        {
-            itemLayout.IsVisible = false;
-            itemLayout.ItemData.stored = true;
+        { 
+            // Update copies: Meta Item Base contains copies of items that should be updated
+            ItemLayout metaItemLayout = ContentManager.MetaItemBase[itemLayout.ItemData.ID];
+            ItemLayout unplacedItemLayout = ContentManager.UnplacedItemBase[itemLayout.ItemData.ID];
 
-            itemLayout.ItemData.SetStorage(name, cellIndex);
+            itemLayout.IsVisible = false;
+
+            Console.WriteLine("Cabinet Add 165 cell index " + cellIndex);
+            metaItemLayout.ItemData.SetStorage(name, cellIndex, ContentManager.GetStorageType());
+            itemLayout.ItemData.SetStorage(name, cellIndex, ContentManager.GetStorageType());
+
             itemLayout.SetMarkingVisibility(false);
             ContentManager.UnplacedItemBase.Remove(itemLayout.ItemData.ID);
+            GridManager.RemoveGridItem(ContentManager.unplacedGridName, unplacedItemLayout);
 
             // Weird fact: the animation actually allows the touchEffect cycle to complete without complaining that the item is disposed.
             var storage = ContentManager.GetSelectedStorage(name);
@@ -170,8 +174,10 @@ namespace ZestyKitchenHelper
             await ViewExtensions.QuadraticInterpolator(cellBackground, .5, 250, d => cellBackground.Scale = d, null);
 
             GridManager.RemoveGridItem(partialUnplacedGrid, itemLayout);
-        //    GridManager.RemoveGridItem(unplacedGrid, itemLayout);
-        //    removeUnplacedItemsEvent.Invoke();
+            //    GridManager.RemoveGridItem(unplacedGrid, itemLayout);
+            //    removeUnplacedItemsEvent.Invoke();
+
+            Console.WriteLine("CabinetAddPage 180 Unplaced children length " + unplacedGrid.Children.Count);
 
             storage.AddGridItems(cellIndex, new List<View>() { itemLayout });
 

@@ -29,7 +29,8 @@ namespace ZestyKitchenHelper
             searchAllBar.TextColor = Color.Black;
             searchAllBar.Focused += (obj, args) => searchAllBar.Text = "";
             searchAllBar.Unfocused += (obj, args) => { if (searchAllBar.Text.Length == 0) searchAllBar.Text = ContentManager.defaultSearchAllBarText; };
-            searchAllBar.Unfocused += (obj, args) => ListSorter.OnSearchUnplacedGrid(metaGrid, searchAllBar.Text);
+            searchAllBar.Unfocused += (obj, args) => GridManager.FilterItemGrid(metaGrid, searchAllBar.Text);
+            searchAllBar.TextChanged += (obj, args) => GridManager.FilterItemGrid(metaGrid, searchAllBar.Text);
             addNewButton.Clicked += (obj, args) => { addForm.IsVisible = true; };
 
             var sortSelector = new Picker()
@@ -39,13 +40,11 @@ namespace ZestyKitchenHelper
             };
             sortSelector.SelectedIndexChanged += (obj, args) =>
             {
-                metaGrid.SetGridChildrenList(metaGrid.Children.Cast<ItemLayout>().ToList());
                 switch (sortSelector.SelectedItem)
                 {
-                    case expIndicatorString: GridOrganizer.SortItemGrid(metaGrid, GridOrganizer.SortingType.Expiration_Close); break;
-                    case alphaIndicatorString: GridOrganizer.SortItemGrid(metaGrid, GridOrganizer.SortingType.A_Z); break;
+                    case expIndicatorString: GridOrganizer.SortItemGrid(metaGrid, GridOrganizer.ItemSortingMode.Expiration_Close); break;
+                    case alphaIndicatorString: GridOrganizer.SortItemGrid(metaGrid, GridOrganizer.ItemSortingMode.A_Z); break;
                 }
-                metaGrid.SetGridChildrenList(metaGrid.Children.Cast<ItemLayout>().ToList());
             };
 
 
@@ -58,9 +57,6 @@ namespace ZestyKitchenHelper
 
             UpdateChildren();
 
-            GridManager.GetGrid(ContentManager.metaGridName).ChildRemoved += (o, e) => Console.WriteLine("Unplaced Grid Child Removed!");
-            GridManager.GetGrid(ContentManager.metaGridName).ChildAdded += (o, e) => Console.WriteLine("Unplaced Grid Child Added!");
-
             var pageWidth = Application.Current.MainPage.Width;
             AbsoluteLayout.SetLayoutBounds(returnButton, new Rectangle(0, 0, 70, 70));
             AbsoluteLayout.SetLayoutFlags(returnButton, AbsoluteLayoutFlags.PositionProportional);
@@ -72,7 +68,8 @@ namespace ZestyKitchenHelper
             AbsoluteLayout.SetLayoutFlags(sortSelector, AbsoluteLayoutFlags.XProportional);
             AbsoluteLayout.SetLayoutBounds(gridScroll, new Rectangle(0, 100, 1, .8));
             AbsoluteLayout.SetLayoutFlags(gridScroll, AbsoluteLayoutFlags.SizeProportional);
-
+            AbsoluteLayout.SetLayoutBounds(addForm, new Rectangle(0, 0, 1, 1));
+            AbsoluteLayout.SetLayoutFlags(addForm, AbsoluteLayoutFlags.All);
             Content = new AbsoluteLayout()
             {
                 Children =

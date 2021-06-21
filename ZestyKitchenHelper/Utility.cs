@@ -50,9 +50,6 @@ namespace Utility
         }
         public static int GetID(string groupName)
         {
-            if (!idBase.ContainsKey(groupName))
-                return -1;
-
             int newId = 0;
             while (idBase[groupName].Contains(newId))
             {
@@ -151,13 +148,15 @@ namespace Utility
         [Column("One Day Warning")]
         public bool oneDayWarning { get; set; }
         [Column("Amount")]
-        public int amount { get; set; }
+        public int Amount { get; set; }
         [Column("Name")]
-        public string name { get; set; }
+        public string Name { get; set; }
+        [Column("Storage Type")]
+        public string StorageType { get; set; }
         [Column("Icon")]
-        public string icon { get; set; }
+        public string Icon { get; set; }
         [Column("Stored")]
-        public bool stored { get; set; }
+        public bool Stored { get; set; }
 
         [Column("Storage Name")]
         public string StorageName { get; set; }
@@ -166,13 +165,13 @@ namespace Utility
         public Item SetItem(int expYr, int expMth, int expD, int quantity, string productName, string image)
         {
             ID = IDGenerator.GetID(ContentManager.itemStorageIdGenerator);
-            expDay = expD; expMonth = expMth; expYear = expYr; amount = quantity; name = productName;
+            expDay = expD; expMonth = expMth; expYear = expYr; Amount = quantity; Name = productName;
             daysUntilExp = 0;
-            icon = image;
+            Icon = image;
             weekWarning = false;
             threeDaysWarning = false;
             oneDayWarning = false;
-            stored = false;
+            Stored = false;
             SetDaysUntilExpiration();
             return this;
         }
@@ -180,13 +179,15 @@ namespace Utility
         {
             daysUntilExp = DateCalculator.SubtractDate(expYear, expMonth, expDay);
         }
-        public void SetStorage(string storageName, int storageCellIndex)
+        public void SetStorage(string storageName, int storageCellIndex, string storageType)
         {
             StorageName = storageName;
             StorageCellIndex = storageCellIndex;
-            stored = true;
+            StorageType = storageType;
+            Stored = true;
         }
     }
+
     [Table("Storage Cell")]
     public class StorageCell
     {
@@ -233,7 +234,7 @@ namespace Utility
             Index = index;
             ParentGrid = parentGrid;
             GridType = gridType;
-            Grid = GridManager.InitializeGrid(2, 5, GridLength.Star, GridLength.Star);
+            Grid = GridManager.InitializeGrid(6, 4, GridLength.Star, GridLength.Star);
 
             MetaID = IDGenerator.GetID(ContentManager.storageCellIdGenerator);
             X = position.X; Y = position.Y;
@@ -568,31 +569,6 @@ namespace Utility
                 }
             }
         }
-
-        public static void OnSearchUnplacedGrid(Grid unplacedGrid, string name)
-        {
-            string input = name;
-            unplacedGrid.Children.Clear();
-            List<View> results = new List<View>();
-            foreach (var item in ContentManager.MetaItemBase.Values)
-            {
-                var match = 0;
-                for (int i = 0; i < input.Length; i++)
-                {
-                    if (i < item.ItemData.name.Length && string.Equals(input[i].ToString(), item.ItemData.name[i].ToString(), StringComparison.OrdinalIgnoreCase))
-                    {
-                        match++;
-                    }
-                    else { match = 0; break; }
-                }
-                if ((match > 0 && !unplacedGrid.Children.Contains(item)) || input == "" || input == ContentManager.defaultSearchAllBarText)
-                {
-                    results.Add(item);
-                }
-
-                unplacedGrid.OrganizeGrid(results, GridOrganizer.OrganizeMode.HorizontalLeft);
-            }
-        }
     }
 
     public static class ElementBinder
@@ -650,7 +626,7 @@ namespace Utility
             TwoRowSpanLeft,
             HorizontalZigZag
         }
-        public enum SortingType
+        public enum ItemSortingMode
         {
             Expiration_Close,
             A_Z
@@ -660,30 +636,29 @@ namespace Utility
         /// </summary>
         /// <param name="grid"></param>
         /// <param name="sortingType"></param>
-        public static void SortItemGrid(Grid grid, SortingType sortingType)
+        public static void SortItemGrid(Grid grid, ItemSortingMode sortingType)
         {
-            var list = grid.GetGridChilrenList().Cast<ItemLayout>().ToList();
+            var children = grid.Children.ToList();
             switch (sortingType)
             {
-                case SortingType.Expiration_Close:
+                case ItemSortingMode.Expiration_Close:
                     List<int> expDates = new List<int>();
-                    for (int i = 0; i < list.Count; i ++)
+                    for (int i = 0; i < children.Count; i ++)
                     {
-                        expDates.Add(list[i].ItemData.daysUntilExp);
+                        expDates.Add(((ItemLayout)children[i]).ItemData.daysUntilExp);
                     }
-                    ListSorter.SortToListAscending(expDates, list);
+                    ListSorter.SortToListAscending(expDates, children);
                     break;
-                case SortingType.A_Z:
+                case ItemSortingMode.A_Z:
                     List<string> name = new List<string>();
-                    for (int i = 0; i < list.Count; i++)
+                    for (int i = 0; i < children.Count; i++)
                     {
-                        name.Add(list[i].ItemData.name);
+                        name.Add(((ItemLayout)children[i]).ItemData.Name);
                     }
-                    ListSorter.SortToListAscending(name, list);
+                    ListSorter.SortToListAscending(name, children);
                     break;
             }
-            grid.OrganizeGrid(list, OrganizeMode.HorizontalLeft);
-            grid.SetGridChildrenList(list);
+            grid.OrganizeGrid(children, OrganizeMode.HorizontalLeft);
         }
 
 

@@ -10,6 +10,11 @@ namespace ZestyKitchenHelper
 {
     public class SelectionPage : ContentPage
     {
+        public class TestCarousel
+        {
+            public string Image { get; set; }
+            public string Name { get; set; }
+        }
         private ImageButton cabinetButton = new ImageButton()
         {
             Source = ContentManager.pantryIcon,
@@ -72,7 +77,26 @@ namespace ZestyKitchenHelper
                 }
             };
 
-            List<View> gridChildren = new List<View>(){ cabinetLabel, cabinetButton, fridgeLabel, fridgeButton, unplacedLabel, addUnplaceButton };
+            var carouselView = new CarouselView();
+            carouselView.ItemsSource = new List<View>()
+            { new Frame(){ Content = new StackLayout(){ Children = { new Button()} } } };
+            carouselView.ItemTemplate = new DataTemplate(() =>
+            {
+                Frame frame = new Frame();
+                frame.HeightRequest = 200;
+                frame.WidthRequest = 200;
+                frame.BackgroundColor = Color.DarkGoldenrod;
+                frame.SetBinding(ContentView.ContentProperty, "Content");
+
+                return frame;
+            }
+            );
+
+            Button carouselButton = new Button();
+            carouselButton.Clicked += (o, a) => ContentManager.pageController.Content = carouselView;
+
+            List<View> gridChildren = new List<View>(){ cabinetLabel, cabinetButton, fridgeLabel, fridgeButton, unplacedLabel, addUnplaceButton, 
+                new Label() { Text = "Carousel Test" }, carouselButton };
             grid.OrganizeGrid(gridChildren, GridOrganizer.OrganizeMode.TwoRowSpanLeft);
 
             void SetSelection(ContentManager.StorageSelection selection)

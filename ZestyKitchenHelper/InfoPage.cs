@@ -18,21 +18,24 @@ namespace ZestyKitchenHelper
         {
             var backButton = new ImageButton() { Source = ContentManager.backButton, Aspect = Aspect.Fill, WidthRequest = 50, HeightRequest = 50, HorizontalOptions = LayoutOptions.StartAndExpand };
             backButton.Clicked += (obj, args) => ContentManager.pageController.ToUnplacedPage();
-            var itemLabel = new Label() { Text = item.name, TextColor = Color.Black, FontSize = 20, FontAttributes = FontAttributes.Bold, HorizontalTextAlignment = TextAlignment.Center };
-            var itemImage = new Image() { Source = item.icon.Substring(6), Aspect = Aspect.Fill, WidthRequest = 150, HeightRequest = 150, HorizontalOptions = LayoutOptions.StartAndExpand};
+            var itemLabel = new Label() { Text = item.Name, TextColor = Color.Black, FontSize = 20, FontAttributes = FontAttributes.Bold, HorizontalTextAlignment = TextAlignment.Center };
+            var itemImage = new Image() { Source = item.Icon.Substring(6), Aspect = Aspect.Fill, WidthRequest = 150, HeightRequest = 150, HorizontalOptions = LayoutOptions.StartAndExpand};
             var expirationDateLabel = new Label() { Text = "Expiration Date: " + item.expMonth + "/" + item.expDay + "/" + item.expYear, TextColor = Color.Black, FontSize = 20  };
-            var amountLabel = new Label() { Text = "Amount: " + item.amount.ToString(), TextColor = Color.Black, FontSize = 20 };
+            var amountLabel = new Label() { Text = "Amount: " + item.Amount.ToString(), TextColor = Color.Black, FontSize = 20 };
             locationLabel = new Label() { Text = "Location: This item has not been placed", TextColor = Color.Black, FontSize = 20 };
-            var deleteButton = new Button() { BackgroundColor = Color.FromRgba(0, 100, 20, 80), Text = "Use", WidthRequest = 100, HorizontalOptions = LayoutOptions.CenterAndExpand };
-            deleteButton.Clicked += (obj, args) => { 
-                ContentManager.MetaItemBase.Remove(item.ID);
-                UnplacedPage.UpdateGrid(item);
-                ContentManager.pageController.ToUnplacedPage();
+            var toStorageViewButton = new Button() { BackgroundColor = Color.FromRgba(0, 100, 20, 80), Text = "View In Storage", WidthRequest = 100, HorizontalOptions = LayoutOptions.CenterAndExpand };
+            toStorageViewButton.BackgroundColor = item.Stored ? Color.FromRgba(0, 100, 20, 80) : Color.Gray;
+            toStorageViewButton.Clicked += (obj, args) => {
+                if (item.Stored)
+                {
+                    Console.WriteLine("Info Page 31 Direct Select Index: " + item.StorageCellIndex);
+                    ContentManager.pageController.ToViewItemPage(item.StorageName, item.StorageCellIndex, item.StorageType);
+                }
             };
 
             pageContainer = new StackLayout()
             {
-                Children = { backButton, itemLabel, itemImage, expirationDateLabel, amountLabel, locationLabel, deleteButton }
+                Children = { backButton, itemLabel, itemImage, expirationDateLabel, amountLabel, locationLabel, toStorageViewButton }
             };
             Content = pageContainer;
         }
@@ -43,7 +46,7 @@ namespace ZestyKitchenHelper
             storageName = _storageName;
             cabinetBinded = true;
        }
-
+        /*
         public void SetCabinetView()
         {
             if (storageAction != null)
@@ -55,6 +58,6 @@ namespace ZestyKitchenHelper
                 pageContainer.Children.Insert(pageContainer.Children.Count - 1, storageView);
             }
 
-        }
+        }*/
     }
 }

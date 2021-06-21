@@ -29,7 +29,7 @@ namespace ZestyKitchenHelper
                 IDGenerator.SkipID(ContentManager.itemStorageIdGenerator, item.ID);
 
                 // Add to unplaced dictionary if item is not stored
-                if (!item.stored) {
+                if (!item.Stored) {
                     unplacedGridChildren.Add(itemLayout);
                     ContentManager.UnplacedItemBase.Add(item.ID, itemLayout);
                 }
@@ -57,6 +57,7 @@ namespace ZestyKitchenHelper
 
                 // Record cabinet ID 
                 IDGenerator.SkipID(ContentManager.cabinetEditIdGenerator, cabinet.ID);
+                IDGenerator.InitializeIDGroup(cabinet.Name);
 
                 foreach (StorageCell cell in storageCells)
                 {
@@ -65,6 +66,7 @@ namespace ZestyKitchenHelper
                     // Check if cell belongs to the given cabinet
                     if (cell.StorageName == cabinet.Name)
                     {
+                        IDGenerator.SkipID(cabinet.Name, cell.Index);
                         cell.SetStorageCell(new Vector2D<int>(cell.X, cell.Y), cell.Index, cell.StorageName, cabinetGrid, "", cell.ColumnSpan, cell.RowSpan);
 
                         Console.WriteLine("ContentLoader 78 cabinet name: " + cabinet.Name + " cell storage: " + cell.StorageName + " cell index: " + cell.Index);
@@ -118,6 +120,7 @@ namespace ZestyKitchenHelper
 
                 // Record cabinet ID 
                 IDGenerator.SkipID(ContentManager.fridgeEditIdGenerator, fridge.ID);
+                IDGenerator.InitializeIDGroup(fridge.Name);
 
                 foreach (StorageCell cell in storageCells)
                 {
@@ -126,6 +129,7 @@ namespace ZestyKitchenHelper
                     // Check if cell belongs to the given cabinet
                     if (cell.StorageName == fridge.Name)
                     {
+                        IDGenerator.SkipID(fridge.Name, cell.MetaID);
                         Grid cellParentGrid = cell.GridType == "Left" ? fridgeLeftGrid : cell.GridType == "Right" ? fridgeRightGrid : fridgeMainGrid;
                         cell.SetStorageCell(new Vector2D<int>(cell.X, cell.Y), cell.Index, cell.StorageName, cellParentGrid, cell.GridType, cell.ColumnSpan, cell.RowSpan);
 

@@ -47,7 +47,6 @@ namespace ZestyKitchenHelper
 
 
             SetNewShelf(newShelf);
-            IDGenerator.InitializeIDGroup(name);
 
             var saveGrid = new Grid()
             {
@@ -139,6 +138,7 @@ namespace ZestyKitchenHelper
                 name = "untitled shelf " + id;
                 cabinet = new Cabinet().SetCabinet(name, storageGrid, id);
                 nameLegacy = name;
+                IDGenerator.InitializeIDGroup(name);
 
                 AddCell(new Vector2D<int>(0, 0));
 
@@ -149,6 +149,7 @@ namespace ZestyKitchenHelper
                 storageGrid = ContentManager.GetCabinetView(name) as Grid;
             }
         }
+
 
         protected override void SaveGridState(string cabinetName)
         {
@@ -602,6 +603,7 @@ namespace ZestyKitchenHelper
                 name = "untitled fridge " + id;
                 fridge = new Fridge().SetFridge(name, storageGrid, leftSideStorageGrid, rightSideStorageGrid, id);
                 nameLegacy = name;
+                IDGenerator.InitializeIDGroup(name);
 
                 ContentManager.FridgeMetaBase.Add(name, fridge);
             }

@@ -53,10 +53,11 @@ namespace ZestyKitchenHelper
             }
         }
 
-        public void ToViewItemPage(string name)
+
+        public void ToViewItemPage(string name, int directSelectIndex = -1, string directSelectStorageType = "")
         {
             Content = new CabinetViewPage(name, LocalStorageController.DeleteItem, FireBaseController.DeleteItem,
-                LocalStorageController.UpdateItem, FireBaseController.SaveItem).Content;
+                LocalStorageController.UpdateItem, FireBaseController.SaveItem, directSelectIndex, directSelectStorageType).Content;
         }
         public void ToStorageCreationPage(bool newShelf, string name = "")
         {

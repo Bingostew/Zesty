@@ -123,7 +123,7 @@ namespace ZestyKitchenHelper
         }
         public ItemLayout AddAmountMark()
         {
-            amountLabel = new Label() { Text = "X" + ItemData.amount.ToString(), WidthRequest = 10, HeightRequest = 5, HorizontalTextAlignment = TextAlignment.Center,
+            amountLabel = new Label() { Text = "X" + ItemData.Amount.ToString(), WidthRequest = 10, HeightRequest = 5, HorizontalTextAlignment = TextAlignment.Center,
                 BackgroundColor = Color.White, TextColor = Color.Black, FontAttributes = FontAttributes.Bold };
 
             GetAbsoluteLayout.Children.Add(amountLabel, new Rectangle(1, 1, 30, 20), AbsoluteLayoutFlags.PositionProportional);
@@ -131,7 +131,7 @@ namespace ZestyKitchenHelper
         }
         public ItemLayout AddMainImage()
         {
-            ImageSource source = ItemData.icon.Substring(6);
+            ImageSource source = ItemData.Icon.Substring(6);
             iconImage = new ImageButton { Source = source, Aspect = Aspect.Fill };
             iconImage.BorderColor = Color.Black;
             iconImage.BorderWidth = 2;
@@ -145,7 +145,7 @@ namespace ZestyKitchenHelper
         public ItemLayout AddTitle()
         {
             itemTitle = new Label() 
-            { Text = ItemData.name, HorizontalTextAlignment = TextAlignment.Center, BackgroundColor = Color.White, TextColor = Color.Black, FontSize = 12 };
+            { Text = ItemData.Name, HorizontalTextAlignment = TextAlignment.Center, BackgroundColor = Color.White, TextColor = Color.Black, FontSize = 12 };
             GetAbsoluteLayout.Children.Add(itemTitle, new Rectangle(0, 1, .6, .3), AbsoluteLayoutFlags.All);
 
             return this;
@@ -168,20 +168,21 @@ namespace ZestyKitchenHelper
             GetAbsoluteLayout.Children.Add(infoIcon);
             AbsoluteLayout.SetLayoutBounds(infoIcon, new Rectangle(1, 0, 30, 30));
             AbsoluteLayout.SetLayoutFlags(infoIcon, AbsoluteLayoutFlags.PositionProportional);
-            infoIcon.Clicked += (obj, args) => 
+            infoIcon.Clicked += (obj, args) =>
             {
+                Console.WriteLine("ItemLayout 173 Direct Select Index: " + ItemData.StorageCellIndex);
                 InfoPage infoPage = new InfoPage(ItemData);
                 ContentManager.pageController.ToInfoPage(infoPage);
                 if(ItemData.StorageName != null) { infoPage.BindCabinetInfo(storageEvent, ItemData.StorageName); }
-                infoPage.SetCabinetView(); 
+               // infoPage.SetCabinetView(); 
             };
             return this;
         }
 
         public void SubtractAmount()
         {
-            ItemData.amount--;
-            amountLabel.Text = "X" + ItemData.amount.ToString();
+            ItemData.Amount--;
+            amountLabel.Text = "X" + ItemData.Amount.ToString();
         }
 
         public void RecalculateDate()

@@ -161,7 +161,7 @@ namespace ZestyKitchenHelper
             int startIndex = 0 <= startChildIndex ? startChildIndex : 0;
 
             // If invalid range, then no constraint
-            if (endIndex - startIndex <= 0)
+            if (endIndex - startIndex < 0)
                 return grid;
 
             // get the child list from beginning index to end index
@@ -206,6 +206,34 @@ namespace ZestyKitchenHelper
         public static Grid ConstrainGrid(Grid baseGrid, int startChildIndex, int endChildIndex, Grid grid, Converter<View, View> converter = null, bool constrainSize = false)
         {
             return ConstrainGrid(baseGrid.Children.ToList(), startChildIndex, endChildIndex, grid, converter, constrainSize);
+        }
+
+        /// <summary>
+        /// Filters an ItemLayout grid by the name
+        /// </summary>
+        /// <param name="grid">Grid with all its children with type ItemLayout.</param>
+        /// <param name="input">The name to search for</param>
+        public static void FilterItemGrid(Grid grid, string input)
+        {
+            List<View> results = new List<View>();
+            foreach (var item in ContentManager.MetaItemBase.Values)
+            {
+                var match = 0;
+                for (int i = 0; i < input.Length; i++)
+                {
+                    if (i < item.ItemData.Name.Length && string.Equals(input[i].ToString(), item.ItemData.Name[i].ToString(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        match++;
+                    }
+                    else { match = 0; break; }
+                }
+                if ((match > 0 && !grid.Children.Contains(item)) || input == "" || input == ContentManager.defaultSearchAllBarText)
+                {
+                    results.Add(item);
+                }
+
+                AddGridItem(grid, results, true);
+            }
         }
 
         public static Grid GetGrid(string name)
