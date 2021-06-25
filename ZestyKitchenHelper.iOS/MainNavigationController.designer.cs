@@ -9,8 +9,8 @@ using System.CodeDom.Compiler;
 
 namespace ZestyKitchenHelper.iOS
 {
-	[Register ("NavigationController")]
-	partial class NavigationController
+	[Register ("MainNavigationController")]
+	partial class MainNavigationController
 	{
 		
 		void ReleaseDesignerOutlets ()

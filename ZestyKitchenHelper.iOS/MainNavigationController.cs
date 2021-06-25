@@ -7,9 +7,9 @@ using UIKit;
 
 namespace ZestyKitchenHelper.iOS
 {
-	public partial class NavigationController : UINavigationController
+	public partial class MainNavigationController : UINavigationController
 	{
-		public NavigationController (IntPtr handle) : base (handle)
+		public MainNavigationController (IntPtr handle) : base (handle)
 		{
 		}
 	}

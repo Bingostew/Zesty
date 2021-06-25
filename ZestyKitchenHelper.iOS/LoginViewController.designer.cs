@@ -9,8 +9,8 @@ using System.CodeDom.Compiler;
 
 namespace ZestyKitchenHelper.iOS
 {
-	[Register ("MainViewController")]
-	partial class MainViewController
+	[Register ("LoginViewController")]
+	partial class LoginViewController
 	{
 		[Outlet]
 		UIKit.UIButton LoginButton { get; set; }
@@ -20,14 +20,14 @@ namespace ZestyKitchenHelper.iOS
 		
 		void ReleaseDesignerOutlets ()
 		{
-			if (SkipLoginButton != null) {
-				SkipLoginButton.Dispose ();
-				SkipLoginButton = null;
-			}
-
 			if (LoginButton != null) {
 				LoginButton.Dispose ();
 				LoginButton = null;
+			}
+
+			if (SkipLoginButton != null) {
+				SkipLoginButton.Dispose ();
+				SkipLoginButton = null;
 			}
 		}
 	}
