@@ -11,7 +11,6 @@ namespace ZestyKitchenHelper.iOS
 	{
 		public NavigationController (IntPtr handle) : base (handle)
 		{
-			
 		}
 	}
 }
