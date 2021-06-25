@@ -12,46 +12,50 @@
         <scene sceneID="uel-r3-s7F">
             <objects>
                 <tableViewController storyboardIdentifier="LoginViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="yTe-ww-lVN" customClass="LoginViewController" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="D3a-4Z-JJe">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="D3a-4Z-JJe">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="LoginCell" rowHeight="333" id="rvX-rd-Yq9">
-                                <rect key="frame" x="0.0" y="24.5" width="414" height="333"/>
-                                <autoresizingMask key="autoresizingMask"/>
-                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="rvX-rd-Yq9" id="joZ-2V-nbL">
-                                    <rect key="frame" x="0.0" y="0.0" width="414" height="333"/>
-                                    <autoresizingMask key="autoresizingMask"/>
-                                    <subviews>
-                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="paY-P2-3UL">
-                                            <rect key="frame" x="46" y="74" width="322" height="44"/>
-                                            <color key="backgroundColor" systemColor="systemRedColor"/>
-                                            <fontDescription key="fontDescription" type="system" pointSize="20"/>
-                                            <state key="normal" title="Login/Signup">
-                                                <color key="titleColor" systemColor="labelColor"/>
-                                            </state>
-                                        </button>
-                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JIg-DB-mQC">
-                                            <rect key="frame" x="46" y="150" width="86" height="34"/>
-                                            <fontDescription key="fontDescription" type="system" pointSize="18"/>
-                                            <state key="normal" title="Skip Login">
-                                                <color key="titleColor" systemColor="linkColor"/>
-                                            </state>
-                                        </button>
-                                    </subviews>
-                                    <constraints>
-                                        <constraint firstItem="JIg-DB-mQC" firstAttribute="top" secondItem="paY-P2-3UL" secondAttribute="bottom" constant="32" id="029-ER-bCK"/>
-                                        <constraint firstItem="paY-P2-3UL" firstAttribute="leading" secondItem="joZ-2V-nbL" secondAttribute="leading" constant="46" id="FbI-xi-Ga8"/>
-                                        <constraint firstItem="paY-P2-3UL" firstAttribute="top" secondItem="joZ-2V-nbL" secondAttribute="top" constant="74" id="MmO-VZ-M1f"/>
-                                        <constraint firstItem="JIg-DB-mQC" firstAttribute="leading" secondItem="paY-P2-3UL" secondAttribute="leading" id="bF4-KJ-xKj"/>
-                                        <constraint firstAttribute="trailing" secondItem="JIg-DB-mQC" secondAttribute="trailing" constant="282" id="dTV-Td-d4j"/>
-                                        <constraint firstAttribute="trailing" secondItem="paY-P2-3UL" secondAttribute="trailing" constant="46" id="h52-WZ-zmg"/>
-                                        <constraint firstAttribute="bottom" secondItem="paY-P2-3UL" secondAttribute="bottom" constant="215" id="nHi-ln-PCe"/>
-                                    </constraints>
-                                </tableViewCellContentView>
-                            </tableViewCell>
-                        </prototypes>
+                        <sections>
+                            <tableViewSection id="Ij0-lf-xk3">
+                                <cells>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="LoginCell" rowHeight="333" id="rvX-rd-Yq9">
+                                        <rect key="frame" x="0.0" y="24.5" width="414" height="333"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="rvX-rd-Yq9" id="joZ-2V-nbL">
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="333"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="paY-P2-3UL">
+                                                    <rect key="frame" x="46" y="74" width="322" height="44"/>
+                                                    <color key="backgroundColor" systemColor="systemRedColor"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="20"/>
+                                                    <state key="normal" title="Login/Signup">
+                                                        <color key="titleColor" systemColor="labelColor"/>
+                                                    </state>
+                                                </button>
+                                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JIg-DB-mQC">
+                                                    <rect key="frame" x="46" y="150" width="86" height="34"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="18"/>
+                                                    <state key="normal" title="Skip Login">
+                                                        <color key="titleColor" systemColor="linkColor"/>
+                                                    </state>
+                                                </button>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="JIg-DB-mQC" firstAttribute="top" secondItem="paY-P2-3UL" secondAttribute="bottom" constant="32" id="029-ER-bCK"/>
+                                                <constraint firstItem="paY-P2-3UL" firstAttribute="leading" secondItem="joZ-2V-nbL" secondAttribute="leading" constant="46" id="FbI-xi-Ga8"/>
+                                                <constraint firstItem="paY-P2-3UL" firstAttribute="top" secondItem="joZ-2V-nbL" secondAttribute="top" constant="74" id="MmO-VZ-M1f"/>
+                                                <constraint firstItem="JIg-DB-mQC" firstAttribute="leading" secondItem="paY-P2-3UL" secondAttribute="leading" id="bF4-KJ-xKj"/>
+                                                <constraint firstAttribute="trailing" secondItem="JIg-DB-mQC" secondAttribute="trailing" constant="282" id="dTV-Td-d4j"/>
+                                                <constraint firstAttribute="trailing" secondItem="paY-P2-3UL" secondAttribute="trailing" constant="46" id="h52-WZ-zmg"/>
+                                                <constraint firstAttribute="bottom" secondItem="paY-P2-3UL" secondAttribute="bottom" constant="215" id="nHi-ln-PCe"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                </cells>
+                            </tableViewSection>
+                        </sections>
                         <connections>
                             <outlet property="dataSource" destination="yTe-ww-lVN" id="Iev-3r-h4B"/>
                             <outlet property="delegate" destination="yTe-ww-lVN" id="inY-YD-C8P"/>
