@@ -35,7 +35,7 @@
                                                     </state>
                                                 </button>
                                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JIg-DB-mQC">
-                                                    <rect key="frame" x="46" y="150" width="86" height="34"/>
+                                                    <rect key="frame" x="46" y="150" width="84" height="34"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="18"/>
                                                     <state key="normal" title="Skip Login">
                                                         <color key="titleColor" systemColor="linkColor"/>
@@ -47,7 +47,6 @@
                                                 <constraint firstItem="paY-P2-3UL" firstAttribute="leading" secondItem="joZ-2V-nbL" secondAttribute="leading" constant="46" id="FbI-xi-Ga8"/>
                                                 <constraint firstItem="paY-P2-3UL" firstAttribute="top" secondItem="joZ-2V-nbL" secondAttribute="top" constant="74" id="MmO-VZ-M1f"/>
                                                 <constraint firstItem="JIg-DB-mQC" firstAttribute="leading" secondItem="paY-P2-3UL" secondAttribute="leading" id="bF4-KJ-xKj"/>
-                                                <constraint firstAttribute="trailing" secondItem="JIg-DB-mQC" secondAttribute="trailing" constant="282" id="dTV-Td-d4j"/>
                                                 <constraint firstAttribute="trailing" secondItem="paY-P2-3UL" secondAttribute="trailing" constant="46" id="h52-WZ-zmg"/>
                                                 <constraint firstAttribute="bottom" secondItem="paY-P2-3UL" secondAttribute="bottom" constant="215" id="nHi-ln-PCe"/>
                                             </constraints>
