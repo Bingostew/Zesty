@@ -46,7 +46,7 @@ namespace ZestyKitchenHelper
             };
 
 
-            SetNewShelf(newShelf);
+            SetNewStorage(newShelf);
 
             var saveGrid = new Grid()
             {
@@ -80,7 +80,7 @@ namespace ZestyKitchenHelper
             Content = pageContent;
         }
 
-        protected abstract void SetNewShelf(bool newShelf);
+        protected abstract void SetNewStorage(bool newShelf);
 
         protected virtual void SetBasicView(bool newShelf)
         {
@@ -125,7 +125,7 @@ namespace ZestyKitchenHelper
             storageSaveLocalEvent = saveCabinetLocalEvent;
             storageSaveBaseEvent = saveCabinetBaseEvent;
         }
-        protected override void SetNewShelf(bool newShelf)
+        protected override void SetNewStorage(bool newShelf)
         {
             if (newShelf)
             {
@@ -533,7 +533,7 @@ namespace ZestyKitchenHelper
         private Grid rightSideStorageGrid;
 
         private Fridge fridge;
-        private Grid[] initialFridgeState = new Grid[3]; // the cabinet at the beginning of the edit, in the case where user discards all changes.
+        private Grid[] initialFridgeState; // the cabinet at the beginning of the edit, in the case where user discards all changes.
 
         public FridgeEditPage(bool newShelf, Action<string> saveFridgeLocalEvent, Action<string> saveFridgeBaseEvent, string storageName = "")
             : base(newShelf, storageName)
@@ -585,7 +585,7 @@ namespace ZestyKitchenHelper
             pageContent.Children.Add(containerGrid);
         }
 
-        protected override void SetNewShelf(bool newFridge)
+        protected override void SetNewStorage(bool newFridge)
         {
             if (newFridge)
             {
@@ -649,6 +649,7 @@ namespace ZestyKitchenHelper
                     GridManager.AddGridItemAtPosition(rightGridCopy, cellCopy.GetChildren(), cellCopy.GetPosition());
                 }
             }
+            initialFridgeState = new Grid[3];
             initialFridgeState[0] = mainGridCopy;
             initialFridgeState[1] = leftGridCopy;
             initialFridgeState[2] = rightGridCopy;

@@ -12,7 +12,7 @@ namespace ZestyKitchenHelper
     public class CabinetAddPage : ContentPage
     {
         AbsoluteLayout pageContainer;
-        CarouselView addForm;
+        AbsoluteLayout addForm;
         static View storageView;
         private static string storageName;
         const int unplacedGridRows = 2;

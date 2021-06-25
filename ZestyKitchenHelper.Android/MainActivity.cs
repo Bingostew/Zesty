@@ -50,7 +50,14 @@ namespace ZestyKitchenHelper.Droid
         {
             client = new Auth0Client(new Auth0ClientOptions()
             { Domain = "dev-4l7acohw.auth0.com", ClientId = "Srn3fq8ccb7dnBmskN5VNGG2A4A0XKz4" }) ;
+
             base.OnCreate(savedInstanceState);
+
+            Xamarin.Essentials.Platform.Init(this, savedInstanceState);
+            Xamarin.Forms.Forms.Init(this, savedInstanceState);
+            ZXing.Net.Mobile.Forms.Android.Platform.Init();
+            ZXing.Mobile.MobileBarcodeScanner.Initialize(Application);
+
             SetContentView(Resource.Layout.LoginPage);
             loadingOverlay = FindViewById<TextView>(Resource.Id.loadingOverlay);
             skipLoginField = FindViewById<TextView>(Resource.Id.skipLoginButton);
@@ -112,6 +119,15 @@ namespace ZestyKitchenHelper.Droid
                 Console.WriteLine("failure");
             }
         }
+
+        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Permission[] grantResults)
+        {
+
+            Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+            ZXing.Net.Mobile.Android.PermissionsHandler.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+            base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+
         protected void LoadingPage(/*Android.Views.View view*/)
         {
             loadingOverlay.ScaleX = 1;

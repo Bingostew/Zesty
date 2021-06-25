@@ -5,14 +5,40 @@ using System.Text;
 using Xamarin.Forms;
 using Utility;
 using System.Linq;
+using ZXing.Net.Mobile.Forms;
+using ZXing.Mobile;
 
 namespace ZestyKitchenHelper
 {
     public class AddView
     {
         static List<Item> newItem = new List<Item>();
-        const int addFormTextFontSize = 20;
 
+        private static readonly double screenHeight, screenWidth;
+        private const double form_height_proportional = 0.4;
+        private const int form_label_font_size = 20;
+        private const int form_label_horizontal_margin = 10;
+        private const int form_input_border_width = 2;
+        private const int form_icon_select_border_radius = 2;
+        private const int form_icon_margin = 5;
+        private static readonly double formIconWidthHeight;
+        private static readonly double formGridRowHeight;
+        private const int form_grid_row_count = 5;
+        private const int form_grid_spacing = 5;
+
+        private const double numpad_height_proportional = 0.35;
+        private static readonly Color numpadBackground = new Color(255, 255, 255, 80);
+        private const int numpad_font_size = 20;
+        private const int numpad_spacing = 5;
+
+        static AddView()
+        {
+            screenHeight = Application.Current.MainPage.Height;
+            screenWidth = Application.Current.MainPage.Width;
+
+            formGridRowHeight = (form_height_proportional * screenHeight / form_grid_row_count * 2 - form_grid_spacing * (form_grid_row_count - 1)) / 3;
+            formIconWidthHeight = form_height_proportional * screenHeight / form_grid_row_count - form_icon_margin * 1.5;
+        }
         /// <summary>
         /// Initialized an instance of add form with a num pad.
         /// </summary>
@@ -30,55 +56,38 @@ namespace ZestyKitchenHelper
 
             Vector2D<int> selectGridIndex = new Vector2D<int>(0, 5);
 
-            Grid expirationGrid = GridManager.InitializeGrid("AddExpirationGrid", 2, 3, GridLength.Auto, GridLength.Star);
-
-            Grid iconGrid = new Grid()
-            {
-                RowDefinitions =
-                {
-                    new RowDefinition(){ Height = GridLength.Star },
-                    new RowDefinition(){ Height = GridLength.Star }
-                },
-                ColumnDefinitions =
-                {
-                    new ColumnDefinition(){ Width = GridLength.Auto },
-                    new ColumnDefinition(){ Width = GridLength.Star }
-                }
-            };
-
             List<IconLayout> presetResult = new List<IconLayout>();
             List<int> presetResultSorter = new List<int>();
-            Grid partialPresetSelectGrid = GridManager.InitializeGrid("Partial Preset Grid", 2, 3, GridLength.Star, GridLength.Star);
-            Grid defaultSelectGrid = GridManager.InitializeGrid("Add Default Grid", 2, 3, GridLength.Star, GridLength.Star);
-            Grid partialDefaultSelectGrid = GridManager.InitializeGrid("Partial Default Grid", 2, 3, GridLength.Star, GridLength.Star);
-
+            Grid presetSelectGrid = GridManager.InitializeGrid("Partial Preset Grid", 2, 1, formIconWidthHeight, formIconWidthHeight);
+            presetSelectGrid.RowSpacing = form_icon_margin;  presetSelectGrid.ColumnSpacing = form_icon_margin;
+            ScrollView iconScrollView = new ScrollView() { Content = presetSelectGrid, Orientation = ScrollOrientation.Horizontal};
+            Grid defaultSelectGrid = GridManager.InitializeGrid("Partial Default Grid", 2, 1, formIconWidthHeight, formIconWidthHeight);
+            defaultSelectGrid.RowSpacing = form_icon_margin; defaultSelectGrid.ColumnSpacing = form_icon_margin;
             foreach (var name in ContentManager.DefaultIcons.Keys)
             {
                 ContentManager.DefaultIcons[name].OnClickIconAction = (imageButton) =>
                 {
-                    toggleIconSelect(imageButton, defaultSelectGrid); item.icon = ContentManager.DefaultIcons[name].GetImageSource();
+                    toggleIconSelect(imageButton, defaultSelectGrid); item.Icon = ContentManager.DefaultIcons[name].GetImageSource();
                 };
             }
-            //GridManager.AddGridItem(defaultSelectGrid, ContentManager.DefaultIcons.Values , true);
+            GridManager.AddGridItem(defaultSelectGrid, ContentManager.DefaultIcons.Values , true);
 
             var autoDetectLabel = new Label() { FontSize = 15, TextColor = Color.Black, BackgroundColor = Color.White, IsVisible = false, AnchorX = 0 };
-            Entry nameInput = new Entry() { Text = "product" };
-            nameInput.TextChanged += (obj, args) => { item.name = args.NewTextValue; autoDetectExpiration(args.NewTextValue); if (imageSelectorIndex == 0) changeSelectedIcon(); };
-            nameInput.Completed += (obj, args) => { item.name = nameInput.Text; if (imageSelectorIndex == 0) changeSelectedIcon(); };
-            var foregroundTint = new Image() { BackgroundColor = Color.FromRgba(0, 0, 0, 98), HeightRequest = Application.Current.MainPage.Height, WidthRequest = Application.Current.MainPage.Width };
+         
+            var foregroundTint = new Image() { BackgroundColor = Color.FromRgba(0, 0, 0, 98), HeightRequest = screenHeight, WidthRequest = screenWidth };
 
             Grid form = new Grid()
             {
                 BackgroundColor = Color.FromRgb(200, 200, 200),
-                RowSpacing = 5,
-                ColumnSpacing = 5,
+                RowSpacing = form_grid_spacing,
+                ColumnSpacing = form_grid_spacing,
                 RowDefinitions =
                 {
                     new RowDefinition(){ Height = GridLength.Star },
                     new RowDefinition(){ Height = GridLength.Star },
                     new RowDefinition(){ Height = GridLength.Star },
                     new RowDefinition(){ Height = GridLength.Star },
-                    new RowDefinition(){Height = new GridLength(2, GridUnitType.Star) }
+                    new RowDefinition(){ Height = GridLength.Star }
                 },
                 ColumnDefinitions =
                 {
@@ -93,60 +102,44 @@ namespace ZestyKitchenHelper
                 toggleSelect(selectorIndex, formSelector, Color.BlanchedAlmond, Color.Wheat);
             }
 
-            var nameLabel = new Label() { Text = "Item Name: ", FontSize = addFormTextFontSize, TextColor = Color.Black };
-            var dateLabel = new Label() { Text = "Exp. Date: ", FontSize = addFormTextFontSize, TextColor = Color.Black };
-            var amountLabel = new Label() { Text = "Amount: ", FontSize = addFormTextFontSize, TextColor = Color.Black };
-            var iconLabel = new Label() { Text = "Icon: ", FontSize = addFormTextFontSize, TextColor = Color.Black };
-            var dateMonth = new Button() { BorderColor = Color.Black, BorderWidth = 2, BackgroundColor = Color.Transparent };
+            Entry nameInput = new Entry() { Text = "product", HeightRequest = form_height_proportional * screenHeight / form_grid_row_count };
+            nameInput.TextChanged += (obj, args) => { item.Name = args.NewTextValue; autoDetectExpiration(args.NewTextValue); if (imageSelectorIndex == 0) changeSelectedIcon(); };
+            nameInput.Completed += (obj, args) => { item.Name = nameInput.Text; if (imageSelectorIndex == 0) changeSelectedIcon(); };
+            var nameLabel = new Label() { Text = "Name: ", FontSize = form_label_font_size, TextColor = Color.Black, Margin = new Thickness(form_label_horizontal_margin, 0) };
+            var dateLabel = new Label() { Text = "Exp. Date: ", FontSize = form_label_font_size, TextColor = Color.Black, Margin = new Thickness(form_label_horizontal_margin, 0) };
+            var amountLabel = new Label() { Text = "Amount: ", FontSize = form_label_font_size, TextColor = Color.Black, Margin = new Thickness(form_label_horizontal_margin, 0) };
+            var iconLabel = new Label() { Text = "Icon: ", FontSize = form_label_font_size, TextColor = Color.Black, HeightRequest = formGridRowHeight };
+            var dateMonth = new Button() { BorderColor = Color.Black, BorderWidth = form_input_border_width, BackgroundColor = Color.Transparent };
             dateMonth.Clicked += (obj, arg) => { selectorIndex = 0; ClearText(dateMonth); };
-            var dateDay = new Button() { BorderColor = Color.Black, BorderWidth = 2, BackgroundColor = Color.Transparent, };
+            var dateDay = new Button() { BorderColor = Color.Black, BorderWidth = form_input_border_width, BackgroundColor = Color.Transparent, };
             dateDay.Clicked += (obj, arg) => { selectorIndex = 1; ClearText(dateDay); };
-            var dateYear = new Button() { BorderColor = Color.Black, BorderWidth = 2 };
+            var dateYear = new Button() { BorderColor = Color.Black, BorderWidth = form_input_border_width };
             dateYear.Clicked += (obj, arg) => { selectorIndex = 2; ClearText(dateYear); };
-            var amountInput = new Button() { BorderColor = Color.Black, BorderWidth = 2, BackgroundColor = Color.Transparent, };
+            var amountInput = new Button() { BorderColor = Color.Black, BorderWidth = form_input_border_width, BackgroundColor = Color.Transparent, Margin = new Thickness(0, 0, form_label_horizontal_margin, 0) };
             amountInput.Clicked += (obj, arg) => { selectorIndex = 3; ClearText(amountInput); };
-            var lastPageButton = new ImageButton() { Source = ContentManager.countIcon, Rotation = 180, 
-                BackgroundColor = Color.Transparent, Aspect = Aspect.Fill, WidthRequest = 50 };
-            lastPageButton.Clicked += (obj, args) =>
-            {
-                selectGridIndex = selectGridIndex.X < 6 ? new Vector2D<int>(0, 5)
-                    : new Vector2D<int>(selectGridIndex.X - 6, selectGridIndex.Y - 6);
-                Console.WriteLine("AddView 113: starting index: " + selectGridIndex.X + " end index: " + selectGridIndex.Y);
-                GridManager.ConstrainGrid(presetResult, selectGridIndex.X, selectGridIndex.Y, partialPresetSelectGrid, null, true);
-            };
-            var nextPageButton = new ImageButton() { Source = ContentManager.countIcon, Aspect = Aspect.Fill, 
-                BackgroundColor = Color.Transparent, WidthRequest = 50, TranslationX = 50 };
-            nextPageButton.Clicked += (obj, args) =>
-            {
-                Console.WriteLine("AddView 121: starting index: " + selectGridIndex.X + " end index: " + selectGridIndex.Y);
-                selectGridIndex = selectGridIndex.Y >= presetResult.Count - 6 ? new Vector2D<int>(presetResult.Count - 6, presetResult.Count - 1)
-                    : new Vector2D<int>(selectGridIndex.X + 6, selectGridIndex.Y + 6);
-                Console.WriteLine("AddView 124: starting index: " + selectGridIndex.X + " end index: " + selectGridIndex.Y);
-                GridManager.ConstrainGrid(presetResult, selectGridIndex.X, selectGridIndex.Y, partialPresetSelectGrid, null, true);
-            };
-            var pageToolGrid = new Grid() { ColumnDefinitions = { new ColumnDefinition() { Width = 50 }, new ColumnDefinition() { Width = 50 } } };
-            pageToolGrid.Children.Add(lastPageButton, 0, 0); pageToolGrid.Children.Add(nextPageButton, 1, 0);
-            var iconSelect1 = new Button() { WidthRequest = 30, CornerRadius = 2, BorderColor = Color.Wheat, BorderWidth = 3 };
+            StackLayout expStackLayout = new StackLayout() { Orientation = StackOrientation.Horizontal, Children = { dateMonth, dateDay, dateYear } };
+
+            var iconSelect1 = new Button() { HeightRequest = formGridRowHeight, Text = "In-App", CornerRadius = form_icon_select_border_radius, BorderColor = Color.Wheat, BorderWidth = 3 };
             iconSelect1.Clicked += (obj, arg) =>
             {
                 imageSelectorIndex = 0; toggleSelect(0, imageSelector, Color.Black, Color.Wheat);
-                partialPresetSelectGrid.IsVisible = true;
-                partialDefaultSelectGrid.IsVisible = false;
-                currentGrid = partialPresetSelectGrid;
-                partialPresetSelectGrid.Children.Clear();
+                iconScrollView.Content = presetSelectGrid;
+
                 changeSelectedIcon();
             };
-            var iconSelect2 = new Button() { WidthRequest = 30, CornerRadius = 2, BorderColor = Color.Wheat, BorderWidth = 3 };
+            var iconSelect2 = new Button() { HeightRequest = formGridRowHeight, Text = "General", CornerRadius = form_icon_select_border_radius, BorderColor = Color.Wheat, BorderWidth = 3 };
             iconSelect2.Clicked += (obj, arg) =>
             {
                 imageSelectorIndex = 1; toggleSelect(1, imageSelector, Color.Black, Color.Wheat);
-                partialPresetSelectGrid.IsVisible = false;
-                partialDefaultSelectGrid.IsVisible = true;
-                currentGrid = partialDefaultSelectGrid;
+                iconScrollView.Content = defaultSelectGrid;
             };
 
-            var iconLabel1 = new Label() { Text = "In-App Icons", TextColor = Color.Black, FontSize = 15, VerticalTextAlignment = TextAlignment.Center };
-            var iconLabel2 = new Label() { Text = "General Icons", TextColor = Color.Black, FontSize = 15, VerticalTextAlignment = TextAlignment.Center };
+            StackLayout iconStackLayout = new StackLayout()
+            {
+                Margin = new Thickness(form_label_horizontal_margin, 0),
+                Children = { iconLabel, iconSelect1, iconSelect2 }
+            };
+
 
             void changeSelectedIcon()
             {
@@ -157,7 +150,7 @@ namespace ZestyKitchenHelper
 
                     foreach (char n in name.ToCharArray())
                     {
-                        foreach (char i in item.name.ToCharArray())
+                        foreach (char i in item.Name.ToCharArray())
                         {
                             if (n == i || char.ToLower(n) == i || char.ToLower(i) == n)
                             {
@@ -165,21 +158,23 @@ namespace ZestyKitchenHelper
                             }
                         }
                     }
-                    if (match != 0 || item.name == "" || item.name == "product")
+                    if (match != 0 || item.Name.Equals("") || item.Name.Equals("product"))
                     {
                         presetResultSorter.Add(match);
-                        presetResult.Add(ContentManager.PresetIcons[name]);
+                        IconLayout iconLayout = ContentManager.PresetIcons[name];
+                        presetResult.Add(iconLayout);
                         ContentManager.PresetIcons[name].OnClickIconAction += (button) =>
                         {
-                            toggleIconSelect(button, partialPresetSelectGrid); var _name = name;
-                            item.icon = ContentManager.PresetIcons[_name].GetImageSource();
+                            toggleIconSelect(button, presetSelectGrid); var _name = name;
+                            item.Icon = ContentManager.PresetIcons[_name].GetImageSource();
                         };
                         match = 0;
                     }
                 }
-                toggleIconSelect(null, partialPresetSelectGrid);
+                toggleIconSelect(null, presetSelectGrid);
                 ListSorter.SortToListAscending(presetResultSorter, presetResult);
-                GridManager.ConstrainGrid(presetResult, 0, 5, partialPresetSelectGrid, null);
+                GridManager.AddGridItem(presetSelectGrid, presetResult, true, GridOrganizer.OrganizeMode.VerticalLeft);
+                Console.WriteLine("AddView 177 preset children " + presetSelectGrid.Children.Count + " preset column count " + presetSelectGrid.ColumnDefinitions.Count);
             }
 
             async void autoDetectExpiration(string name)
@@ -236,7 +231,6 @@ namespace ZestyKitchenHelper
                 selectorIndex = 0;
                 nameInput.Text = "product";
                 defaultSelectGrid.IsVisible = false;
-                partialPresetSelectGrid.IsVisible = false;
                 foreach (var button in imageSelector)
                 {
                     button.BackgroundColor = Color.Wheat;
@@ -256,45 +250,20 @@ namespace ZestyKitchenHelper
             imageSelector.Add(iconSelect1);
             imageSelector.Add(iconSelect2);
 
-            expirationGrid.Children.Add(dateMonth, 0, 0);
-            expirationGrid.Children.Add(dateDay, 1, 0);
-            expirationGrid.Children.Add(dateYear, 2, 0);
-            iconGrid.Children.Add(iconSelect1, 0, 0);
-            iconGrid.Children.Add(iconSelect2, 0, 1);
-            iconGrid.Children.Add(iconLabel1, 1, 0);
-            iconGrid.Children.Add(iconLabel2, 1, 1);
-            Grid.SetRowSpan(partialPresetSelectGrid, 3);
-            Grid.SetRowSpan(partialDefaultSelectGrid, 3);
             form.Children.Add(nameLabel, 0, 0);
             form.Children.Add(nameInput, 1, 0);
             form.Children.Add(dateLabel, 0, 1);
-            form.Children.Add(expirationGrid, 1, 1);
+            form.Children.Add(expStackLayout, 1, 1);
             form.Children.Add(amountLabel, 0, 2);
             form.Children.Add(amountInput, 1, 2);
-            form.Children.Add(iconLabel, 0, 3);
-            form.Children.Add(iconGrid, 0, 4);
-            form.Children.Add(pageToolGrid, 1, 3);
-            form.Children.Add(partialPresetSelectGrid, 1, 4);
-            form.Children.Add(partialDefaultSelectGrid, 1, 4);
+            form.Children.Add(iconScrollView, 1, 3);
+            form.Children.Add(iconStackLayout, 0, 3);
+            Grid.SetRowSpan(iconScrollView, 2);
+            Grid.SetRowSpan(iconStackLayout, 2);
 
-
-            Grid numPadGrid = new Grid()
-            {
-                RowSpacing = 0,
-                ColumnSpacing = 0,
-                RowDefinitions =
-                {
-                    new RowDefinition(),
-                    new RowDefinition(),
-                    new RowDefinition(),
-                },
-                ColumnDefinitions =
-                {
-                    new ColumnDefinition(),
-                    new ColumnDefinition(),
-                    new ColumnDefinition()
-                }
-            };
+            Grid numPadGrid = GridManager.InitializeGrid(4, 3, GridLength.Star, GridLength.Star);
+            numPadGrid.RowSpacing = numpad_spacing;
+            numPadGrid.ColumnSpacing = numpad_spacing;
 
             void setItem(int newText, int index)
             {
@@ -303,7 +272,7 @@ namespace ZestyKitchenHelper
                     case 0: item.expMonth = newText; break;
                     case 1: item.expDay = newText; break;
                     case 2: item.expYear = newText; break;
-                    case 3: item.amount = newText; break;
+                    case 3: item.Amount = newText; break;
                 }
             }
             void changeText(string addedText)
@@ -357,47 +326,52 @@ namespace ZestyKitchenHelper
             List<View> numPadList = new List<View>();
             for (int i = 1; i < 10; i++)
             {
-                var button = new Button() { Text = i.ToString(), TextColor = Color.Black, Margin = new Thickness(0), BackgroundColor = Color.Gray };
+                var button = new Button() { Text = i.ToString(), TextColor = Color.Black, Margin = new Thickness(0), BackgroundColor = numpadBackground, FontSize = numpad_font_size };
                 int index = i;
                 button.Clicked += (obj, arg) => changeText(index.ToString());
                 numPadList.Add(button);
             }
 
-            var nextButton = new Button() { IsVisible = false, BackgroundColor = Color.Transparent, };
-            var zeroButton = new Button() { Text = "0"};
+            var numpadBottomLeftEmptyBuffer = new Button() { IsVisible = false };
+            var zeroButton = new Button() { Text = "0", TextColor = Color.Black, FontSize = numpad_font_size, BackgroundColor = numpadBackground };
             zeroButton.Clicked += (obj, arg) => changeText("0");
-            var deleteButton = new Button() { IsVisible = false, BackgroundColor = Color.Transparent, };
 
-            numPadList.Add(nextButton);
+            numPadList.Add(numpadBottomLeftEmptyBuffer);
             numPadList.Add(zeroButton);
-            numPadList.Add(deleteButton);
-            
+
             numPadGrid.OrganizeGrid(numPadList, GridOrganizer.OrganizeMode.HorizontalLeft);
 
-            var saveButton = new Button() { Text = "Done", BackgroundColor = Color.Blue, TextColor = Color.Black };
+            var scanButton = new Button() { Text = "Scan", TextColor = Color.Black, FontAttributes = FontAttributes.Bold };
+            var exitButton = new Button() { Text = "Exit", BackgroundColor = Color.Blue, TextColor = Color.Black };
             var newFormButton = new Button() { BackgroundColor = Color.ForestGreen, Text = "Add" };
 
-            AbsoluteLayout layout = new AbsoluteLayout()
+            AbsoluteLayout manualEditLayout = new AbsoluteLayout()
             {
-                HorizontalOptions = LayoutOptions.Center,
-                HeightRequest = Application.Current.MainPage.Height,
-                WidthRequest = Application.Current.MainPage.Width,
                 IsVisible = false,
+                HorizontalOptions = LayoutOptions.Center,
+                WidthRequest = 500,
                 Children =
                 {
                     foregroundTint,
                     form,
                     autoDetectLabel,
                     numPadGrid,
+                    scanButton,
                     newFormButton,
-                    saveButton
+                    exitButton
                 }
             };
-           
+
+            BarcodeScannerPage scannerPage = new BarcodeScannerPage(() => { ContentManager.pageController.Content = manualEditLayout; });
+            scanButton.Clicked += (o, a) => 
+            {
+                ContentManager.pageController.Content = scannerPage.Content;
+                scannerPage.StartScanning();
+            };
             async void OnNewItemAdded(object obj, EventArgs args)
             {
-                var animatedImage = new Image() { Source = item.icon.Substring(6), WidthRequest = 50, HeightRequest = 50, Aspect = Aspect.Fill };
-                layout.Children.Add(animatedImage);
+                var animatedImage = new Image() { Source = item.Icon.Substring(6), WidthRequest = 50, HeightRequest = 50, Aspect = Aspect.Fill };
+                manualEditLayout.Children.Add(animatedImage);
                 AbsoluteLayout.SetLayoutBounds(animatedImage, AbsoluteLayout.GetLayoutBounds(newFormButton));
                 AbsoluteLayout.SetLayoutFlags(animatedImage, AbsoluteLayoutFlags.All);
                 await animatedImage.QuadraticFlight(15, 75, -80, 30, (v) => { animatedImage.TranslationX = -v.X; animatedImage.TranslationY = -v.Y; }, 1500, easing: Easing.Linear);
@@ -407,44 +381,43 @@ namespace ZestyKitchenHelper
             newFormButton.Clicked += (obj, args) => 
             {  item.SetDaysUntilExpiration(); newItem.Add(item); baseUnplacedEvent?.Invoke(item); localUnplacedEvent?.Invoke(item);  resetForm(); };
 
+            AbsoluteLayout.SetLayoutBounds(foregroundTint, new Rectangle(0, 0, 1, 1));
+            AbsoluteLayout.SetLayoutFlags(foregroundTint, AbsoluteLayoutFlags.All);
             AbsoluteLayout.SetLayoutBounds(autoDetectLabel, new Rectangle(0, 0, 1, .06));
             AbsoluteLayout.SetLayoutFlags(autoDetectLabel, AbsoluteLayoutFlags.All);
-            AbsoluteLayout.SetLayoutBounds(form, new Rectangle(.5, .1, .9, .4));
+            AbsoluteLayout.SetLayoutBounds(form, new Rectangle(0, 0, 1, form_height_proportional));
             AbsoluteLayout.SetLayoutFlags(form, AbsoluteLayoutFlags.All);
-            AbsoluteLayout.SetLayoutBounds(numPadGrid, new Rectangle(.5, .95, .9, .5));
+            AbsoluteLayout.SetLayoutBounds(numPadGrid, new Rectangle(.5, .6, 1, numpad_height_proportional));
             AbsoluteLayout.SetLayoutFlags(numPadGrid, AbsoluteLayoutFlags.All);
-            AbsoluteLayout.SetLayoutBounds(newFormButton, new Rectangle(.5, .9, .6, .06));
+            AbsoluteLayout.SetLayoutBounds(scanButton, new Rectangle(.5, .88, .5, .08));
+            AbsoluteLayout.SetLayoutFlags(scanButton, AbsoluteLayoutFlags.All);
+            AbsoluteLayout.SetLayoutBounds(newFormButton, new Rectangle(.25, .95, .25, .06));
             AbsoluteLayout.SetLayoutFlags(newFormButton, AbsoluteLayoutFlags.All);
-            AbsoluteLayout.SetLayoutBounds(saveButton, new Rectangle(.5, .97, .6, .06));
-            AbsoluteLayout.SetLayoutFlags(saveButton, AbsoluteLayoutFlags.All);
+            AbsoluteLayout.SetLayoutBounds(exitButton, new Rectangle(.75, .95, .25, .06));
+            AbsoluteLayout.SetLayoutFlags(exitButton, AbsoluteLayoutFlags.All);
 
-            saveButton.Clicked += (obj, args) =>
+            exitButton.Clicked += (obj, args) =>
             {
                 List<ItemLayout> newItemLayouts = new List<ItemLayout>();
                 List<ItemLayout> newItemLayoutsCopy = new List<ItemLayout>();
                 List<ItemLayout> newItemLayoutsCopy2 = new List<ItemLayout>();
 
-                SaveInput(item, newItemLayouts, newItemLayoutsCopy, newItemLayoutsCopy2);
+                SaveInput(newItemLayouts, newItemLayoutsCopy, newItemLayoutsCopy2);
 
                 if (partialUnplacedGrid != null)
                     GridManager.AddGridItem(partialUnplacedGrid, newItemLayoutsCopy2, false);
 
-                baseUnplacedEvent?.Invoke(item);
-                localUnplacedEvent?.Invoke(item);
                 resetForm();
                 newItem.Clear();
-                layout.IsVisible = false;
+                manualEditLayout.IsVisible = false;
             };
 
-            return layout;
+            return manualEditLayout;
         }
  
         // First copy for unplacedGrid, second for metaGrid, third is optional for partial grid
-        private static void SaveInput(Item item, List<ItemLayout> newItemLayouts, List<ItemLayout> newItemLayoutsCopy, List<ItemLayout> newItemLayoutsCopy2 = null)
-        {
-            item.SetDaysUntilExpiration();
-            newItem.Add(item);
-
+        private static void SaveInput(List<ItemLayout> newItemLayouts, List<ItemLayout> newItemLayoutsCopy, List<ItemLayout> newItemLayoutsCopy2 = null)
+        { 
             foreach (Item _item in newItem)
             {
                 ItemLayout itemLayout = new ItemLayout(100,100, _item)
@@ -476,8 +449,8 @@ namespace ZestyKitchenHelper
             }
 
 
-            GridManager.AddGridItem(GridManager.GetGrid(ContentManager.unplacedGridName), newItemLayouts, false);
-            GridManager.AddGridItem(GridManager.GetGrid(ContentManager.metaGridName), newItemLayoutsCopy,  false);
+            GridManager.AddGridItem(GridManager.GetGrid(ContentManager.metaGridName), newItemLayouts, false);
+            GridManager.AddGridItem(GridManager.GetGrid(ContentManager.unplacedGridName), newItemLayoutsCopy,  false);
             Console.WriteLine("AddView 471 unplaced grid children count " + GridManager.GetGrid(ContentManager.unplacedGridName).Children.Count);
         }
     }

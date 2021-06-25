@@ -42,6 +42,7 @@ namespace ZestyKitchenHelper
             if (!isInitialized && !hasMappings)
             {
                 Console.WriteLine("LocalStorage 44 : new table created !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                ContentManager.isUserNew = true;
                 await SQLDatabase.CreateTableAsync(typeof(Item), CreateFlags.None).ConfigureAwait(false);
                 await SQLDatabase.CreateTableAsync(typeof(StorageCell), CreateFlags.None).ConfigureAwait(false);
                 await SQLDatabase.CreateTableAsync(typeof(Cabinet), CreateFlags.None).ConfigureAwait(false);

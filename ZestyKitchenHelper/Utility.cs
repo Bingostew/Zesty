@@ -71,60 +71,15 @@ namespace Utility
                 idBase[groupName].Add(id);
         }
     }
-
-    #region Equality Comparers
-    public class ItemEqualityComparer : IEqualityComparer<Item>
+    
+    public class BarcodeItem
     {
-        public bool Equals(Item item1, Item item2)
+        public ScannedItems[] items;
+        public class ScannedItems
         {
-            return (item1.ID == item2.ID) || (item1 == null && item2 == null);
-        }
-
-        public int GetHashCode(Item item)
-        {
-            return item.ID;
+            public string title;
         }
     }
-
-    public class CabinetEqualityComparer : IEqualityComparer<Cabinet>
-    {
-        public bool Equals(Cabinet storage1, Cabinet storage2)
-        {
-            return (storage1.ID == storage2.ID) || (storage1 == null && storage2 == null);
-        }
-
-        public int GetHashCode(Cabinet storage)
-        {
-            return storage.ID;
-        }
-    }
-
-    public class FridgeEqualityComparer : IEqualityComparer<Fridge>
-    {
-        public bool Equals(Fridge storage1, Fridge storage2)
-        { 
-            return (storage1.ID == storage2.ID) || (storage1 == null && storage2 == null);
-        }
-
-        public int GetHashCode(Fridge storage)
-        {
-            return storage.ID;
-        }
-    }
-
-    public class StorageCellEqualityComparer : IEqualityComparer<StorageCell>
-    {
-        public bool Equals(StorageCell cell1, StorageCell cell2)
-        {
-            return (cell1.MetaID == cell2.MetaID) || (cell1 == null && cell2 == null);
-        }
-
-        public int GetHashCode(StorageCell cell)
-        {
-            return cell.MetaID;
-        }
-    }
-    #endregion
 
     [Table("Item")]
     public class Item
@@ -548,7 +503,6 @@ namespace Utility
             int FindMinimum(int start)
             {
                 int minIndex = start;
-                T min = sorter[start];
                 for(int x = start + 1; x < sorter.Count; x++)
                 {
                     if(sorter[minIndex].CompareTo(sorter[x]) >= 0)
@@ -690,11 +644,13 @@ namespace Utility
                 if (gridPair.Y > rowCount - 1)
                 {
                     //var height = grid.RowDefinitions.Count > 0 ? grid.RowDefinitions[0].Height : grid.Height;
-                    grid.RowDefinitions.Add(new RowDefinition() {  });
+                    grid.RowDefinitions.Add(new RowDefinition() { Height = grid.RowDefinitions.First().Height });
+                    rowCount++;
                 }
                 if (gridPair.X > columnCount - 1)
                 {
-                    grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Star });
+                    grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = grid.ColumnDefinitions.First().Width });
+                    columnCount++;
                 }
 
                 grid.Children.Add(items.ElementAt(i) as View, gridPair.X, gridPair.Y);
@@ -731,10 +687,12 @@ namespace Utility
                 if (gridPair.Y > rowCount - 1)
                 {
                     grid.RowDefinitions.Add(new RowDefinition() { Height = grid.RowDefinitions[0].Height });
+                    rowCount++;
                 }
                 if (gridPair.X > columnCount - 1)
                 {
                     grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = grid.ColumnDefinitions[0].Width });
+                    columnCount++;
                 }
                 foreach (View view in items[i])
                 {

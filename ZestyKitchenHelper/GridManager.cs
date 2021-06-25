@@ -33,6 +33,7 @@ namespace ZestyKitchenHelper
 
             // initialize grid with rows and columns parameter
             Grid grid = new Grid();
+
             for (int i = 0; i < rows; i++)
             {
                 grid.RowDefinitions.Add(new RowDefinition() { Height = gridHeight });
@@ -83,7 +84,7 @@ namespace ZestyKitchenHelper
         /// <param name="grid"></param>
         /// <param name="item">List of children</param>
         /// <param name="replaceExisting">Whether to clear the grid children first</param>
-        public static void AddGridItem(Grid grid, IEnumerable<View> item, bool replaceExisting) 
+        public static void AddGridItem(Grid grid, IEnumerable<View> item, bool replaceExisting, GridOrganizer.OrganizeMode organizeMode= GridOrganizer.OrganizeMode.HorizontalLeft) 
         {
             // If replacing existing children, then does not retrive child list
             List<View> gridChildren; 
@@ -109,12 +110,12 @@ namespace ZestyKitchenHelper
                 gridChildren = gridChildren.GetRange(0, constraintBase[grid]);
                 Console.WriteLine("GridManager 57: " + constraintBase[grid] + " " + grid.Children.Count + " "+ gridChildren.Count);
             }
-            grid.OrganizeGrid(gridChildren, GridOrganizer.OrganizeMode.HorizontalLeft);
+            grid.OrganizeGrid(gridChildren, organizeMode);
         }
 
-        public static void AddGridItem(string name, IEnumerable<View> item, bool replaceExisting)
+        public static void AddGridItem(string name, IEnumerable<View> item, bool replaceExisting, GridOrganizer.OrganizeMode organizeMode = GridOrganizer.OrganizeMode.HorizontalLeft)
         {
-            AddGridItem(gridDataBase[name], item, replaceExisting);
+            AddGridItem(gridDataBase[name], item, replaceExisting, organizeMode);
         }
 
         public static void RemoveGridItem<T>(Grid grid, T item) where T : View

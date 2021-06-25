@@ -55,6 +55,8 @@ namespace ZestyKitchenHelper
         public static Dictionary<string, Fridge> FridgeMetaBase = new Dictionary<string, Fridge>();
         public static async void InitializeApp()
         {
+
+
             // Initialize ID Groups
             IDGenerator.InitializeIDGroup(itemStorageIdGenerator);
             IDGenerator.InitializeIDGroup(cabinetEditIdGenerator);
@@ -67,52 +69,57 @@ namespace ZestyKitchenHelper
             GridManager.InitializeGrid(metaGridName, 9, 4, GridLength.Auto, GridLength.Star);
             GridManager.InitializeGrid(unplacedGridName, 0, 4, GridLength.Star, GridLength.Star);
 
+
             // Load saved data
-            List<Cabinet> localCabinets = await LocalStorageController.GetTableListAsync<Cabinet>();
-            List<Fridge> localFridges = await LocalStorageController.GetTableListAsync<Fridge>();
-            List<StorageCell> localStorageCells = await LocalStorageController.GetTableListAsync<StorageCell>();
-            List<Item> localItems = await LocalStorageController.GetTableListAsync<Item>();
-            List<Cabinet> baseCabinets = new List<Cabinet>();
-            List<Fridge> baseFridges = new List<Fridge>();
-            List<StorageCell> baseStorageCells = new List<StorageCell>();
-            List<Item> baseItems = new List<Item>();
-            if (sessionUserProfile != null && !isUserNew)
+            if (!isUserNew)
             {
-                // Populating list with firebase data 
-                baseCabinets = (await FireBaseController.GetCabinets()).ToList().ConvertAll(o => o.Object);
-                baseFridges = (await FireBaseController.GetFridges()).ToList().ConvertAll(o => o.Object);
-                baseItems = (await FireBaseController.GetItems()).ToList().ConvertAll(o => o.Object);
-                baseStorageCells = (await FireBaseController.GetStorageCells()).ToList().ConvertAll(o => o.Object);
+                List<Cabinet> localCabinets = await LocalStorageController.GetTableListAsync<Cabinet>();
+                List<Fridge> localFridges = await LocalStorageController.GetTableListAsync<Fridge>();
+                List<StorageCell> localStorageCells = await LocalStorageController.GetTableListAsync<StorageCell>();
+                List<Item> localItems = await LocalStorageController.GetTableListAsync<Item>();
+                List<Cabinet> baseCabinets = new List<Cabinet>();
+                List<Fridge> baseFridges = new List<Fridge>();
+                List<StorageCell> baseStorageCells = new List<StorageCell>();
+                List<Item> baseItems = new List<Item>();
 
-                // Load with cloud data
-                ContentLoader.LoadItems(baseItems);
-                ContentLoader.LoadCabinets(baseCabinets, baseStorageCells, baseItems);
-                ContentLoader.LoadFridges(baseFridges, baseStorageCells, baseItems);
-            }
-            else
-            {
-                // Load with local data
-                ContentLoader.LoadItems(localItems);
-                ContentLoader.LoadCabinets(localCabinets, localStorageCells, localItems);
-                ContentLoader.LoadFridges(localFridges, localStorageCells, localItems);
-            }
+                if (sessionUserProfile != null)
+                {
+                    // Populating list with firebase data 
+                    baseCabinets = (await FireBaseController.GetCabinets()).ToList().ConvertAll(o => o.Object);
+                    baseFridges = (await FireBaseController.GetFridges()).ToList().ConvertAll(o => o.Object);
+                    baseItems = (await FireBaseController.GetItems()).ToList().ConvertAll(o => o.Object);
+                    baseStorageCells = (await FireBaseController.GetStorageCells()).ToList().ConvertAll(o => o.Object);
 
-            if (sessionUserProfile != null)
-            {
-                // Updating local data with firebase data
-                // -----Logic: In a firebase list, select all item that does not exist in the local list. 
-                // -----Hence check for ID similarities in both list, if the given item ID in firebase does not match any item ID in local list, add to listDiff
-                List<Item> itemListDiff = baseItems.Where(i => !localItems.Any(j => i.ID == j.ID)).ToList();
-                List<Cabinet> cabinetListDiff = baseCabinets.Where(i => !localCabinets.Any(j => i.ID == j.ID)).ToList();
-                List<Fridge> fridgeListDiff = baseFridges.Where(i => !localFridges.Any(j => i.ID == j.ID)).ToList();
-               // List<StorageCell> storageCellListDiff = baseStorageCells.Where(i => !localStorageCells.Any(j => i.MetaID == j.MetaID)).ToList();
+                    // Load with cloud data
+                    ContentLoader.LoadItems(baseItems);
+                    ContentLoader.LoadCabinets(baseCabinets, baseStorageCells, baseItems);
+                    ContentLoader.LoadFridges(baseFridges, baseStorageCells, baseItems);
+                }
+                else
+                {
+                    // Load with local data
+                    ContentLoader.LoadItems(localItems);
+                    ContentLoader.LoadCabinets(localCabinets, localStorageCells, localItems);
+                    ContentLoader.LoadFridges(localFridges, localStorageCells, localItems);
+                }
 
-                //actually updating local list.
-                cabinetListDiff.ForEach(c => LocalStorageController.AddCabinet(c.Name));
-                fridgeListDiff.ForEach(f => LocalStorageController.AddFridge(f.Name));
-                itemListDiff.ForEach(i => LocalStorageController.AddItem(i));
+                if (sessionUserProfile != null)
+                {
+                    // Updating local data with firebase data
+                    // -----Logic: In a firebase list, select all item that does not exist in the local list. 
+                    // -----Hence check for ID similarities in both list, if the given item ID in firebase does not match any item ID in local list, add to listDiff
+                    List<Item> itemListDiff = baseItems.Where(i => !localItems.Any(j => i.ID == j.ID)).ToList();
+                    List<Cabinet> cabinetListDiff = baseCabinets.Where(i => !localCabinets.Any(j => i.ID == j.ID)).ToList();
+                    List<Fridge> fridgeListDiff = baseFridges.Where(i => !localFridges.Any(j => i.ID == j.ID)).ToList();
+                    // List<StorageCell> storageCellListDiff = baseStorageCells.Where(i => !localStorageCells.Any(j => i.MetaID == j.MetaID)).ToList();
 
-                baseItems.ForEach(i => LocalStorageController.UpdateItem(i));
+                    //actually updating local list.
+                    cabinetListDiff.ForEach(c => LocalStorageController.AddCabinet(c.Name));
+                    fridgeListDiff.ForEach(f => LocalStorageController.AddFridge(f.Name));
+                    itemListDiff.ForEach(i => LocalStorageController.AddItem(i));
+
+                    baseItems.ForEach(i => LocalStorageController.UpdateItem(i));
+                }
             }
         }
         /// <summary>

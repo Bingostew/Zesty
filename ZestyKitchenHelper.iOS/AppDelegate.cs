@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Auth0.OidcClient;
 using Xamarin.Forms.Platform.iOS;
 using CoreGraphics;
 
 
 using Foundation;
 using UIKit;
+using System.Threading.Tasks;
 
 namespace ZestyKitchenHelper.iOS
 {
@@ -16,6 +18,8 @@ namespace ZestyKitchenHelper.iOS
     [Register("AppDelegate")]
     public partial class AppDelegate : global::Xamarin.Forms.Platform.iOS.FormsApplicationDelegate
     {
+        private Auth0Client client;
+        private UserProfile userProfile;
         public static UIView ConvertFormsToNative(Xamarin.Forms.VisualElement view, CGRect size)
         {
             var renderer = Platform.CreateRenderer(view);
@@ -47,12 +51,71 @@ namespace ZestyKitchenHelper.iOS
         //
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
-            global::Xamarin.Forms.Forms.Init();
-            LoadApplication(new App());
 
-            UIApplication.SharedApplication.StatusBarHidden = false;
-            
+            global::Xamarin.Forms.Forms.Init();
+            global::ZXing.Net.Mobile.Forms.iOS.Platform.Init();
+            LoadApplication(new App());
+            ContentManager.InitializeApp();
+
+            client = new Auth0Client(new Auth0ClientOptions()
+            {
+                Domain = "dev-4l7acohw.auth0.com",
+                ClientId = "Srn3fq8ccb7dnBmskN5VNGG2A4A0XKz4"
+            });
+
+            UIApplication.SharedApplication.StatusBarHidden = true;
+
             return base.FinishedLaunching(app, options);
+        }
+
+        public override UIWindow Window
+        {
+            get;set;
+        }
+
+        public override bool OpenUrl(UIApplication app, NSUrl url, NSDictionary options)
+        {
+            ActivityMediator.Instance.Send(url.AbsoluteString);
+            return true;
+        }
+
+        private async Task LoginAsync()
+        {
+            var loginResult = await client.LoginAsync();
+
+            if (!loginResult.IsError)
+            {
+                var name = loginResult.User.FindFirst(c => c.Type == "name")?.Value;
+                var email = loginResult.User.FindFirst(c => c.Type == "email")?.Value;
+                var image = loginResult.User.FindFirst(c => c.Type == "picture")?.Value;
+
+                userProfile = new UserProfile()
+                {
+                    Email = email,
+                    Name = name,
+                };
+
+
+                if (!await FireBaseController.HasUser(email))
+                {
+                    ContentManager.isUserNew = true;
+                    await FireBaseController.AddUser(name, email);
+                }
+
+                //  var serializedLoginResponse = JsonConvert.SerializeObject(userProfile);
+                ContentManager.sessionUserProfile = userProfile;
+                Console.WriteLine("REEEEE");
+
+            }
+            else
+            {
+                Console.WriteLine("Failure");
+            }
+        }
+       
+        public async Task<IdentityModel.OidcClient.Browser.BrowserResultType> LogoutAsync()
+        {
+            return await client.LogoutAsync();
         }
         /*
         public void GotoUnplacedPage(object obj, EventArgs args)

@@ -25,105 +25,6 @@ namespace ZestyKitchenHelper.Droid
 		
 		public static void UpdateIdValues()
 		{
-			global::Auth0.OidcClient.Resource.Attribute.font = global::ZestyKitchenHelper.Droid.Resource.Attribute.font;
-			global::Auth0.OidcClient.Resource.Attribute.fontProviderAuthority = global::ZestyKitchenHelper.Droid.Resource.Attribute.fontProviderAuthority;
-			global::Auth0.OidcClient.Resource.Attribute.fontProviderCerts = global::ZestyKitchenHelper.Droid.Resource.Attribute.fontProviderCerts;
-			global::Auth0.OidcClient.Resource.Attribute.fontProviderFetchStrategy = global::ZestyKitchenHelper.Droid.Resource.Attribute.fontProviderFetchStrategy;
-			global::Auth0.OidcClient.Resource.Attribute.fontProviderFetchTimeout = global::ZestyKitchenHelper.Droid.Resource.Attribute.fontProviderFetchTimeout;
-			global::Auth0.OidcClient.Resource.Attribute.fontProviderPackage = global::ZestyKitchenHelper.Droid.Resource.Attribute.fontProviderPackage;
-			global::Auth0.OidcClient.Resource.Attribute.fontProviderQuery = global::ZestyKitchenHelper.Droid.Resource.Attribute.fontProviderQuery;
-			global::Auth0.OidcClient.Resource.Attribute.fontStyle = global::ZestyKitchenHelper.Droid.Resource.Attribute.fontStyle;
-			global::Auth0.OidcClient.Resource.Attribute.fontWeight = global::ZestyKitchenHelper.Droid.Resource.Attribute.fontWeight;
-			global::Auth0.OidcClient.Resource.Boolean.abc_action_bar_embed_tabs = global::ZestyKitchenHelper.Droid.Resource.Boolean.abc_action_bar_embed_tabs;
-			global::Auth0.OidcClient.Resource.Color.notification_action_color_filter = global::ZestyKitchenHelper.Droid.Resource.Color.notification_action_color_filter;
-			global::Auth0.OidcClient.Resource.Color.notification_icon_bg_color = global::ZestyKitchenHelper.Droid.Resource.Color.notification_icon_bg_color;
-			global::Auth0.OidcClient.Resource.Color.ripple_material_light = global::ZestyKitchenHelper.Droid.Resource.Color.ripple_material_light;
-			global::Auth0.OidcClient.Resource.Color.secondary_text_default_material_light = global::ZestyKitchenHelper.Droid.Resource.Color.secondary_text_default_material_light;
-			global::Auth0.OidcClient.Resource.Dimension.compat_button_inset_horizontal_material = global::ZestyKitchenHelper.Droid.Resource.Dimension.compat_button_inset_horizontal_material;
-			global::Auth0.OidcClient.Resource.Dimension.compat_button_inset_vertical_material = global::ZestyKitchenHelper.Droid.Resource.Dimension.compat_button_inset_vertical_material;
-			global::Auth0.OidcClient.Resource.Dimension.compat_button_padding_horizontal_material = global::ZestyKitchenHelper.Droid.Resource.Dimension.compat_button_padding_horizontal_material;
-			global::Auth0.OidcClient.Resource.Dimension.compat_button_padding_vertical_material = global::ZestyKitchenHelper.Droid.Resource.Dimension.compat_button_padding_vertical_material;
-			global::Auth0.OidcClient.Resource.Dimension.compat_control_corner_material = global::ZestyKitchenHelper.Droid.Resource.Dimension.compat_control_corner_material;
-			global::Auth0.OidcClient.Resource.Dimension.notification_action_icon_size = global::ZestyKitchenHelper.Droid.Resource.Dimension.notification_action_icon_size;
-			global::Auth0.OidcClient.Resource.Dimension.notification_action_text_size = global::ZestyKitchenHelper.Droid.Resource.Dimension.notification_action_text_size;
-			global::Auth0.OidcClient.Resource.Dimension.notification_big_circle_margin = global::ZestyKitchenHelper.Droid.Resource.Dimension.notification_big_circle_margin;
-			global::Auth0.OidcClient.Resource.Dimension.notification_content_margin_start = global::ZestyKitchenHelper.Droid.Resource.Dimension.notification_content_margin_start;
-			global::Auth0.OidcClient.Resource.Dimension.notification_large_icon_height = global::ZestyKitchenHelper.Droid.Resource.Dimension.notification_large_icon_height;
-			global::Auth0.OidcClient.Resource.Dimension.notification_large_icon_width = global::ZestyKitchenHelper.Droid.Resource.Dimension.notification_large_icon_width;
-			global::Auth0.OidcClient.Resource.Dimension.notification_main_column_padding_top = global::ZestyKitchenHelper.Droid.Resource.Dimension.notification_main_column_padding_top;
-			global::Auth0.OidcClient.Resource.Dimension.notification_media_narrow_margin = global::ZestyKitchenHelper.Droid.Resource.Dimension.notification_media_narrow_margin;
-			global::Auth0.OidcClient.Resource.Dimension.notification_right_icon_size = global::ZestyKitchenHelper.Droid.Resource.Dimension.notification_right_icon_size;
-			global::Auth0.OidcClient.Resource.Dimension.notification_right_side_padding_top = global::ZestyKitchenHelper.Droid.Resource.Dimension.notification_right_side_padding_top;
-			global::Auth0.OidcClient.Resource.Dimension.notification_small_icon_background_padding = global::ZestyKitchenHelper.Droid.Resource.Dimension.notification_small_icon_background_padding;
-			global::Auth0.OidcClient.Resource.Dimension.notification_small_icon_size_as_large = global::ZestyKitchenHelper.Droid.Resource.Dimension.notification_small_icon_size_as_large;
-			global::Auth0.OidcClient.Resource.Dimension.notification_subtext_size = global::ZestyKitchenHelper.Droid.Resource.Dimension.notification_subtext_size;
-			global::Auth0.OidcClient.Resource.Dimension.notification_top_pad = global::ZestyKitchenHelper.Droid.Resource.Dimension.notification_top_pad;
-			global::Auth0.OidcClient.Resource.Dimension.notification_top_pad_large_text = global::ZestyKitchenHelper.Droid.Resource.Dimension.notification_top_pad_large_text;
-			global::Auth0.OidcClient.Resource.Drawable.notification_action_background = global::ZestyKitchenHelper.Droid.Resource.Drawable.notification_action_background;
-			global::Auth0.OidcClient.Resource.Drawable.notification_bg = global::ZestyKitchenHelper.Droid.Resource.Drawable.notification_bg;
-			global::Auth0.OidcClient.Resource.Drawable.notification_bg_low = global::ZestyKitchenHelper.Droid.Resource.Drawable.notification_bg_low;
-			global::Auth0.OidcClient.Resource.Drawable.notification_bg_low_normal = global::ZestyKitchenHelper.Droid.Resource.Drawable.notification_bg_low_normal;
-			global::Auth0.OidcClient.Resource.Drawable.notification_bg_low_pressed = global::ZestyKitchenHelper.Droid.Resource.Drawable.notification_bg_low_pressed;
-			global::Auth0.OidcClient.Resource.Drawable.notification_bg_normal = global::ZestyKitchenHelper.Droid.Resource.Drawable.notification_bg_normal;
-			global::Auth0.OidcClient.Resource.Drawable.notification_bg_normal_pressed = global::ZestyKitchenHelper.Droid.Resource.Drawable.notification_bg_normal_pressed;
-			global::Auth0.OidcClient.Resource.Drawable.notification_icon_background = global::ZestyKitchenHelper.Droid.Resource.Drawable.notification_icon_background;
-			global::Auth0.OidcClient.Resource.Drawable.notification_template_icon_bg = global::ZestyKitchenHelper.Droid.Resource.Drawable.notification_template_icon_bg;
-			global::Auth0.OidcClient.Resource.Drawable.notification_template_icon_low_bg = global::ZestyKitchenHelper.Droid.Resource.Drawable.notification_template_icon_low_bg;
-			global::Auth0.OidcClient.Resource.Drawable.notification_tile_bg = global::ZestyKitchenHelper.Droid.Resource.Drawable.notification_tile_bg;
-			global::Auth0.OidcClient.Resource.Drawable.notify_panel_notification_icon_bg = global::ZestyKitchenHelper.Droid.Resource.Drawable.notify_panel_notification_icon_bg;
-			global::Auth0.OidcClient.Resource.Id.actions = global::ZestyKitchenHelper.Droid.Resource.Id.actions;
-			global::Auth0.OidcClient.Resource.Id.action_container = global::ZestyKitchenHelper.Droid.Resource.Id.action_container;
-			global::Auth0.OidcClient.Resource.Id.action_divider = global::ZestyKitchenHelper.Droid.Resource.Id.action_divider;
-			global::Auth0.OidcClient.Resource.Id.action_image = global::ZestyKitchenHelper.Droid.Resource.Id.action_image;
-			global::Auth0.OidcClient.Resource.Id.action_text = global::ZestyKitchenHelper.Droid.Resource.Id.action_text;
-			global::Auth0.OidcClient.Resource.Id.async = global::ZestyKitchenHelper.Droid.Resource.Id.async;
-			global::Auth0.OidcClient.Resource.Id.blocking = global::ZestyKitchenHelper.Droid.Resource.Id.blocking;
-			global::Auth0.OidcClient.Resource.Id.chronometer = global::ZestyKitchenHelper.Droid.Resource.Id.chronometer;
-			global::Auth0.OidcClient.Resource.Id.forever = global::ZestyKitchenHelper.Droid.Resource.Id.forever;
-			global::Auth0.OidcClient.Resource.Id.icon = global::ZestyKitchenHelper.Droid.Resource.Id.icon;
-			global::Auth0.OidcClient.Resource.Id.icon_group = global::ZestyKitchenHelper.Droid.Resource.Id.icon_group;
-			global::Auth0.OidcClient.Resource.Id.info = global::ZestyKitchenHelper.Droid.Resource.Id.info;
-			global::Auth0.OidcClient.Resource.Id.italic = global::ZestyKitchenHelper.Droid.Resource.Id.italic;
-			global::Auth0.OidcClient.Resource.Id.line1 = global::ZestyKitchenHelper.Droid.Resource.Id.line1;
-			global::Auth0.OidcClient.Resource.Id.line3 = global::ZestyKitchenHelper.Droid.Resource.Id.line3;
-			global::Auth0.OidcClient.Resource.Id.normal = global::ZestyKitchenHelper.Droid.Resource.Id.normal;
-			global::Auth0.OidcClient.Resource.Id.notification_background = global::ZestyKitchenHelper.Droid.Resource.Id.notification_background;
-			global::Auth0.OidcClient.Resource.Id.notification_main_column = global::ZestyKitchenHelper.Droid.Resource.Id.notification_main_column;
-			global::Auth0.OidcClient.Resource.Id.notification_main_column_container = global::ZestyKitchenHelper.Droid.Resource.Id.notification_main_column_container;
-			global::Auth0.OidcClient.Resource.Id.right_icon = global::ZestyKitchenHelper.Droid.Resource.Id.right_icon;
-			global::Auth0.OidcClient.Resource.Id.right_side = global::ZestyKitchenHelper.Droid.Resource.Id.right_side;
-			global::Auth0.OidcClient.Resource.Id.text = global::ZestyKitchenHelper.Droid.Resource.Id.text;
-			global::Auth0.OidcClient.Resource.Id.text2 = global::ZestyKitchenHelper.Droid.Resource.Id.text2;
-			global::Auth0.OidcClient.Resource.Id.time = global::ZestyKitchenHelper.Droid.Resource.Id.time;
-			global::Auth0.OidcClient.Resource.Id.title = global::ZestyKitchenHelper.Droid.Resource.Id.title;
-			global::Auth0.OidcClient.Resource.Integer.status_bar_notification_info_maxnum = global::ZestyKitchenHelper.Droid.Resource.Integer.status_bar_notification_info_maxnum;
-			global::Auth0.OidcClient.Resource.Layout.notification_action = global::ZestyKitchenHelper.Droid.Resource.Layout.notification_action;
-			global::Auth0.OidcClient.Resource.Layout.notification_action_tombstone = global::ZestyKitchenHelper.Droid.Resource.Layout.notification_action_tombstone;
-			global::Auth0.OidcClient.Resource.Layout.notification_template_custom_big = global::ZestyKitchenHelper.Droid.Resource.Layout.notification_template_custom_big;
-			global::Auth0.OidcClient.Resource.Layout.notification_template_icon_group = global::ZestyKitchenHelper.Droid.Resource.Layout.notification_template_icon_group;
-			global::Auth0.OidcClient.Resource.Layout.notification_template_part_chronometer = global::ZestyKitchenHelper.Droid.Resource.Layout.notification_template_part_chronometer;
-			global::Auth0.OidcClient.Resource.Layout.notification_template_part_time = global::ZestyKitchenHelper.Droid.Resource.Layout.notification_template_part_time;
-			global::Auth0.OidcClient.Resource.String.ApplicationName = global::ZestyKitchenHelper.Droid.Resource.String.ApplicationName;
-			global::Auth0.OidcClient.Resource.String.Hello = global::ZestyKitchenHelper.Droid.Resource.String.Hello;
-			global::Auth0.OidcClient.Resource.String.status_bar_notification_info_overflow = global::ZestyKitchenHelper.Droid.Resource.String.status_bar_notification_info_overflow;
-			global::Auth0.OidcClient.Resource.Style.TextAppearance_Compat_Notification = global::ZestyKitchenHelper.Droid.Resource.Style.TextAppearance_Compat_Notification;
-			global::Auth0.OidcClient.Resource.Style.TextAppearance_Compat_Notification_Info = global::ZestyKitchenHelper.Droid.Resource.Style.TextAppearance_Compat_Notification_Info;
-			global::Auth0.OidcClient.Resource.Style.TextAppearance_Compat_Notification_Line2 = global::ZestyKitchenHelper.Droid.Resource.Style.TextAppearance_Compat_Notification_Line2;
-			global::Auth0.OidcClient.Resource.Style.TextAppearance_Compat_Notification_Time = global::ZestyKitchenHelper.Droid.Resource.Style.TextAppearance_Compat_Notification_Time;
-			global::Auth0.OidcClient.Resource.Style.TextAppearance_Compat_Notification_Title = global::ZestyKitchenHelper.Droid.Resource.Style.TextAppearance_Compat_Notification_Title;
-			global::Auth0.OidcClient.Resource.Style.Widget_Compat_NotificationActionContainer = global::ZestyKitchenHelper.Droid.Resource.Style.Widget_Compat_NotificationActionContainer;
-			global::Auth0.OidcClient.Resource.Style.Widget_Compat_NotificationActionText = global::ZestyKitchenHelper.Droid.Resource.Style.Widget_Compat_NotificationActionText;
-			global::Auth0.OidcClient.Resource.Styleable.FontFamily = global::ZestyKitchenHelper.Droid.Resource.Styleable.FontFamily;
-			global::Auth0.OidcClient.Resource.Styleable.FontFamilyFont = global::ZestyKitchenHelper.Droid.Resource.Styleable.FontFamilyFont;
-			global::Auth0.OidcClient.Resource.Styleable.FontFamilyFont_font = global::ZestyKitchenHelper.Droid.Resource.Styleable.FontFamilyFont_font;
-			global::Auth0.OidcClient.Resource.Styleable.FontFamilyFont_fontStyle = global::ZestyKitchenHelper.Droid.Resource.Styleable.FontFamilyFont_fontStyle;
-			global::Auth0.OidcClient.Resource.Styleable.FontFamilyFont_fontWeight = global::ZestyKitchenHelper.Droid.Resource.Styleable.FontFamilyFont_fontWeight;
-			global::Auth0.OidcClient.Resource.Styleable.FontFamily_fontProviderAuthority = global::ZestyKitchenHelper.Droid.Resource.Styleable.FontFamily_fontProviderAuthority;
-			global::Auth0.OidcClient.Resource.Styleable.FontFamily_fontProviderCerts = global::ZestyKitchenHelper.Droid.Resource.Styleable.FontFamily_fontProviderCerts;
-			global::Auth0.OidcClient.Resource.Styleable.FontFamily_fontProviderFetchStrategy = global::ZestyKitchenHelper.Droid.Resource.Styleable.FontFamily_fontProviderFetchStrategy;
-			global::Auth0.OidcClient.Resource.Styleable.FontFamily_fontProviderFetchTimeout = global::ZestyKitchenHelper.Droid.Resource.Styleable.FontFamily_fontProviderFetchTimeout;
-			global::Auth0.OidcClient.Resource.Styleable.FontFamily_fontProviderPackage = global::ZestyKitchenHelper.Droid.Resource.Styleable.FontFamily_fontProviderPackage;
-			global::Auth0.OidcClient.Resource.Styleable.FontFamily_fontProviderQuery = global::ZestyKitchenHelper.Droid.Resource.Styleable.FontFamily_fontProviderQuery;
 			global::Xamarin.Essentials.Resource.Attribute.alpha = global::ZestyKitchenHelper.Droid.Resource.Attribute.alpha;
 			global::Xamarin.Essentials.Resource.Attribute.font = global::ZestyKitchenHelper.Droid.Resource.Attribute.font;
 			global::Xamarin.Essentials.Resource.Attribute.fontProviderAuthority = global::ZestyKitchenHelper.Droid.Resource.Attribute.fontProviderAuthority;
@@ -7564,6 +7465,9 @@ namespace ZestyKitchenHelper.Droid
 			global::Xamarin.Forms.Platform.Resource.Xml.standalone_badge_gravity_bottom_start = global::ZestyKitchenHelper.Droid.Resource.Xml.standalone_badge_gravity_bottom_start;
 			global::Xamarin.Forms.Platform.Resource.Xml.standalone_badge_gravity_top_start = global::ZestyKitchenHelper.Droid.Resource.Xml.standalone_badge_gravity_top_start;
 			global::Xamarin.Forms.Platform.Resource.Xml.standalone_badge_offset = global::ZestyKitchenHelper.Droid.Resource.Xml.standalone_badge_offset;
+			global::ZXing.Net.Mobile.Forms.Android.Resource.Layout.zxingscanneractivitylayout = global::ZestyKitchenHelper.Droid.Resource.Layout.zxingscanneractivitylayout;
+			global::ZXing.Net.Mobile.Forms.Android.Resource.Layout.zxingscannerfragmentlayout = global::ZestyKitchenHelper.Droid.Resource.Layout.zxingscannerfragmentlayout;
+			global::ZXing.Net.Mobile.Forms.Android.Resource.String.library_name = global::ZestyKitchenHelper.Droid.Resource.String.library_name;
 			global::ZXing.Mobile.Resource.Id.contentFrame = global::ZestyKitchenHelper.Droid.Resource.Id.contentFrame;
 			global::ZXing.Mobile.Resource.Layout.zxingscanneractivitylayout = global::ZestyKitchenHelper.Droid.Resource.Layout.zxingscanneractivitylayout;
 			global::ZXing.Mobile.Resource.Layout.zxingscannerfragmentlayout = global::ZestyKitchenHelper.Droid.Resource.Layout.zxingscannerfragmentlayout;
@@ -13558,281 +13462,278 @@ namespace ZestyKitchenHelper.Droid
 		public partial class String
 		{
 			
-			// aapt resource value: 0x7F0E0002
-			public const int abc_action_bar_home_description = 2131623938;
-			
-			// aapt resource value: 0x7F0E0003
-			public const int abc_action_bar_up_description = 2131623939;
-			
-			// aapt resource value: 0x7F0E0004
-			public const int abc_action_menu_overflow_description = 2131623940;
-			
-			// aapt resource value: 0x7F0E0005
-			public const int abc_action_mode_done = 2131623941;
-			
-			// aapt resource value: 0x7F0E0007
-			public const int abc_activitychooserview_choose_application = 2131623943;
-			
-			// aapt resource value: 0x7F0E0006
-			public const int abc_activity_chooser_view_see_all = 2131623942;
-			
-			// aapt resource value: 0x7F0E0008
-			public const int abc_capital_off = 2131623944;
-			
-			// aapt resource value: 0x7F0E0009
-			public const int abc_capital_on = 2131623945;
-			
-			// aapt resource value: 0x7F0E000A
-			public const int abc_menu_alt_shortcut_label = 2131623946;
-			
-			// aapt resource value: 0x7F0E000B
-			public const int abc_menu_ctrl_shortcut_label = 2131623947;
-			
-			// aapt resource value: 0x7F0E000C
-			public const int abc_menu_delete_shortcut_label = 2131623948;
-			
-			// aapt resource value: 0x7F0E000D
-			public const int abc_menu_enter_shortcut_label = 2131623949;
-			
-			// aapt resource value: 0x7F0E000E
-			public const int abc_menu_function_shortcut_label = 2131623950;
-			
-			// aapt resource value: 0x7F0E000F
-			public const int abc_menu_meta_shortcut_label = 2131623951;
-			
-			// aapt resource value: 0x7F0E0010
-			public const int abc_menu_shift_shortcut_label = 2131623952;
-			
-			// aapt resource value: 0x7F0E0011
-			public const int abc_menu_space_shortcut_label = 2131623953;
-			
-			// aapt resource value: 0x7F0E0012
-			public const int abc_menu_sym_shortcut_label = 2131623954;
-			
-			// aapt resource value: 0x7F0E0013
-			public const int abc_prepend_shortcut_label = 2131623955;
-			
-			// aapt resource value: 0x7F0E0015
-			public const int abc_searchview_description_clear = 2131623957;
-			
-			// aapt resource value: 0x7F0E0016
-			public const int abc_searchview_description_query = 2131623958;
-			
-			// aapt resource value: 0x7F0E0017
-			public const int abc_searchview_description_search = 2131623959;
-			
-			// aapt resource value: 0x7F0E0018
-			public const int abc_searchview_description_submit = 2131623960;
-			
-			// aapt resource value: 0x7F0E0019
-			public const int abc_searchview_description_voice = 2131623961;
-			
-			// aapt resource value: 0x7F0E0014
-			public const int abc_search_hint = 2131623956;
-			
-			// aapt resource value: 0x7F0E001A
-			public const int abc_shareactionprovider_share_with = 2131623962;
-			
-			// aapt resource value: 0x7F0E001B
-			public const int abc_shareactionprovider_share_with_application = 2131623963;
-			
-			// aapt resource value: 0x7F0E001C
-			public const int abc_toolbar_collapse_description = 2131623964;
-			
-			// aapt resource value: 0x7F0E001D
-			public const int appbar_scrolling_view_behavior = 2131623965;
-			
 			// aapt resource value: 0x7F0E0000
-			public const int ApplicationName = 2131623936;
-			
-			// aapt resource value: 0x7F0E001E
-			public const int bottom_sheet_behavior = 2131623966;
-			
-			// aapt resource value: 0x7F0E001F
-			public const int character_counter_content_description = 2131623967;
-			
-			// aapt resource value: 0x7F0E0020
-			public const int character_counter_overflowed_content_description = 2131623968;
-			
-			// aapt resource value: 0x7F0E0021
-			public const int character_counter_pattern = 2131623969;
-			
-			// aapt resource value: 0x7F0E0022
-			public const int chip_text = 2131623970;
-			
-			// aapt resource value: 0x7F0E0023
-			public const int clear_text_end_icon_content_description = 2131623971;
-			
-			// aapt resource value: 0x7F0E0024
-			public const int copy_toast_msg = 2131623972;
-			
-			// aapt resource value: 0x7F0E0025
-			public const int error_icon_content_description = 2131623973;
-			
-			// aapt resource value: 0x7F0E0026
-			public const int exposed_dropdown_menu_content_description = 2131623974;
-			
-			// aapt resource value: 0x7F0E0027
-			public const int fab_transformation_scrim_behavior = 2131623975;
-			
-			// aapt resource value: 0x7F0E0028
-			public const int fab_transformation_sheet_behavior = 2131623976;
-			
-			// aapt resource value: 0x7F0E0029
-			public const int fallback_menu_item_copy_link = 2131623977;
-			
-			// aapt resource value: 0x7F0E002A
-			public const int fallback_menu_item_open_in_browser = 2131623978;
-			
-			// aapt resource value: 0x7F0E002B
-			public const int fallback_menu_item_share_link = 2131623979;
+			public const int abc_action_bar_home_description = 2131623936;
 			
 			// aapt resource value: 0x7F0E0001
-			public const int Hello = 2131623937;
+			public const int abc_action_bar_up_description = 2131623937;
+			
+			// aapt resource value: 0x7F0E0002
+			public const int abc_action_menu_overflow_description = 2131623938;
+			
+			// aapt resource value: 0x7F0E0003
+			public const int abc_action_mode_done = 2131623939;
+			
+			// aapt resource value: 0x7F0E0005
+			public const int abc_activitychooserview_choose_application = 2131623941;
+			
+			// aapt resource value: 0x7F0E0004
+			public const int abc_activity_chooser_view_see_all = 2131623940;
+			
+			// aapt resource value: 0x7F0E0006
+			public const int abc_capital_off = 2131623942;
+			
+			// aapt resource value: 0x7F0E0007
+			public const int abc_capital_on = 2131623943;
+			
+			// aapt resource value: 0x7F0E0008
+			public const int abc_menu_alt_shortcut_label = 2131623944;
+			
+			// aapt resource value: 0x7F0E0009
+			public const int abc_menu_ctrl_shortcut_label = 2131623945;
+			
+			// aapt resource value: 0x7F0E000A
+			public const int abc_menu_delete_shortcut_label = 2131623946;
+			
+			// aapt resource value: 0x7F0E000B
+			public const int abc_menu_enter_shortcut_label = 2131623947;
+			
+			// aapt resource value: 0x7F0E000C
+			public const int abc_menu_function_shortcut_label = 2131623948;
+			
+			// aapt resource value: 0x7F0E000D
+			public const int abc_menu_meta_shortcut_label = 2131623949;
+			
+			// aapt resource value: 0x7F0E000E
+			public const int abc_menu_shift_shortcut_label = 2131623950;
+			
+			// aapt resource value: 0x7F0E000F
+			public const int abc_menu_space_shortcut_label = 2131623951;
+			
+			// aapt resource value: 0x7F0E0010
+			public const int abc_menu_sym_shortcut_label = 2131623952;
+			
+			// aapt resource value: 0x7F0E0011
+			public const int abc_prepend_shortcut_label = 2131623953;
+			
+			// aapt resource value: 0x7F0E0013
+			public const int abc_searchview_description_clear = 2131623955;
+			
+			// aapt resource value: 0x7F0E0014
+			public const int abc_searchview_description_query = 2131623956;
+			
+			// aapt resource value: 0x7F0E0015
+			public const int abc_searchview_description_search = 2131623957;
+			
+			// aapt resource value: 0x7F0E0016
+			public const int abc_searchview_description_submit = 2131623958;
+			
+			// aapt resource value: 0x7F0E0017
+			public const int abc_searchview_description_voice = 2131623959;
+			
+			// aapt resource value: 0x7F0E0012
+			public const int abc_search_hint = 2131623954;
+			
+			// aapt resource value: 0x7F0E0018
+			public const int abc_shareactionprovider_share_with = 2131623960;
+			
+			// aapt resource value: 0x7F0E0019
+			public const int abc_shareactionprovider_share_with_application = 2131623961;
+			
+			// aapt resource value: 0x7F0E001A
+			public const int abc_toolbar_collapse_description = 2131623962;
+			
+			// aapt resource value: 0x7F0E001B
+			public const int appbar_scrolling_view_behavior = 2131623963;
+			
+			// aapt resource value: 0x7F0E001C
+			public const int bottom_sheet_behavior = 2131623964;
+			
+			// aapt resource value: 0x7F0E001D
+			public const int character_counter_content_description = 2131623965;
+			
+			// aapt resource value: 0x7F0E001E
+			public const int character_counter_overflowed_content_description = 2131623966;
+			
+			// aapt resource value: 0x7F0E001F
+			public const int character_counter_pattern = 2131623967;
+			
+			// aapt resource value: 0x7F0E0020
+			public const int chip_text = 2131623968;
+			
+			// aapt resource value: 0x7F0E0021
+			public const int clear_text_end_icon_content_description = 2131623969;
+			
+			// aapt resource value: 0x7F0E0022
+			public const int copy_toast_msg = 2131623970;
+			
+			// aapt resource value: 0x7F0E0023
+			public const int error_icon_content_description = 2131623971;
+			
+			// aapt resource value: 0x7F0E0024
+			public const int exposed_dropdown_menu_content_description = 2131623972;
+			
+			// aapt resource value: 0x7F0E0025
+			public const int fab_transformation_scrim_behavior = 2131623973;
+			
+			// aapt resource value: 0x7F0E0026
+			public const int fab_transformation_sheet_behavior = 2131623974;
+			
+			// aapt resource value: 0x7F0E0027
+			public const int fallback_menu_item_copy_link = 2131623975;
+			
+			// aapt resource value: 0x7F0E0028
+			public const int fallback_menu_item_open_in_browser = 2131623976;
+			
+			// aapt resource value: 0x7F0E0029
+			public const int fallback_menu_item_share_link = 2131623977;
+			
+			// aapt resource value: 0x7F0E002A
+			public const int hide_bottom_view_on_scroll_behavior = 2131623978;
+			
+			// aapt resource value: 0x7F0E002B
+			public const int icon_content_description = 2131623979;
 			
 			// aapt resource value: 0x7F0E002C
-			public const int hide_bottom_view_on_scroll_behavior = 2131623980;
+			public const int item_view_role_description = 2131623980;
 			
 			// aapt resource value: 0x7F0E002D
-			public const int icon_content_description = 2131623981;
+			public const int library_name = 2131623981;
 			
 			// aapt resource value: 0x7F0E002E
-			public const int item_view_role_description = 2131623982;
+			public const int material_slider_range_end = 2131623982;
 			
 			// aapt resource value: 0x7F0E002F
-			public const int material_slider_range_end = 2131623983;
+			public const int material_slider_range_start = 2131623983;
 			
 			// aapt resource value: 0x7F0E0030
-			public const int material_slider_range_start = 2131623984;
+			public const int mtrl_badge_numberless_content_description = 2131623984;
 			
 			// aapt resource value: 0x7F0E0031
-			public const int mtrl_badge_numberless_content_description = 2131623985;
+			public const int mtrl_chip_close_icon_content_description = 2131623985;
 			
 			// aapt resource value: 0x7F0E0032
-			public const int mtrl_chip_close_icon_content_description = 2131623986;
+			public const int mtrl_exceed_max_badge_number_content_description = 2131623986;
 			
 			// aapt resource value: 0x7F0E0033
-			public const int mtrl_exceed_max_badge_number_content_description = 2131623987;
+			public const int mtrl_exceed_max_badge_number_suffix = 2131623987;
 			
 			// aapt resource value: 0x7F0E0034
-			public const int mtrl_exceed_max_badge_number_suffix = 2131623988;
+			public const int mtrl_picker_a11y_next_month = 2131623988;
 			
 			// aapt resource value: 0x7F0E0035
-			public const int mtrl_picker_a11y_next_month = 2131623989;
+			public const int mtrl_picker_a11y_prev_month = 2131623989;
 			
 			// aapt resource value: 0x7F0E0036
-			public const int mtrl_picker_a11y_prev_month = 2131623990;
+			public const int mtrl_picker_announce_current_selection = 2131623990;
 			
 			// aapt resource value: 0x7F0E0037
-			public const int mtrl_picker_announce_current_selection = 2131623991;
+			public const int mtrl_picker_cancel = 2131623991;
 			
 			// aapt resource value: 0x7F0E0038
-			public const int mtrl_picker_cancel = 2131623992;
+			public const int mtrl_picker_confirm = 2131623992;
 			
 			// aapt resource value: 0x7F0E0039
-			public const int mtrl_picker_confirm = 2131623993;
+			public const int mtrl_picker_date_header_selected = 2131623993;
 			
 			// aapt resource value: 0x7F0E003A
-			public const int mtrl_picker_date_header_selected = 2131623994;
+			public const int mtrl_picker_date_header_title = 2131623994;
 			
 			// aapt resource value: 0x7F0E003B
-			public const int mtrl_picker_date_header_title = 2131623995;
+			public const int mtrl_picker_date_header_unselected = 2131623995;
 			
 			// aapt resource value: 0x7F0E003C
-			public const int mtrl_picker_date_header_unselected = 2131623996;
+			public const int mtrl_picker_day_of_week_column_header = 2131623996;
 			
 			// aapt resource value: 0x7F0E003D
-			public const int mtrl_picker_day_of_week_column_header = 2131623997;
+			public const int mtrl_picker_invalid_format = 2131623997;
 			
 			// aapt resource value: 0x7F0E003E
-			public const int mtrl_picker_invalid_format = 2131623998;
+			public const int mtrl_picker_invalid_format_example = 2131623998;
 			
 			// aapt resource value: 0x7F0E003F
-			public const int mtrl_picker_invalid_format_example = 2131623999;
+			public const int mtrl_picker_invalid_format_use = 2131623999;
 			
 			// aapt resource value: 0x7F0E0040
-			public const int mtrl_picker_invalid_format_use = 2131624000;
+			public const int mtrl_picker_invalid_range = 2131624000;
 			
 			// aapt resource value: 0x7F0E0041
-			public const int mtrl_picker_invalid_range = 2131624001;
+			public const int mtrl_picker_navigate_to_year_description = 2131624001;
 			
 			// aapt resource value: 0x7F0E0042
-			public const int mtrl_picker_navigate_to_year_description = 2131624002;
+			public const int mtrl_picker_out_of_range = 2131624002;
 			
 			// aapt resource value: 0x7F0E0043
-			public const int mtrl_picker_out_of_range = 2131624003;
+			public const int mtrl_picker_range_header_only_end_selected = 2131624003;
 			
 			// aapt resource value: 0x7F0E0044
-			public const int mtrl_picker_range_header_only_end_selected = 2131624004;
+			public const int mtrl_picker_range_header_only_start_selected = 2131624004;
 			
 			// aapt resource value: 0x7F0E0045
-			public const int mtrl_picker_range_header_only_start_selected = 2131624005;
+			public const int mtrl_picker_range_header_selected = 2131624005;
 			
 			// aapt resource value: 0x7F0E0046
-			public const int mtrl_picker_range_header_selected = 2131624006;
+			public const int mtrl_picker_range_header_title = 2131624006;
 			
 			// aapt resource value: 0x7F0E0047
-			public const int mtrl_picker_range_header_title = 2131624007;
+			public const int mtrl_picker_range_header_unselected = 2131624007;
 			
 			// aapt resource value: 0x7F0E0048
-			public const int mtrl_picker_range_header_unselected = 2131624008;
+			public const int mtrl_picker_save = 2131624008;
 			
 			// aapt resource value: 0x7F0E0049
-			public const int mtrl_picker_save = 2131624009;
+			public const int mtrl_picker_text_input_date_hint = 2131624009;
 			
 			// aapt resource value: 0x7F0E004A
-			public const int mtrl_picker_text_input_date_hint = 2131624010;
+			public const int mtrl_picker_text_input_date_range_end_hint = 2131624010;
 			
 			// aapt resource value: 0x7F0E004B
-			public const int mtrl_picker_text_input_date_range_end_hint = 2131624011;
+			public const int mtrl_picker_text_input_date_range_start_hint = 2131624011;
 			
 			// aapt resource value: 0x7F0E004C
-			public const int mtrl_picker_text_input_date_range_start_hint = 2131624012;
+			public const int mtrl_picker_text_input_day_abbr = 2131624012;
 			
 			// aapt resource value: 0x7F0E004D
-			public const int mtrl_picker_text_input_day_abbr = 2131624013;
+			public const int mtrl_picker_text_input_month_abbr = 2131624013;
 			
 			// aapt resource value: 0x7F0E004E
-			public const int mtrl_picker_text_input_month_abbr = 2131624014;
+			public const int mtrl_picker_text_input_year_abbr = 2131624014;
 			
 			// aapt resource value: 0x7F0E004F
-			public const int mtrl_picker_text_input_year_abbr = 2131624015;
+			public const int mtrl_picker_toggle_to_calendar_input_mode = 2131624015;
 			
 			// aapt resource value: 0x7F0E0050
-			public const int mtrl_picker_toggle_to_calendar_input_mode = 2131624016;
+			public const int mtrl_picker_toggle_to_day_selection = 2131624016;
 			
 			// aapt resource value: 0x7F0E0051
-			public const int mtrl_picker_toggle_to_day_selection = 2131624017;
+			public const int mtrl_picker_toggle_to_text_input_mode = 2131624017;
 			
 			// aapt resource value: 0x7F0E0052
-			public const int mtrl_picker_toggle_to_text_input_mode = 2131624018;
+			public const int mtrl_picker_toggle_to_year_selection = 2131624018;
 			
 			// aapt resource value: 0x7F0E0053
-			public const int mtrl_picker_toggle_to_year_selection = 2131624019;
+			public const int overflow_tab_title = 2131624019;
 			
 			// aapt resource value: 0x7F0E0054
-			public const int overflow_tab_title = 2131624020;
+			public const int password_toggle_content_description = 2131624020;
 			
 			// aapt resource value: 0x7F0E0055
-			public const int password_toggle_content_description = 2131624021;
+			public const int path_password_eye = 2131624021;
 			
 			// aapt resource value: 0x7F0E0056
-			public const int path_password_eye = 2131624022;
+			public const int path_password_eye_mask_strike_through = 2131624022;
 			
 			// aapt resource value: 0x7F0E0057
-			public const int path_password_eye_mask_strike_through = 2131624023;
+			public const int path_password_eye_mask_visible = 2131624023;
 			
 			// aapt resource value: 0x7F0E0058
-			public const int path_password_eye_mask_visible = 2131624024;
+			public const int path_password_strike_through = 2131624024;
 			
 			// aapt resource value: 0x7F0E0059
-			public const int path_password_strike_through = 2131624025;
+			public const int search_menu_title = 2131624025;
 			
 			// aapt resource value: 0x7F0E005A
-			public const int search_menu_title = 2131624026;
-			
-			// aapt resource value: 0x7F0E005B
-			public const int status_bar_notification_info_overflow = 2131624027;
+			public const int status_bar_notification_info_overflow = 2131624026;
 			
 			static String()
 			{

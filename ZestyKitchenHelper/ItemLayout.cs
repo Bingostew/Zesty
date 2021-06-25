@@ -258,16 +258,16 @@ namespace ZestyKitchenHelper
         public IconLayout(ImageSource source, string iconName)
         {
             imageSource = source;
-            imageButton = new ImageButton() { Source = source };
-            var label = new Label() { Text = iconName, HorizontalTextAlignment = TextAlignment.Center, TextColor = Color.Black };
+            imageButton = new ImageButton() { Source = source, BackgroundColor = Color.Transparent };
+
             this.iconName = iconName;
             imageButton.Clicked += (obj, args) =>
             {
                 OnClickIconAction?.Invoke(imageButton);
             };
             layout.Children.Add(imageButton, new Rectangle(0, 0, 1, 1), AbsoluteLayoutFlags.All);
-            layout.Children.Add(label, new Rectangle(0, .7, 1, .1), AbsoluteLayoutFlags.All);
             Children.Add(layout);
+            BackgroundColor = Color.Wheat;
         }
     }
 }

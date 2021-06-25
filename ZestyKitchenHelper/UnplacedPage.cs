@@ -55,8 +55,6 @@ namespace ZestyKitchenHelper
                 Content = metaGrid
             };
 
-            UpdateChildren();
-
             var pageWidth = Application.Current.MainPage.Width;
             AbsoluteLayout.SetLayoutBounds(returnButton, new Rectangle(0, 0, 70, 70));
             AbsoluteLayout.SetLayoutFlags(returnButton, AbsoluteLayoutFlags.PositionProportional);
@@ -84,19 +82,10 @@ namespace ZestyKitchenHelper
             };
         }
 
-        private void UpdateChildren()
+        protected override void OnDisappearing()
         {
-            Grid metaGrid = GridManager.GetGrid(ContentManager.metaGridName);
-            Grid unplacedGrid = GridManager.GetGrid(ContentManager.unplacedGridName);
-            List<ItemLayout> metaGridChildren = new List<ItemLayout>();
-            List<ItemLayout> unplacedGridChildren = new List<ItemLayout>();
-            foreach (var item in ContentManager.MetaItemBase.Values)
-            {
-                metaGridChildren.Add(item);
-                if (ContentManager.UnplacedItemBase.Values.Contains(item) && !unplacedGrid.Children.Contains(item))
-                    unplacedGridChildren.Add(item);
-            }
-            GridManager.AddGridItem(metaGrid, metaGridChildren, true);
+            base.OnDisappearing();
+            GridManager.FilterItemGrid(metaGrid, "");
         }
         public static void UpdateGrid(Item removed)
         {
