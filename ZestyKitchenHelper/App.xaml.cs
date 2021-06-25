@@ -9,13 +9,13 @@ namespace ZestyKitchenHelper
         public App()
         {
             ContentManager.pageController.InitializePageSequence();
-            MainPage = ContentManager.pageController;
-
         }
-
+        public void SetMainPage()
+        {
+            MainPage = ContentManager.pageController;
+        }
         protected override void OnStart()
         {
-         //   ContentManager.InitializeApp();
         }
 
         protected override void OnSleep()

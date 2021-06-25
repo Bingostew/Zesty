@@ -4,13 +4,91 @@ using System;
 
 using Foundation;
 using UIKit;
+using Auth0.OidcClient;
+using System.Threading.Tasks;
 
 namespace ZestyKitchenHelper.iOS
 {
 	public partial class LoginViewController : UITableViewController
 	{
-		public LoginViewController (IntPtr handle) : base (handle)
-		{
-		}
-	}
+        private Auth0Client client;
+        private UserProfile userProfile;
+
+        public LoginViewController(IntPtr handle) : base(handle)
+        {
+
+        }
+
+        public override void AwakeFromNib()
+        {
+            base.AwakeFromNib();
+
+            client = new Auth0Client(new Auth0ClientOptions()
+            {
+                Domain = "dev-4l7acohw.auth0.com",
+                ClientId = "Srn3fq8ccb7dnBmskN5VNGG2A4A0XKz4"
+            });
+
+        }
+
+        public override void ViewDidLoad()
+        {
+            base.ViewDidLoad();
+
+            LoginButton.TouchUpInside += async (o, a) =>
+            {
+                await LoginAsync();
+            };
+
+            SkipLoginButton.TouchUpInside += async (o, a) =>
+            {
+                UIAlertController loginAlert = UIAlertController.Create("Skip Log In", "Logging in allows the same information to be edited on multiple devices.", UIAlertControllerStyle.Alert);
+                loginAlert.AddAction(UIAlertAction.Create("Skip", UIAlertActionStyle.Default, (action) => AppDelegate.ToPageControllerAction.Invoke()));
+                loginAlert.AddAction(UIAlertAction.Create("Cancel", UIAlertActionStyle.Cancel, null));
+                PresentViewController(loginAlert, true, null);
+            };
+
+
+        }
+
+        private async Task LoginAsync()
+        {
+            var loginResult = await client.LoginAsync();
+
+            if (!loginResult.IsError)
+            {
+                var name = loginResult.User.FindFirst(c => c.Type == "name")?.Value;
+                var email = loginResult.User.FindFirst(c => c.Type == "email")?.Value;
+                var image = loginResult.User.FindFirst(c => c.Type == "picture")?.Value;
+
+                userProfile = new UserProfile()
+                {
+                    Email = email,
+                    Name = name,
+                };
+
+
+                if (!await FireBaseController.HasUser(email))
+                {
+                    ContentManager.isUserNew = true;
+                    await FireBaseController.AddUser(name, email);
+                }
+
+                //  var serializedLoginResponse = JsonConvert.SerializeObject(userProfile);
+                ContentManager.sessionUserProfile = userProfile;
+                Console.WriteLine("REEEEE");
+                AppDelegate.ToPageControllerAction.Invoke();
+
+            }
+            else
+            {
+                Console.WriteLine("Failure");
+            }
+        }
+
+        public async Task<IdentityModel.OidcClient.Browser.BrowserResultType> LogoutAsync()
+        {
+            return await client.LogoutAsync();
+        }
+    }
 }

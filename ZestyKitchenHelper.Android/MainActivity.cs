@@ -161,6 +161,7 @@ namespace ZestyKitchenHelper.Droid
             ContentManager.InitializeApp();
             LoadingPage();
             StartBackgroundCheck();
+            (Xamarin.Forms.Application.Current as App).SetMainPage();
             StartActivity(new Intent(this, typeof(SelectionActivity)));
         }
 

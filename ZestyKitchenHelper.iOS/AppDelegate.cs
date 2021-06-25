@@ -18,8 +18,8 @@ namespace ZestyKitchenHelper.iOS
     [Register("AppDelegate")]
     public partial class AppDelegate : global::Xamarin.Forms.Platform.iOS.FormsApplicationDelegate
     {
-        private Auth0Client client;
-        private UserProfile userProfile;
+        public static Action ToPageControllerAction;
+
         public static UIView ConvertFormsToNative(Xamarin.Forms.VisualElement view, CGRect size)
         {
             var renderer = Platform.CreateRenderer(view);
@@ -37,11 +37,15 @@ namespace ZestyKitchenHelper.iOS
             
             return nativeView;
         }
-        public UIWindow window { get; set; }
-        private UIViewController mainView;
-        private UIView selectionPage, unplacedPage;
+
+        public override UIWindow Window
+        {
+            get; set;
+        }
+        private UIStoryboard storyBoard = UIStoryboard.FromName("LoginStoryboard", null);
+        private UIViewController initialViewController;
         public static UIView currentView;
-        private CGRect screensize;
+
         //
         // This method is invoked when the application has loaded and is ready to run. In this 
         // method you should instantiate the window, load the UI into it and then make the window
@@ -55,68 +59,41 @@ namespace ZestyKitchenHelper.iOS
             global::Xamarin.Forms.Forms.Init();
             global::ZXing.Net.Mobile.Forms.iOS.Platform.Init();
             LoadApplication(new App());
+
             ContentManager.InitializeApp();
 
-            client = new Auth0Client(new Auth0ClientOptions()
-            {
-                Domain = "dev-4l7acohw.auth0.com",
-                ClientId = "Srn3fq8ccb7dnBmskN5VNGG2A4A0XKz4"
-            });
-
+            ToPageControllerAction = ToPageController;
             UIApplication.SharedApplication.StatusBarHidden = true;
+            Window = new UIWindow(UIScreen.MainScreen.Bounds);
 
+            initialViewController = storyBoard.InstantiateViewController("LoginViewController");
+            Window.RootViewController = initialViewController;
+            Window.AddSubview(initialViewController.View);
+            Window.MakeKeyAndVisible();
             return base.FinishedLaunching(app, options);
         }
 
-        public override UIWindow Window
+        private void ToPageController()
         {
-            get;set;
+            var renderer = Platform.CreateRenderer(ContentManager.pageController);
+
+            renderer.NativeView.Frame = UIScreen.MainScreen.Bounds;
+
+            renderer.NativeView.AutoresizingMask = UIViewAutoresizing.All;
+            renderer.NativeView.ContentMode = UIViewContentMode.ScaleToFill;
+
+            renderer.Element.Layout(UIScreen.MainScreen.Bounds.ToRectangle());
+
+            Window.RootViewController = renderer.ViewController;
+            (Xamarin.Forms.Application.Current as App).SetMainPage();
         }
 
-        public override bool OpenUrl(UIApplication app, NSUrl url, NSDictionary options)
+        public override bool OpenUrl(UIApplication application, NSUrl url, string sourceApplication, NSObject annotation)
         {
             ActivityMediator.Instance.Send(url.AbsoluteString);
             return true;
         }
 
-        private async Task LoginAsync()
-        {
-            var loginResult = await client.LoginAsync();
-
-            if (!loginResult.IsError)
-            {
-                var name = loginResult.User.FindFirst(c => c.Type == "name")?.Value;
-                var email = loginResult.User.FindFirst(c => c.Type == "email")?.Value;
-                var image = loginResult.User.FindFirst(c => c.Type == "picture")?.Value;
-
-                userProfile = new UserProfile()
-                {
-                    Email = email,
-                    Name = name,
-                };
-
-
-                if (!await FireBaseController.HasUser(email))
-                {
-                    ContentManager.isUserNew = true;
-                    await FireBaseController.AddUser(name, email);
-                }
-
-                //  var serializedLoginResponse = JsonConvert.SerializeObject(userProfile);
-                ContentManager.sessionUserProfile = userProfile;
-                Console.WriteLine("REEEEE");
-
-            }
-            else
-            {
-                Console.WriteLine("Failure");
-            }
-        }
-       
-        public async Task<IdentityModel.OidcClient.Browser.BrowserResultType> LogoutAsync()
-        {
-            return await client.LogoutAsync();
-        }
         /*
         public void GotoUnplacedPage(object obj, EventArgs args)
         {

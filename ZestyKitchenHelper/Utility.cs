@@ -637,7 +637,11 @@ namespace Utility
                 grid.Children.Add(items.ElementAt(0) as View, 0, 0);
             }
 
-            
+
+            if (grid.RowDefinitions.Count == 0)
+                grid.RowDefinitions.Add(new RowDefinition());
+            if (grid.ColumnDefinitions.Count == 0)
+                grid.ColumnDefinitions.Add(new ColumnDefinition());
             for (int i = 1; i < items.Count(); i++)
             {
                 SetGridPairs(mode);
