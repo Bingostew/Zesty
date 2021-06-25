@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Main View Controller-->
+        <scene sceneID="D8e-p5-9iE">
+            <objects>
+                <viewController storyboardIdentifier="MainViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="N9x-Zc-7tb" customClass="MainViewController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="Dj1-35-l6c"/>
+                        <viewControllerLayoutGuide type="bottom" id="MOh-Kd-ZVR"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="56d-OV-rz9">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qsY-82-e0g" userLabel="LoginButton">
+                                <rect key="frame" x="34" y="210" width="347" height="38"/>
+                                <color key="backgroundColor" systemColor="systemPinkColor"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="21"/>
+                                <state key="normal" title="Login/Signup">
+                                    <color key="titleColor" systemColor="labelColor"/>
+                                </state>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="y59-Vh-RTP" userLabel="SkipLoginButton">
+                                <rect key="frame" x="34" y="271" width="106" height="34"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="18"/>
+                                <state key="normal" title="Skip login"/>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="y59-Vh-RTP" firstAttribute="top" secondItem="qsY-82-e0g" secondAttribute="bottom" constant="23" id="7GK-MX-cri"/>
+                            <constraint firstAttribute="trailing" secondItem="qsY-82-e0g" secondAttribute="trailing" constant="33" id="AKt-Fc-Axd"/>
+                            <constraint firstAttribute="trailing" secondItem="y59-Vh-RTP" secondAttribute="trailing" constant="274" id="ia8-OR-Ueu"/>
+                            <constraint firstItem="qsY-82-e0g" firstAttribute="top" secondItem="Dj1-35-l6c" secondAttribute="bottom" constant="122" id="l7v-fI-QYK"/>
+                            <constraint firstItem="qsY-82-e0g" firstAttribute="leading" secondItem="56d-OV-rz9" secondAttribute="leading" constant="34" id="uJg-AH-vva"/>
+                            <constraint firstItem="y59-Vh-RTP" firstAttribute="leading" secondItem="56d-OV-rz9" secondAttribute="leading" constant="34" id="xLC-X6-U9g"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" id="rDH-cs-3Yy"/>
+                    <connections>
+                        <outlet property="LoginButton" destination="qsY-82-e0g" id="hSu-R3-Dga"/>
+                        <outlet property="SkipLoginButton" destination="y59-Vh-RTP" id="WjY-bw-dFX"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Nzs-WZ-dkh" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="810.14492753623199" y="13.392857142857142"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="axu-OZ-xRO">
+            <objects>
+                <navigationController storyboardIdentifier="NavigationController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="ZrO-pv-12U" customClass="NavigationController" sceneMemberID="viewController">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="LMD-2P-1hk">
+                        <rect key="frame" x="0.0" y="44" width="414" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <connections>
+                        <segue destination="N9x-Zc-7tb" kind="relationship" relationship="rootViewController" id="lOS-xQ-Ayp"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="xJk-jG-Pef" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-904" y="1"/>
+        </scene>
+    </scenes>
+    <resources>
+        <systemColor name="labelColor">
+            <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="systemPinkColor">
+            <color red="1" green="0.17647058823529413" blue="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+    </resources>
+</document>
