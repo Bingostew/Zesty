@@ -24,14 +24,14 @@ namespace ZestyKitchenHelper
             returnButton.Clicked += (o,a) => ContentManager.pageController.ToMainSelectionPage();
             var addNewButton = new ImageButton() { Source = ContentManager.addIcon, BackgroundColor = Color.Transparent };
             metaGrid = GridManager.GetGrid(ContentManager.metaGridName); 
-            var addForm = AddView.GetAddForm(localUnplacedEvent, baseUnplaceEvent, "", false);
+            var addView = new AddView(localUnplacedEvent, baseUnplaceEvent, "", false);
             searchAllBar.Text = ContentManager.defaultSearchAllBarText;
             searchAllBar.TextColor = Color.Black;
             searchAllBar.Focused += (obj, args) => searchAllBar.Text = "";
             searchAllBar.Unfocused += (obj, args) => { if (searchAllBar.Text.Length == 0) searchAllBar.Text = ContentManager.defaultSearchAllBarText; };
             searchAllBar.Unfocused += (obj, args) => GridManager.FilterItemGrid(metaGrid, searchAllBar.Text);
             searchAllBar.TextChanged += (obj, args) => GridManager.FilterItemGrid(metaGrid, searchAllBar.Text);
-            addNewButton.Clicked += (obj, args) => { addForm.IsVisible = true; };
+            addNewButton.Clicked += (obj, args) => { ContentManager.pageController.ToAddView(addView); };
 
             var sortSelector = new Picker()
             {
@@ -66,8 +66,8 @@ namespace ZestyKitchenHelper
             AbsoluteLayout.SetLayoutFlags(sortSelector, AbsoluteLayoutFlags.XProportional);
             AbsoluteLayout.SetLayoutBounds(gridScroll, new Rectangle(0, 100, 1, .8));
             AbsoluteLayout.SetLayoutFlags(gridScroll, AbsoluteLayoutFlags.SizeProportional);
-            AbsoluteLayout.SetLayoutBounds(addForm, new Rectangle(0, 0, 1, 1));
-            AbsoluteLayout.SetLayoutFlags(addForm, AbsoluteLayoutFlags.All);
+            AbsoluteLayout.SetLayoutBounds(addView, new Rectangle(0, 0, 1, 1));
+            AbsoluteLayout.SetLayoutFlags(addView, AbsoluteLayoutFlags.All);
             Content = new AbsoluteLayout()
             {
                 Children =
@@ -76,8 +76,7 @@ namespace ZestyKitchenHelper
                     searchAllBar,
                     addNewButton,
                     sortSelector,
-                    gridScroll,
-                    addForm
+                    gridScroll
                 }
             };
         }

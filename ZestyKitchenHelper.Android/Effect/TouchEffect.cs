@@ -133,7 +133,7 @@ namespace ZestyKitchenHelper.Droid.Effects
 
                 foreach (var cell in contactBase.GetGridCells())
                 {
-                    var child = cell.GetButton();
+                    var child = cell.GetBackground();
 
                     var contactRect = new Rectangle(child.GetAbsolutePosition().X, child.GetAbsolutePosition().Y, child.Width, child.Height);
                     if (contactRect.IntersectsWith(controlRect))
@@ -172,7 +172,7 @@ namespace ZestyKitchenHelper.Droid.Effects
 
             // Call the method
             onTouchAction(touchEffect.Element,
-                new TouchActionEventArgs(actionType, point, pressPoint, isInContact, contactIndexes, contactView));
+                new TouchActionEventArgs(actionType, point, isInContact, contactIndexes, contactView));
             isInContact = false;
         }
 

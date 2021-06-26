@@ -60,16 +60,17 @@ namespace ZestyKitchenHelper.iOS
             global::ZXing.Net.Mobile.Forms.iOS.Platform.Init();
             LoadApplication(new App());
 
-            ContentManager.InitializeApp();
-
             ToPageControllerAction = ToPageController;
             UIApplication.SharedApplication.StatusBarHidden = true;
             Window = new UIWindow(UIScreen.MainScreen.Bounds);
+
+            ContentManager.InitializeApp(UIScreen.MainScreen.Bounds.Width, UIScreen.MainScreen.Bounds.Height);
 
             initialViewController = storyBoard.InstantiateViewController("LoginViewController");
             Window.RootViewController = initialViewController;
             Window.AddSubview(initialViewController.View);
             Window.MakeKeyAndVisible();
+
             return base.FinishedLaunching(app, options);
         }
 

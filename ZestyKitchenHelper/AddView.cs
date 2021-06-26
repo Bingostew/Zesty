@@ -10,11 +10,10 @@ using ZXing.Mobile;
 
 namespace ZestyKitchenHelper
 {
-    public class AddView
+    public class AddView : ContentPage
     {
         static List<Item> newItem = new List<Item>();
 
-        private static readonly double screenHeight, screenWidth;
         private const double form_height_proportional = 0.4;
         private const int form_label_font_size = 20;
         private const int form_label_horizontal_margin = 10;
@@ -33,18 +32,16 @@ namespace ZestyKitchenHelper
 
         static AddView()
         {
-            screenHeight = Application.Current.MainPage.Height;
-            screenWidth = Application.Current.MainPage.Width;
 
-            formGridRowHeight = (form_height_proportional * screenHeight / form_grid_row_count * 2 - form_grid_spacing * (form_grid_row_count - 1)) / 3;
-            formIconWidthHeight = form_height_proportional * screenHeight / form_grid_row_count - form_icon_margin * 1.5;
+            formGridRowHeight = (form_height_proportional * ContentManager.screenHeight / form_grid_row_count * 2 - form_grid_spacing * (form_grid_row_count - 1)) / 3;
+            formIconWidthHeight = form_height_proportional * ContentManager.screenHeight / form_grid_row_count - form_icon_margin * 1.5;
         }
         /// <summary>
         /// Initialized an instance of add form with a num pad.
         /// </summary>
         ///
         /// <returns></returns>
-        public static AbsoluteLayout GetAddForm(Action<Item> localUnplacedEvent, Action<Item> baseUnplacedEvent,
+        public AddView(Action<Item> localUnplacedEvent, Action<Item> baseUnplacedEvent,
             string storageName = "", bool limited = true, Grid partialUnplacedGrid = null)
         {
             List<Button> formSelector = new List<Button>();
@@ -74,7 +71,7 @@ namespace ZestyKitchenHelper
 
             var autoDetectLabel = new Label() { FontSize = 15, TextColor = Color.Black, BackgroundColor = Color.White, IsVisible = false, AnchorX = 0 };
          
-            var foregroundTint = new Image() { BackgroundColor = Color.FromRgba(0, 0, 0, 98), HeightRequest = screenHeight, WidthRequest = screenWidth };
+            var foregroundTint = new Image() { BackgroundColor = Color.FromRgba(0, 0, 0, 98), HeightRequest = ContentManager.screenHeight, WidthRequest = ContentManager.screenWidth };
 
             Grid form = new Grid()
             {
@@ -95,14 +92,14 @@ namespace ZestyKitchenHelper
                     new ColumnDefinition()
                 }
             };
-
+            
             void ClearText(Button button)
             {
                 button.Text = "";
                 toggleSelect(selectorIndex, formSelector, Color.BlanchedAlmond, Color.Wheat);
             }
 
-            Entry nameInput = new Entry() { Text = "product", HeightRequest = form_height_proportional * screenHeight / form_grid_row_count };
+            Entry nameInput = new Entry() { Text = "product", HeightRequest = form_height_proportional * ContentManager.screenHeight / form_grid_row_count };
             nameInput.TextChanged += (obj, args) => { item.Name = args.NewTextValue; autoDetectExpiration(args.NewTextValue); if (imageSelectorIndex == 0) changeSelectedIcon(); };
             nameInput.Completed += (obj, args) => { item.Name = nameInput.Text; if (imageSelectorIndex == 0) changeSelectedIcon(); };
             var nameLabel = new Label() { Text = "Name: ", FontSize = form_label_font_size, TextColor = Color.Black, Margin = new Thickness(form_label_horizontal_margin, 0) };
@@ -117,9 +114,11 @@ namespace ZestyKitchenHelper
             dateYear.Clicked += (obj, arg) => { selectorIndex = 2; ClearText(dateYear); };
             var amountInput = new Button() { BorderColor = Color.Black, BorderWidth = form_input_border_width, BackgroundColor = Color.Transparent, Margin = new Thickness(0, 0, form_label_horizontal_margin, 0) };
             amountInput.Clicked += (obj, arg) => { selectorIndex = 3; ClearText(amountInput); };
-            StackLayout expStackLayout = new StackLayout() { Orientation = StackOrientation.Horizontal, Children = { dateMonth, dateDay, dateYear } };
+            Grid expGrid = GridManager.InitializeGrid(1, 3, GridLength.Star, GridLength.Star);
+            expGrid.ColumnSpacing = form_grid_spacing;
+            GridManager.AddGridItem(expGrid, new List<View>() { dateMonth, dateDay, dateYear }, true);
 
-            var iconSelect1 = new Button() { HeightRequest = formGridRowHeight, Text = "In-App", CornerRadius = form_icon_select_border_radius, BorderColor = Color.Wheat, BorderWidth = 3 };
+            var iconSelect1 = new Button() { HeightRequest = formGridRowHeight, Text = "In-App", TextColor = Color.Black, CornerRadius = form_icon_select_border_radius, BorderColor = Color.Wheat, BorderWidth = 3 };
             iconSelect1.Clicked += (obj, arg) =>
             {
                 imageSelectorIndex = 0; toggleSelect(0, imageSelector, Color.Black, Color.Wheat);
@@ -127,7 +126,7 @@ namespace ZestyKitchenHelper
 
                 changeSelectedIcon();
             };
-            var iconSelect2 = new Button() { HeightRequest = formGridRowHeight, Text = "General", CornerRadius = form_icon_select_border_radius, BorderColor = Color.Wheat, BorderWidth = 3 };
+            var iconSelect2 = new Button() { HeightRequest = formGridRowHeight, Text = "General", TextColor = Color.Black, CornerRadius = form_icon_select_border_radius, BorderColor = Color.Wheat, BorderWidth = 3 };
             iconSelect2.Clicked += (obj, arg) =>
             {
                 imageSelectorIndex = 1; toggleSelect(1, imageSelector, Color.Black, Color.Wheat);
@@ -253,7 +252,7 @@ namespace ZestyKitchenHelper
             form.Children.Add(nameLabel, 0, 0);
             form.Children.Add(nameInput, 1, 0);
             form.Children.Add(dateLabel, 0, 1);
-            form.Children.Add(expStackLayout, 1, 1);
+            form.Children.Add(expGrid, 1, 1);
             form.Children.Add(amountLabel, 0, 2);
             form.Children.Add(amountInput, 1, 2);
             form.Children.Add(iconScrollView, 1, 3);
@@ -341,15 +340,15 @@ namespace ZestyKitchenHelper
 
             numPadGrid.OrganizeGrid(numPadList, GridOrganizer.OrganizeMode.HorizontalLeft);
 
-            var scanButton = new Button() { Text = "Scan", TextColor = Color.Black, FontAttributes = FontAttributes.Bold };
+            var scanButton = new Button() { Text = "Scan", TextColor = Color.Black, FontAttributes = FontAttributes.Bold, BackgroundColor = numpadBackground };
             var exitButton = new Button() { Text = "Exit", BackgroundColor = Color.Blue, TextColor = Color.Black };
-            var newFormButton = new Button() { BackgroundColor = Color.ForestGreen, Text = "Add" };
+            var newFormButton = new Button() { BackgroundColor = Color.ForestGreen, Text = "Add", TextColor = Color.Black };
 
             AbsoluteLayout manualEditLayout = new AbsoluteLayout()
             {
-                IsVisible = false,
                 HorizontalOptions = LayoutOptions.Center,
-                WidthRequest = 500,
+                HeightRequest = ContentManager.screenHeight,
+                WidthRequest = ContentManager.screenWidth,
                 Children =
                 {
                     foregroundTint,
@@ -361,11 +360,11 @@ namespace ZestyKitchenHelper
                     exitButton
                 }
             };
-
-            BarcodeScannerPage scannerPage = new BarcodeScannerPage(() => { ContentManager.pageController.Content = manualEditLayout; });
+            
+            BarcodeScannerPage scannerPage = new BarcodeScannerPage(() => { Content = manualEditLayout; });
             scanButton.Clicked += (o, a) => 
             {
-                ContentManager.pageController.Content = scannerPage.Content;
+                Content = scannerPage.Content;
                 scannerPage.StartScanning();
             };
             async void OnNewItemAdded(object obj, EventArgs args)
@@ -387,7 +386,7 @@ namespace ZestyKitchenHelper
             AbsoluteLayout.SetLayoutFlags(autoDetectLabel, AbsoluteLayoutFlags.All);
             AbsoluteLayout.SetLayoutBounds(form, new Rectangle(0, 0, 1, form_height_proportional));
             AbsoluteLayout.SetLayoutFlags(form, AbsoluteLayoutFlags.All);
-            AbsoluteLayout.SetLayoutBounds(numPadGrid, new Rectangle(.5, .6, 1, numpad_height_proportional));
+            AbsoluteLayout.SetLayoutBounds(numPadGrid, new Rectangle(.5, .7, 1, numpad_height_proportional));
             AbsoluteLayout.SetLayoutFlags(numPadGrid, AbsoluteLayoutFlags.All);
             AbsoluteLayout.SetLayoutBounds(scanButton, new Rectangle(.5, .88, .5, .08));
             AbsoluteLayout.SetLayoutFlags(scanButton, AbsoluteLayoutFlags.All);
@@ -407,12 +406,15 @@ namespace ZestyKitchenHelper
                 if (partialUnplacedGrid != null)
                     GridManager.AddGridItem(partialUnplacedGrid, newItemLayoutsCopy2, false);
 
+                newItemLayouts.Clear();
+                newItemLayoutsCopy.Clear();
+                newItemLayoutsCopy2.Clear();
                 resetForm();
                 newItem.Clear();
-                manualEditLayout.IsVisible = false;
+                ContentManager.pageController.ReturnToPrevious();
             };
 
-            return manualEditLayout;
+            Content = manualEditLayout;
         }
  
         // First copy for unplacedGrid, second for metaGrid, third is optional for partial grid

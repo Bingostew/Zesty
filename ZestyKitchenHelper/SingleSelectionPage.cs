@@ -92,6 +92,7 @@ namespace ZestyKitchenHelper
                 {
                     BackgroundColor = Color.Red,
                     Text = "Add",
+                    TextColor = Color.Black,
                     WidthRequest = 60,
                     HeightRequest = 40,
                     TranslationX = -40,
@@ -104,6 +105,7 @@ namespace ZestyKitchenHelper
                 {
                     BackgroundColor = Color.Red,
                     Text = "View",
+                    TextColor = Color.Black,
                     WidthRequest = 60,
                     HeightRequest = 40,
                     TranslationX = 40,
@@ -127,6 +129,7 @@ namespace ZestyKitchenHelper
                 {
                     BackgroundColor = Color.DeepSkyBlue,
                     Text = "Name",
+                    TextColor = Color.Black,
                     HeightRequest = 30,
                     WidthRequest = 60,
                     HorizontalOptions = LayoutOptions.EndAndExpand,
@@ -189,7 +192,7 @@ namespace ZestyKitchenHelper
                 addButton.Clicked += (obj, args) => ContentManager.pageController.ToAddItemPage(metaName);
                 viewButton.Clicked += (obj, args) => ContentManager.pageController.ToViewItemPage(metaName);
                 button.Clicked += (object obj, EventArgs args) =>
-                    button.ToggleEffects(new ImageTint() { tint = Color.FromHsla(1, .1, .5, .5) }, new List<VisualElement>() { addButton, viewButton, deleteButton, changeNameButton});
+                    button.ToggleEffects(new ImageTint() { tint = Color.FromHsla(1, .1, .5, .5), ImagePath = ContentManager.buttonTintImage  }, new List<VisualElement>() { addButton, viewButton, deleteButton, changeNameButton});
                 List<View> views = new List<View>() { preview, button, addButton, viewButton, deleteButton, changeNameButton, changeNameField };
                 if(!mainGridChildren.ContainsKey(metaName)) mainGridChildren.Add(metaName, views);
                 gridList.Insert(1, views);

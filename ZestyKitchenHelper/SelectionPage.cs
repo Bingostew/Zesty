@@ -80,39 +80,8 @@ namespace ZestyKitchenHelper
                 }
             };
 
-
-            Button scrollViewTestButton = new Button();
-            Grid parentGrid = new Grid()
-            {
-                RowDefinitions =
-                {
-                    new RowDefinition(){ },
-                    new RowDefinition(){ }
-                },
-                ColumnDefinitions =
-                {
-                    new ColumnDefinition(),
-                }
-            };
-            parentGrid.Children.Add(new Label() { Text = "Left Side" }, 0, 0);
-            Grid scrollGrid = GridManager.InitializeGrid(1, 10, 300, 200);
-            List<View> scrollGridChildren = new List<View>();
-            for(int i = 0; i<10; i++)
-            {
-                Button button = new Button() { Text = i.ToString(), BackgroundColor = Color.RoyalBlue };
-                scrollGridChildren.Add(button);
-                
-            }
-            GridManager.AddGridItem(scrollGrid, scrollGridChildren, false);
-            ScrollView scrollView = new ScrollView() { Content = scrollGrid, Orientation = ScrollOrientation.Horizontal };
-            parentGrid.Children.Add(scrollView, 0, 1);
-            AbsoluteLayout absLayout = new AbsoluteLayout() { Children = { parentGrid } };
-            AbsoluteLayout.SetLayoutBounds(parentGrid, new Rectangle(0, 0, 1, 1));
-            AbsoluteLayout.SetLayoutFlags(parentGrid, AbsoluteLayoutFlags.All);
-            scrollViewTestButton.Clicked += (o, a) => ContentManager.pageController.Content = absLayout;
-
             List<View> gridChildren = new List<View>(){ cabinetLabel, cabinetButton, fridgeLabel, fridgeButton, unplacedLabel, addUnplaceButton, 
-                new Label() { Text = "Testing Page" }, scrollViewTestButton };
+                new Label() { Text = "Testing Page" }};
             grid.OrganizeGrid(gridChildren, GridOrganizer.OrganizeMode.TwoRowSpanLeft);
 
             void SetSelection(ContentManager.StorageSelection selection)
@@ -121,9 +90,9 @@ namespace ZestyKitchenHelper
             }
 
             cabinetButton.Clicked += (obj, args) => SetSelection(ContentManager.StorageSelection.cabinet);
-            cabinetButton.Clicked += (obj, args) => ContentManager.pageController.ToSingleSelectionPage();
+            cabinetButton.Clicked += (obj, args) => ContentManager.pageController.ToSingleSelectionPage(true);
             fridgeButton.Clicked += (obj, args) => SetSelection(ContentManager.StorageSelection.fridge);
-            fridgeButton.Clicked += (obj, args) => ContentManager.pageController.ToSingleSelectionPage();
+            fridgeButton.Clicked += (obj, args) => ContentManager.pageController.ToSingleSelectionPage(true);
             addUnplaceButton.Clicked += (o,a) => ContentManager.pageController.ToUnplacedPage();
             Content = grid;
         }

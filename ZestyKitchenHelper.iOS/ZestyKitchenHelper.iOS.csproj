@@ -63,6 +63,9 @@
     <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Effect\ImageTintEffect.cs" />
+    <Compile Include="Effect\TouchEffect.cs" />
+    <Compile Include="Effect\TouchRecognizer.cs" />
     <Compile Include="LoginViewController.cs" />
     <Compile Include="LoginViewController.designer.cs">
       <DependentUpon>LoginViewController.cs</DependentUpon>
@@ -79,6 +82,9 @@
     <InterfaceDefinition Include="LoginStoryboard.storyboard" />
   </ItemGroup>
   <ItemGroup>
+    <ImageAsset Include="TouchEffect.xcassets\AppIcons.appiconset\Contents.json">
+      <Visible>false</Visible>
+    </ImageAsset>
     <InterfaceDefinition Include="Resources\LaunchScreen.storyboard" />
     <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Contents.json">
       <Visible>false</Visible>
@@ -240,5 +246,8 @@
   </ItemGroup>
   <ItemGroup>
     <BundleResource Include="Resources\fridge_side_cell.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\button_tint.png" />
   </ItemGroup>
 </Project>

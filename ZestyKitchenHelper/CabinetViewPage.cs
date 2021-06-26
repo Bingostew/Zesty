@@ -107,7 +107,7 @@ namespace ZestyKitchenHelper
 
             var storageLabel = new Label() { Text = name, FontSize = 40, TextColor = Color.Black, HorizontalTextAlignment = TextAlignment.Center };
             var returnButton = new ImageButton() { Source = ContentManager.backButton, BackgroundColor = Color.Transparent, WidthRequest = 100, HeightRequest = 100 };
-            returnButton.Clicked += (o,a) => ContentManager.pageController.ToSingleSelectionPage();
+            returnButton.Clicked += (o,a) => ContentManager.pageController.ToSingleSelectionPage(true);
 
             var storageView = ContentManager.GetStorageView(name);
 
@@ -208,7 +208,7 @@ namespace ZestyKitchenHelper
                 itemInstance.iconImage.Clicked += (obj, args) =>
                 {
                     itemInstance.iconImage.ToggleEffects(
-                        new ImageTint() { tint = Color.FromRgba(100, 50, 50, 80) }, new List<VisualElement>() { itemInstance.deleteButton });
+                        new ImageTint() { tint = Color.FromRgba(100, 50, 50, 80), ImagePath = ContentManager.buttonTintImage }, new List<VisualElement>() { itemInstance.deleteButton });
                     Console.WriteLine("the icon image clicked");
                 };
 

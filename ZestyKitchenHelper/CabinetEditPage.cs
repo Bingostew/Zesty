@@ -60,10 +60,10 @@ namespace ZestyKitchenHelper
                 }
             };
 
-            var saveButton = new Button() { Text = "Save", BackgroundColor = Color.Blue };
-            var cancelButton = new Button() { Text = "Exit", BackgroundColor = Color.Red };
-            saveButton.Clicked += (obj, args) => ConfirmationSaveEvent(ContentManager.pageController.ToSingleSelectionPage);
-            cancelButton.Clicked += (obj, args) => ConfirmationCancelEvent(ContentManager.pageController.ToSingleSelectionPage);
+            var saveButton = new Button() { Text = "Save", BackgroundColor = Color.Blue, TextColor = Color.Black };
+            var cancelButton = new Button() { Text = "Exit", BackgroundColor = Color.Red, TextColor = Color.Black };
+            saveButton.Clicked += (obj, args) => ConfirmationSaveEvent(async () => { await ContentManager.pageController.PopAsync(false); ContentManager.pageController.ToSingleSelectionPage(false);  });
+            cancelButton.Clicked +=(obj, args) => ConfirmationCancelEvent(async () => { await ContentManager.pageController.PopAsync(false); ContentManager.pageController.ToSingleSelectionPage(false); });
 
             saveGrid.Children.Add(saveButton, 0, 0);
             saveGrid.Children.Add(cancelButton, 2, 0);
@@ -249,7 +249,7 @@ namespace ZestyKitchenHelper
                     if (element.GetType() == typeof(ImageButton))
                         element.RemoveEffect(typeof(ImageTint));
                 }
-                transparentButton.ToggleEffects(new ImageTint() { tint = Color.FromHsla(1, .1, .5, .5) }, null);
+                transparentButton.ToggleEffects(new ImageTint() { tint = Color.FromHsla(1, .1, .5, .5), ImagePath = ContentManager.buttonTintImage }, null);
                 selectedCellIndex = cellIndex;
             };
 
@@ -361,6 +361,7 @@ namespace ZestyKitchenHelper
                 (int)(compareLayerPositionGetter(position) / (float)oldLayerCount * newLayerCount) + defaultLayerSpan);
             addCell(newCellPosition, defaultLayerSpan, selectedCell);
             // reset cell index
+            cabinet.GetGridCell(selectedCellIndex).GetButton().RemoveEffect(typeof(ImageTint));
             selectedCellIndex = -1;
         }
 
@@ -431,6 +432,7 @@ namespace ZestyKitchenHelper
             setLayerSpan(selectedCell, mergeLayerSpanGetter(selectedCell) + mergeLayerSpanGetter(nextCell));
             updateControlSpan(selectedCell);
             // reset cell index
+            cabinet.GetGridCell(selectedCellIndex).GetButton().RemoveEffect(typeof(ImageTint));
             selectedCellIndex = -1;
         }
 
@@ -726,7 +728,7 @@ namespace ZestyKitchenHelper
             {
                 if(selectedStorageCell != null)
                     selectedStorageCell.GetButton().RemoveEffect(typeof(ImageTint));
-                transparentButton.ToggleEffects(new ImageTint() { tint = Color.FromHsla(1, .1, .5, .5) }, null);
+                selectedStorageCell.GetButton().ToggleEffects(new ImageTint() { tint = Color.FromHsla(1, .1, .5, .5), ImagePath = ContentManager.buttonTintImage }, null);
                 selectedStorageCell = cell;
                 selectedCellIndex = cellIndex;
             };

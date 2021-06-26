@@ -10,70 +10,80 @@ using Utility;
 
 namespace ZestyKitchenHelper
 {
-    public class PageController : ContentPage
+    public class PageController : NavigationPage
     {
 
-        public void InitializePageSequence() {
+        public async void InitializePageSequence() {
             ContentManager.selectionPage = new SelectionPage();
-            Content = ContentManager.selectionPage.Content;
+            await PushAsync(ContentManager.selectionPage);
+            SetHasNavigationBar(RootPage, false);
         }
 
-        public void ToMainSelectionPage()
+        public async void ToMainSelectionPage()
         {
-            Content = ContentManager.selectionPage.Content;
+            await PushAsync(ContentManager.selectionPage);
         }
 
-        public void ToSingleSelectionPage()
+        public async void ToSingleSelectionPage(bool animated)
         {
             //ContentManager.singleSelectionPage.SetView();
             if (ContentManager.storageSelection == ContentManager.StorageSelection.cabinet)
             {
-                Content = new SingleSelectionPage(LocalStorageController.DeleteCabinet, FireBaseController.DeleteCabinet).Content;
+                await PushAsync(new SingleSelectionPage(LocalStorageController.DeleteCabinet, FireBaseController.DeleteCabinet), animated);
             }
             else
             {
-                Content = new SingleSelectionPage(LocalStorageController.DeleteFridge, FireBaseController.DeleteFridge).Content;
+                await PushAsync(new SingleSelectionPage(LocalStorageController.DeleteFridge, FireBaseController.DeleteFridge), animated);
             }
         }
-        public void ToUnplacedPage()
+        public async void ToUnplacedPage()
         {
-            Content = new UnplacedPage(FireBaseController.SaveItem, LocalStorageController.AddItem,
-                LocalStorageController.DeleteItem, FireBaseController.DeleteItem).Content;
+             await PushAsync(new UnplacedPage(FireBaseController.SaveItem, LocalStorageController.AddItem,
+                LocalStorageController.DeleteItem, FireBaseController.DeleteItem));
         }
         
-        public void ToAddItemPage(string name)
+        public async void ToAddItemPage(string name)
         {
             if (ContentManager.storageSelection == ContentManager.StorageSelection.fridge)
             {
-                Content = new CabinetAddPage(name).Content;
+                await PushAsync(new CabinetAddPage(name));
             }
             else
             {
-                Content = new CabinetAddPage(name).Content;
+                await PushAsync(new CabinetAddPage(name));
             }
         }
 
 
-        public void ToViewItemPage(string name, int directSelectIndex = -1, string directSelectStorageType = "")
+        public async void ToViewItemPage(string name, int directSelectIndex = -1, string directSelectStorageType = "")
         {
-            Content = new CabinetViewPage(name, LocalStorageController.DeleteItem, FireBaseController.DeleteItem,
-                LocalStorageController.UpdateItem, FireBaseController.SaveItem, directSelectIndex, directSelectStorageType).Content;
+            await PushAsync(new CabinetViewPage(name, LocalStorageController.DeleteItem, FireBaseController.DeleteItem,
+                LocalStorageController.UpdateItem, FireBaseController.SaveItem, directSelectIndex, directSelectStorageType));
         }
-        public void ToStorageCreationPage(bool newShelf, string name = "")
+        public async void ToStorageCreationPage(bool newShelf, string name = "")
         {
             if (ContentManager.storageSelection == ContentManager.StorageSelection.cabinet)
             {
-                Content = new CabinetEditPage(newShelf, LocalStorageController.AddCabinet, FireBaseController.SaveCabinet, name).Content;
+                await PushAsync(new CabinetEditPage(newShelf, LocalStorageController.AddCabinet, FireBaseController.SaveCabinet, name));
             }
             else
             {
-                Content = new FridgeEditPage(newShelf, LocalStorageController.AddFridge, FireBaseController.SaveFridge, name).Content;
+                await PushAsync(new FridgeEditPage(newShelf, LocalStorageController.AddFridge, FireBaseController.SaveFridge, name));
             }
         }
 
-        public void ToInfoPage(InfoPage infoPage)
+        public async void ToInfoPage(InfoPage infoPage)
         {
-            Content = infoPage.Content;
+            await PushAsync(infoPage);
+        }
+
+        public async void ToAddView(AddView addview)
+        {
+            await PushAsync(addview);
+        }
+        public async void ReturnToPrevious()
+        {
+            await PopAsync();
         }
     }
 }

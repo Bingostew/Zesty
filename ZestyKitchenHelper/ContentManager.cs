@@ -17,6 +17,10 @@ namespace ZestyKitchenHelper
         public static UserProfile sessionUserProfile;
         public static bool isUserNew;
 
+        public static double screenWidth;
+        public static double screenHeight;
+
+        public const string buttonTintImage = "button_tint.png";
         public const string cabinetCellIcon = "cabinet_cell.png";
         public const string cabinetLeftIcon = "cabinet_divider_left.png";
         public const string cabinetMiddleIcon = "cabinet_divider_middle.png";
@@ -53,10 +57,8 @@ namespace ZestyKitchenHelper
 
         public static Dictionary<string, Cabinet> CabinetMetaBase = new Dictionary<string, Cabinet>();
         public static Dictionary<string, Fridge> FridgeMetaBase = new Dictionary<string, Fridge>();
-        public static async void InitializeApp()
+        public static async void InitializeApp(double _screenWidth, double _screenHeight)
         {
-
-
             // Initialize ID Groups
             IDGenerator.InitializeIDGroup(itemStorageIdGenerator);
             IDGenerator.InitializeIDGroup(cabinetEditIdGenerator);
@@ -121,6 +123,10 @@ namespace ZestyKitchenHelper
                     baseItems.ForEach(i => LocalStorageController.UpdateItem(i));
                 }
             }
+
+            // Initialize screen width and height
+            screenHeight = _screenHeight;
+            screenWidth = _screenWidth;
         }
         /// <summary>
         /// Returns the string that represents the storage the current user is in.

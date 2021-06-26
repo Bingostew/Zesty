@@ -276,6 +276,7 @@ namespace Utility
         StorageCell GetGridCell(int ID);
         List<int> GetGridIDs();
         List<StorageCell> GetGridCells();
+        IEnumerable<View> GetChildren();
     }
 
 
@@ -340,6 +341,11 @@ namespace Utility
         public List<int> GetGridIDs()
         {
             return gridCells.Keys.ToList();
+        }
+
+        public IEnumerable<View> GetChildren()
+        {
+            return MainGrid.Children.ToList();
         }
     }
 
@@ -414,6 +420,11 @@ namespace Utility
         public List<int> GetGridIDs()
         {
             return gridCells.Keys.ToList();
+        }
+
+        public IEnumerable<View> GetChildren()
+        {
+            return MainGrid.Children.ToList().Concat(LeftGrid.Children.ToList()).Concat(RightGrid.Children.ToList());
         }
     }
     public static class PositionExtention

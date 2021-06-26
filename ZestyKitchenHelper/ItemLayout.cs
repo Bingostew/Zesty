@@ -96,7 +96,7 @@ namespace ZestyKitchenHelper
                 HorizontalOptions = LayoutOptions.End,
             };
             ChangeExpirationMarkColor();
-            GetAbsoluteLayout.Children.Add(expirationMark, new Rectangle(0, 0, 40, 40));
+            GetAbsoluteLayout.Children.Add(expirationMark, new Rectangle(0, 0, 40, 40), AbsoluteLayoutFlags.PositionProportional);
             return this;
         }
 
@@ -126,7 +126,7 @@ namespace ZestyKitchenHelper
             amountLabel = new Label() { Text = "X" + ItemData.Amount.ToString(), WidthRequest = 10, HeightRequest = 5, HorizontalTextAlignment = TextAlignment.Center,
                 BackgroundColor = Color.White, TextColor = Color.Black, FontAttributes = FontAttributes.Bold };
 
-            GetAbsoluteLayout.Children.Add(amountLabel, new Rectangle(1, 1, 30, 20), AbsoluteLayoutFlags.PositionProportional);
+            GetAbsoluteLayout.Children.Add(amountLabel, new Rectangle(1, 1, .15, .15), AbsoluteLayoutFlags.All);
             return this;
         }
         public ItemLayout AddMainImage()

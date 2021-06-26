@@ -12,7 +12,7 @@ namespace ZestyKitchenHelper
     public class CabinetAddPage : ContentPage
     {
         AbsoluteLayout pageContainer;
-        AbsoluteLayout addForm;
+        AddView addView;
         static View storageView;
         private static string storageName;
         const int unplacedGridRows = 2;
@@ -23,6 +23,7 @@ namespace ZestyKitchenHelper
         public CabinetAddPage(string _storageName)
         {
             storageName = _storageName;
+            
 
             //-- set up storage view
             var name = new Label() { Text = _storageName, FontSize = 30, TextColor = Color.Black };
@@ -51,15 +52,20 @@ namespace ZestyKitchenHelper
                                 .AddInfoIcon();
             }
             , true);
-            addForm = AddView.GetAddForm(LocalStorageController.AddItem, FireBaseController.SaveItem, storageName, true, partialUnplacedGrid);
+            addView = new AddView(LocalStorageController.AddItem, FireBaseController.SaveItem, storageName, true, partialUnplacedGrid);
 
             var backButton = new ImageButton() { Source = ContentManager.backButton, Aspect = Aspect.Fill, BackgroundColor = Color.Transparent };
-            backButton.Clicked += (o, a) =>
+            backButton.Clicked += async (o, a) =>
             {
-                ContentManager.pageController.ToSingleSelectionPage();
+                await ContentManager.pageController.PopAsync(false);
+                ContentManager.pageController.ToSingleSelectionPage(false);
                 foreach (ItemLayout child in partialUnplacedGrid.Children)
                 {
                     child.iconImage.RemoveEffect(typeof(ScreenTouch));
+                }
+                foreach(StorageCell child in ContentManager.GetSelectedStorage(storageName).GetGridCells())
+                {
+                    child.GetButton().RemoveEffect(typeof(ImageTint));
                 }
                 GridManager.RemoveGrid(ContentManager.pUnplacedGridName);
             };
@@ -97,7 +103,7 @@ namespace ZestyKitchenHelper
                 }
             };
             var addNewButton = new ImageButton() { Source = ContentManager.addIcon, BackgroundColor = Color.Transparent };
-            addNewButton.Clicked += (obj, args) => { addForm.IsVisible = true; };
+            addNewButton.Clicked += (obj, args) => { ContentManager.pageController.ToAddView(addView); };
             var searchBar = new SearchBar() { Text = ContentManager.defaultSearchAllBarText, MinimumWidthRequest = 300 };
             searchBar.Focused += (obj, args) => searchBar.Text = "";
             searchBar.Unfocused += (obj, args) => { if (searchBar.Text.Length == 0) searchBar.Text = ContentManager.defaultSearchAllBarText; };
@@ -143,8 +149,7 @@ namespace ZestyKitchenHelper
             {
                 Children =
                 {
-                    pageContainer,
-                    addForm
+                    pageContainer
                 }
             };
             AbsoluteLayout.SetLayoutBounds(pageContainer, new Rectangle(0, 0, 1, 1));

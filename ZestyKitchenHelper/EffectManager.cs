@@ -33,7 +33,7 @@ namespace ZestyKitchenHelper
                 {
                     cell.GetButton().RemoveEffect(typeof(ImageTint));
                 }
-                args.ContactView[0].ToggleEffects(new ImageTint() { tint = Color.FromRgba(100, 30, 30, 70) }, null);
+                args.ContactView[0].AddEffect(new ImageTint() { tint = Color.FromRgba(100, 30, 30, 70), ImagePath = ContentManager.buttonTintImage });
                 if (args.Type == TouchActionEventArgs.TouchActionType.Released)
                 {
                     args.ContactView[0].RemoveEffect(typeof(ImageTint));
@@ -42,7 +42,7 @@ namespace ZestyKitchenHelper
                     updateShelf(currentStorageName, itemIcon, args.ContactIndex[0]);
                 }
             }
-            else if (args.ContactView != null) { args.ContactView[0].ToggleEffects(new ImageTint(), null); }
+            else if (args.ContactView != null) { args.ContactView[0].ToggleEffects(new ImageTint() { tint = Color.FromRgba(100, 30, 30, 70), ImagePath = ContentManager.buttonTintImage }, null); }
 
         }
 
