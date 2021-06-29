@@ -76,7 +76,6 @@ namespace ZestyKitchenHelper.iOS
 
                 //  var serializedLoginResponse = JsonConvert.SerializeObject(userProfile);
                 ContentManager.sessionUserProfile = userProfile;
-                Console.WriteLine("REEEEE");
                 AppDelegate.ToPageControllerAction.Invoke();
 
             }

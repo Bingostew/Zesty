@@ -123,7 +123,7 @@ namespace ZestyKitchenHelper
         }
         public ItemLayout AddAmountMark()
         {
-            amountLabel = new Label() { Text = "X" + ItemData.Amount.ToString(), WidthRequest = 10, HeightRequest = 5, HorizontalTextAlignment = TextAlignment.Center,
+            amountLabel = new Label() { Text = ItemData.Amount.ToString(), HorizontalTextAlignment = TextAlignment.Center,
                 BackgroundColor = Color.White, TextColor = Color.Black, FontAttributes = FontAttributes.Bold };
 
             GetAbsoluteLayout.Children.Add(amountLabel, new Rectangle(1, 1, .15, .15), AbsoluteLayoutFlags.All);
@@ -145,8 +145,8 @@ namespace ZestyKitchenHelper
         public ItemLayout AddTitle()
         {
             itemTitle = new Label() 
-            { Text = ItemData.Name, HorizontalTextAlignment = TextAlignment.Center, BackgroundColor = Color.White, TextColor = Color.Black, FontSize = 12 };
-            GetAbsoluteLayout.Children.Add(itemTitle, new Rectangle(0, 1, .6, .3), AbsoluteLayoutFlags.All);
+            { Text = ItemData.Name, HorizontalTextAlignment = TextAlignment.Center, BackgroundColor = Color.White, TextColor = Color.Black, FontSize = 12, LineBreakMode = LineBreakMode.HeadTruncation };
+            GetAbsoluteLayout.Children.Add(itemTitle, new Rectangle(0, 1, .75, .3), AbsoluteLayoutFlags.All);
 
             return this;
         }
@@ -182,7 +182,7 @@ namespace ZestyKitchenHelper
         public void SubtractAmount()
         {
             ItemData.Amount--;
-            amountLabel.Text = "X" + ItemData.Amount.ToString();
+            amountLabel.Text = ItemData.Amount.ToString();
         }
 
         public void RecalculateDate()

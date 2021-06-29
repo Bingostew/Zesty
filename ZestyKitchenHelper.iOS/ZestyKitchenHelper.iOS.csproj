@@ -250,4 +250,16 @@
   <ItemGroup>
     <BundleResource Include="Resources\button_tint.png" />
   </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\subdivide.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\merge.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\delete_cell_button.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\small_arrow.png" />
+  </ItemGroup>
 </Project>

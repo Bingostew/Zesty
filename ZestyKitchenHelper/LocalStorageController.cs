@@ -71,15 +71,15 @@ namespace ZestyKitchenHelper
         }
         public static Task<Item> GetItemAsync(int ID)
         {
-            return SQLDatabase.Table<Item>().Where(i => i.ID == ID).FirstAsync();
+            return SQLDatabase.Table<Item>().Where(i => i.ID == ID).FirstOrDefaultAsync();
         }
         public static Task<Cabinet> GetCabinetAsync(string cabinetName)
         {
-            return SQLDatabase.Table<Cabinet>().Where(c => c.Name == cabinetName).FirstAsync();
+            return SQLDatabase.Table<Cabinet>().Where(c => c.Name == cabinetName).FirstOrDefaultAsync();
         }
         public static Task<Fridge> GetFridgeAsync(string fridgeName)
         {
-            return SQLDatabase.Table<Fridge>().Where(c => c.Name == fridgeName).FirstAsync();
+            return SQLDatabase.Table<Fridge>().Where(c => c.Name == fridgeName).FirstOrDefaultAsync();
         }
 
         // Insertion/Update Methods

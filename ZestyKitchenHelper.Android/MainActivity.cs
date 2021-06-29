@@ -53,10 +53,7 @@ namespace ZestyKitchenHelper.Droid
 
             base.OnCreate(savedInstanceState);
 
-            Xamarin.Essentials.Platform.Init(this, savedInstanceState);
-            Xamarin.Forms.Forms.Init(this, savedInstanceState);
             ZXing.Net.Mobile.Forms.Android.Platform.Init();
-            ZXing.Mobile.MobileBarcodeScanner.Initialize(Application);
 
             SetContentView(Resource.Layout.LoginPage);
             loadingOverlay = FindViewById<TextView>(Resource.Id.loadingOverlay);
@@ -159,6 +156,7 @@ namespace ZestyKitchenHelper.Droid
         private void ToSelectionActivity()
         {
             ContentManager.InitializeApp(Resources.DisplayMetrics.WidthPixels, Resources.DisplayMetrics.HeightPixels);
+            ContentManager.pageController.InitializePageSequence();
             LoadingPage();
             StartBackgroundCheck();
             StartActivity(new Intent(this, typeof(SelectionActivity)));

@@ -58,12 +58,12 @@ namespace ZestyKitchenHelper.iOS
 
             global::Xamarin.Forms.Forms.Init();
             global::ZXing.Net.Mobile.Forms.iOS.Platform.Init();
-            LoadApplication(new App());
 
             ToPageControllerAction = ToPageController;
             UIApplication.SharedApplication.StatusBarHidden = true;
             Window = new UIWindow(UIScreen.MainScreen.Bounds);
 
+            LoadApplication(new App());
             ContentManager.InitializeApp(UIScreen.MainScreen.Bounds.Width, UIScreen.MainScreen.Bounds.Height);
 
             initialViewController = storyBoard.InstantiateViewController("LoginViewController");
@@ -76,6 +76,8 @@ namespace ZestyKitchenHelper.iOS
 
         private void ToPageController()
         {
+            ContentManager.pageController.InitializePageSequence();
+            (Xamarin.Forms.Application.Current as App).SetMainPage();
             var renderer = Platform.CreateRenderer(ContentManager.pageController);
 
             renderer.NativeView.Frame = UIScreen.MainScreen.Bounds;
@@ -86,7 +88,6 @@ namespace ZestyKitchenHelper.iOS
             renderer.Element.Layout(UIScreen.MainScreen.Bounds.ToRectangle());
 
             Window.RootViewController = renderer.ViewController;
-            (Xamarin.Forms.Application.Current as App).SetMainPage();
         }
 
         public override bool OpenUrl(UIApplication application, NSUrl url, string sourceApplication, NSObject annotation)

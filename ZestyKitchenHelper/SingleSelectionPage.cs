@@ -11,11 +11,11 @@ namespace ZestyKitchenHelper
 {
     public class SingleSelectionPage : ContentPage
     {
+        private const int spacing = 5;
 
         private List<View> newSelectionButton = new List<View>();
         private ScrollView scrollView;
         private Grid mainGrid;
-        private ImageButton returnButton;
 
         private List<List<View>> gridList = new List<List<View>>();
 
@@ -25,12 +25,18 @@ namespace ZestyKitchenHelper
         {
             deleteStorageLocal = _deleteStorageLocal;
             deleteStorageBase = _deleteStorageBase;
+
+            var titleGrid = new TopPage().GetGrid();
+            titleGrid.HeightRequest = ContentManager.screenHeight * TopPage.top_bar_height_proportional;
+            
             mainGrid = new Grid()
             {
+                RowSpacing = spacing,
+                ColumnSpacing = spacing,
+                Margin = new Thickness(spacing),
                 RowDefinitions =
                 {
-                    new RowDefinition(){Height = 200 },
-                    new RowDefinition(){Height = 200}
+                    new RowDefinition(){Height = ContentManager.screenWidth / 2 - spacing * 3 },
                 },
                 ColumnDefinitions =
                 {
@@ -42,8 +48,6 @@ namespace ZestyKitchenHelper
             var newButton = new ImageButton() { Source = ContentManager.addIcon, Aspect = Aspect.Fill, BackgroundColor = Color.Transparent };
             newButton.Clicked += (obj, args) => ContentManager.pageController.ToStorageCreationPage(true);
             newSelectionButton.Add(newButton);
-            returnButton = new ImageButton() { Source = ContentManager.backButton, WidthRequest = 80, HorizontalOptions = LayoutOptions.StartAndExpand };
-            returnButton.Clicked += (o, a) => ContentManager.pageController.ToMainSelectionPage();
 
             scrollView = new ScrollView()
             {
@@ -51,15 +55,13 @@ namespace ZestyKitchenHelper
                 Content = mainGrid
             };
 
-            scrollView.Scrolled += (obj, args) => Console.WriteLine("scrolled");
-
             SetView();
 
             Content = new StackLayout()
             {
                 Children =
                 {
-                    returnButton,
+                    titleGrid,
                     scrollView
                 }
             };

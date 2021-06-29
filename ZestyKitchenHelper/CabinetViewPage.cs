@@ -11,6 +11,8 @@ namespace ZestyKitchenHelper
     public class CabinetViewPage : ContentPage
     {
         const int max_grid_count = 20;
+        private const int tool_grid_margin = 10;
+
         private Grid currentGrid;
         private AbsoluteLayout viewOverlay;
         private string storageName;
@@ -26,6 +28,10 @@ namespace ZestyKitchenHelper
             updateItemBaseEvent = updateItemBase;
             deleteItemBaseEvent = deleteItemBase;
             deleteItemLocalEvent = deleteItemLocal;
+
+            var titleGrid = new TopPage().GetGrid();
+            titleGrid.HeightRequest = ContentManager.screenHeight * TopPage.top_bar_height_proportional;
+
             var backgroundImage = ContentManager.storageSelection == ContentManager.StorageSelection.fridge ? ContentManager.fridgeIcon : ContentManager.cabinetCellIcon;
             storageName = name;
             Image backgroundCell = new Image()
@@ -53,15 +59,19 @@ namespace ZestyKitchenHelper
 
             };
             var lastPageButton = new ImageButton() { Source = ContentManager.countIcon, BackgroundColor = Color.Transparent,
-                Rotation = 180, Aspect = Aspect.Fill, WidthRequest = 50 };
+                Rotation = 180, Aspect = Aspect.Fill };
             lastPageButton.Clicked += (obj, args) =>
             {
                 var index = currentGrid.GetGridChilrenList().IndexOf(currentGrid.Children[0]);
                 if (index > max_grid_count) NextPresetPage(index - max_grid_count);
                 else NextPresetPage(0);
             };
-            var nextPageButton = new ImageButton() { Source = ContentManager.countIcon, BackgroundColor = Color.Transparent,
-                Aspect = Aspect.Fill, WidthRequest = 50};
+            var nextPageButton = new ImageButton()
+            {
+                Source = ContentManager.countIcon,
+                BackgroundColor = Color.Transparent,
+                Aspect = Aspect.Fill
+            };
             nextPageButton.Clicked += (obj, args) =>
             {
                 Console.WriteLine("children count " + currentGrid.GetGridChilrenList().IndexOf(currentGrid.Children[currentGrid.Children.Count - 1]));
@@ -70,26 +80,27 @@ namespace ZestyKitchenHelper
             };
             Grid toolGrid = new Grid()
             {
+                Margin = new Thickness(tool_grid_margin),
                 ColumnSpacing = 20,
                 RowDefinitions =
                 {
-                    new RowDefinition(){Height = 50}
+                    new RowDefinition()
                 },
                 ColumnDefinitions =
                 {
-                    new ColumnDefinition(){Width = 40 },
-                    new ColumnDefinition(){Width = 40 },
-                    new ColumnDefinition()
+                    new ColumnDefinition(),
+                    new ColumnDefinition(),
+                    new ColumnDefinition(){Width = new GridLength(3, GridUnitType.Star)}
                 }
             };
             toolGrid.Children.Add(lastPageButton, 0, 0);
             toolGrid.Children.Add(nextPageButton, 1, 0);
             toolGrid.Children.Add(sortSelector, 2, 0);
 
-            AbsoluteLayout.SetLayoutBounds(toolGrid, new Rectangle(150, 40, .6, 100));
-            AbsoluteLayout.SetLayoutFlags(toolGrid, AbsoluteLayoutFlags.WidthProportional);
-            AbsoluteLayout.SetLayoutBounds(backgroundCell, new Rectangle(0, 100, 1, Application.Current.MainPage.Height - 100));
-            AbsoluteLayout.SetLayoutFlags(backgroundCell, AbsoluteLayoutFlags.WidthProportional);
+            AbsoluteLayout.SetLayoutBounds(toolGrid, new Rectangle(1, 0, 0.75, 0.1));
+            AbsoluteLayout.SetLayoutFlags(toolGrid, AbsoluteLayoutFlags.All);
+            AbsoluteLayout.SetLayoutBounds(backgroundCell, new Rectangle(0, 1, 1, .9));
+            AbsoluteLayout.SetLayoutFlags(backgroundCell, AbsoluteLayoutFlags.All);
             viewOverlay = new AbsoluteLayout()
             {
                 IsVisible = false,
@@ -106,9 +117,6 @@ namespace ZestyKitchenHelper
             viewOverlay.ChildAdded += (obj, args) => viewOverlay.ForceLayout();
 
             var storageLabel = new Label() { Text = name, FontSize = 40, TextColor = Color.Black, HorizontalTextAlignment = TextAlignment.Center };
-            var returnButton = new ImageButton() { Source = ContentManager.backButton, BackgroundColor = Color.Transparent, WidthRequest = 100, HeightRequest = 100 };
-            returnButton.Clicked += (o,a) => ContentManager.pageController.ToSingleSelectionPage(true);
-
             var storageView = ContentManager.GetStorageView(name);
 
             storageView.HorizontalOptions = LayoutOptions.CenterAndExpand;
@@ -154,7 +162,7 @@ namespace ZestyKitchenHelper
                         WidthRequest = Application.Current.MainPage.Width,
                         Children =
                         {
-                            returnButton,
+                            titleGrid,
                             storageLabel,
                             storageView,
                         }

@@ -16,8 +16,9 @@ namespace ZestyKitchenHelper
         public bool cabinetBinded;
         public InfoPage(Item item)
         {
-            var backButton = new ImageButton() { Source = ContentManager.backButton, Aspect = Aspect.Fill, WidthRequest = 50, HeightRequest = 50, HorizontalOptions = LayoutOptions.StartAndExpand };
-            backButton.Clicked += (obj, args) => ContentManager.pageController.ReturnToPrevious();
+            var titleGrid = new TopPage().GetGrid();
+            titleGrid.HeightRequest = ContentManager.screenHeight * TopPage.top_bar_height_proportional;
+
             var itemLabel = new Label() { Text = item.Name, TextColor = Color.Black, FontSize = 20, FontAttributes = FontAttributes.Bold, HorizontalTextAlignment = TextAlignment.Center };
             var itemImage = new Image() { Source = item.Icon.Substring(6), Aspect = Aspect.Fill, WidthRequest = 150, HeightRequest = 150, HorizontalOptions = LayoutOptions.StartAndExpand};
             var expirationDateLabel = new Label() { Text = "Expiration Date: " + item.expMonth + "/" + item.expDay + "/" + item.expYear, TextColor = Color.Black, FontSize = 20  };
@@ -35,7 +36,7 @@ namespace ZestyKitchenHelper
 
             pageContainer = new StackLayout()
             {
-                Children = { backButton, itemLabel, itemImage, expirationDateLabel, amountLabel, locationLabel, toStorageViewButton }
+                Children = { titleGrid, itemLabel, itemImage, expirationDateLabel, amountLabel, locationLabel, toStorageViewButton }
             };
             Content = pageContainer;
         }

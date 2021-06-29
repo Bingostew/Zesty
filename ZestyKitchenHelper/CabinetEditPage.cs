@@ -11,7 +11,9 @@ namespace ZestyKitchenHelper
 {
     public abstract class EditPage : ContentPage
     {
-        protected Dictionary<ImageButton, Image> dividerHelper = new Dictionary<ImageButton, Image>();
+        protected const int side_margin = 8;
+        protected const int bottom_margin = 10;
+        protected const int top_margin = 5;
 
         protected ImageSource cabinetCellImage = ContentManager.cabinetCellIcon;
         protected ImageSource cabinetDividerLeft = "cabinet_divider_left.png";
@@ -31,15 +33,13 @@ namespace ZestyKitchenHelper
 
         protected string nameLegacy;
         protected string name;
-        protected double screenWidth = Application.Current.MainPage.Width;
-        protected double screenHeight = Application.Current.MainPage.Width;
 
         protected abstract string cellImageSource { get; }
         public EditPage(bool newShelf, string storageName = "")
         {
             name = storageName;
             nameLegacy = storageName;
-            var nameEntry = new Entry() { Text = "untitled" };
+            var nameEntry = new Entry() { Text = "untitled", Margin = new Thickness(0, top_margin, 0, 0) };
             nameEntry.TextChanged += (obj, args) => name = args.NewTextValue;
             nameEntry.Completed += (obj, arg) => {
                 StoreCabinetInfo();
@@ -50,6 +50,7 @@ namespace ZestyKitchenHelper
 
             var saveGrid = new Grid()
             {
+                Margin = new Thickness(0,0,0, bottom_margin),
                 HorizontalOptions = LayoutOptions.CenterAndExpand,
                 VerticalOptions = LayoutOptions.EndAndExpand,
                 ColumnDefinitions =
@@ -62,8 +63,8 @@ namespace ZestyKitchenHelper
 
             var saveButton = new Button() { Text = "Save", BackgroundColor = Color.Blue, TextColor = Color.Black };
             var cancelButton = new Button() { Text = "Exit", BackgroundColor = Color.Red, TextColor = Color.Black };
-            saveButton.Clicked += (obj, args) => ConfirmationSaveEvent(async () => { await ContentManager.pageController.PopAsync(false); ContentManager.pageController.ToSingleSelectionPage(false);  });
-            cancelButton.Clicked +=(obj, args) => ConfirmationCancelEvent(async () => { await ContentManager.pageController.PopAsync(false); ContentManager.pageController.ToSingleSelectionPage(false); });
+            saveButton.Clicked += (obj, args) => ConfirmationSaveEvent(() =>  ContentManager.pageController.ReturnToPrevious()  );
+            cancelButton.Clicked +=(obj, args) => ConfirmationCancelEvent(() =>  ContentManager.pageController.ReturnToPrevious() );
 
             saveGrid.Children.Add(saveButton, 0, 0);
             saveGrid.Children.Add(cancelButton, 2, 0);
@@ -84,9 +85,10 @@ namespace ZestyKitchenHelper
 
         protected virtual void SetBasicView(bool newShelf)
         {
-            storageGrid.WidthRequest = screenWidth;
-            storageGrid.HeightRequest = 7 * screenWidth / 8;
+            storageGrid.WidthRequest = ContentManager.screenWidth;
+            storageGrid.HeightRequest = ContentManager.screenHeight * 0.75;
             storageGrid.BackgroundColor = Color.SaddleBrown;
+            storageGrid.Margin = new Thickness(side_margin);
 
             pageContent.Children.Add(GetAssetGrid());
             pageContent.Children.Add(storageGrid);
@@ -182,6 +184,7 @@ namespace ZestyKitchenHelper
         {
             Grid assetGrid = new Grid()
             {
+                Margin = new Thickness(side_margin, 0),
                 RowDefinitions =
                 {
                     new RowDefinition() {Height = 50 },
@@ -575,12 +578,12 @@ namespace ZestyKitchenHelper
                 ColumnDefinitions = new ColumnDefinitionCollection() 
                 {
                     new ColumnDefinition() { Width = GridLength.Star }, 
-                    new ColumnDefinition(){Width = main_fridge_width_percentage * screenWidth },
+                    new ColumnDefinition(){Width = main_fridge_width_percentage * ContentManager.screenWidth },
                     new ColumnDefinition(){Width = GridLength.Star}
                 }
             };
             containerGrid.ColumnSpacing = fridge_grid_spacing;
-            containerGrid.HeightRequest = fridge_grid_height_percentage * screenHeight;
+            containerGrid.HeightRequest = fridge_grid_height_percentage * ContentManager.screenHeight;
 
             GridManager.AddGridItem(containerGrid, new List<View>() { leftSideStorageGrid, storageGrid, rightSideStorageGrid }, false);
 
@@ -662,6 +665,7 @@ namespace ZestyKitchenHelper
         {
             Grid assetGrid = new Grid()
             {
+                Margin = new Thickness(side_margin, 0),
                 RowDefinitions =
                 {
                     new RowDefinition() {Height = 50 },

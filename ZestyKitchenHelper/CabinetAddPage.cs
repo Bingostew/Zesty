@@ -11,6 +11,8 @@ namespace ZestyKitchenHelper
 {
     public class CabinetAddPage : ContentPage
     {
+        private const int storage_margin = 10;
+
         AbsoluteLayout pageContainer;
         AddView addView;
         static View storageView;
@@ -23,14 +25,14 @@ namespace ZestyKitchenHelper
         public CabinetAddPage(string _storageName)
         {
             storageName = _storageName;
-            
 
             //-- set up storage view
-            var name = new Label() { Text = _storageName, FontSize = 30, TextColor = Color.Black };
+            var name = new Label() { Text = _storageName, FontSize = 30, TextColor = Color.Black, Margin = new Thickness(0, storage_margin, 0, 0)};
             storageView = ContentManager.GetStorageView(storageName);
-            storageView.WidthRequest = Application.Current.MainPage.Width * .8;
-            storageView.HeightRequest = 5 * Application.Current.MainPage.Height / 8;
+            storageView.WidthRequest = ContentManager.screenWidth;
+            storageView.HeightRequest = ContentManager.screenHeight * .75;
             storageView.VerticalOptions = LayoutOptions.EndAndExpand;
+            storageView.Margin = new Thickness(storage_margin);
 
             //-- set up unplaced grid
             unplacedGrid = GridManager.GetGrid(ContentManager.unplacedGridName);
@@ -54,21 +56,20 @@ namespace ZestyKitchenHelper
             , true);
             addView = new AddView(LocalStorageController.AddItem, FireBaseController.SaveItem, storageName, true, partialUnplacedGrid);
 
-            var backButton = new ImageButton() { Source = ContentManager.backButton, Aspect = Aspect.Fill, BackgroundColor = Color.Transparent };
-            backButton.Clicked += async (o, a) =>
+            // title grid
+            var titleGrid = new TopPage(() =>
             {
-                await ContentManager.pageController.PopAsync(false);
-                ContentManager.pageController.ToSingleSelectionPage(false);
                 foreach (ItemLayout child in partialUnplacedGrid.Children)
                 {
                     child.iconImage.RemoveEffect(typeof(ScreenTouch));
                 }
-                foreach(StorageCell child in ContentManager.GetSelectedStorage(storageName).GetGridCells())
+                foreach (StorageCell child in ContentManager.GetSelectedStorage(storageName).GetGridCells())
                 {
                     child.GetButton().RemoveEffect(typeof(ImageTint));
                 }
                 GridManager.RemoveGrid(ContentManager.pUnplacedGridName);
-            };
+            }).GetGrid();
+          
 
             gridFootIndex = 0;
             var gridPageSelectGrid = new Grid()
@@ -134,16 +135,13 @@ namespace ZestyKitchenHelper
             gridPageSelectGrid.Children.Add(addNewButton, 0, 0);
             gridPageSelectGrid.Children.Add(searchBar, 3, 0);
 
-            var infoGrid = new Grid() { HeightRequest = 40, ColumnDefinitions = { new ColumnDefinition() { Width = 100 }, new ColumnDefinition() } };
-            infoGrid.Children.Add(backButton, 0, 0);
-            infoGrid.Children.Add(name, 1, 0);
-
             pageContainer = new AbsoluteLayout();
             pageContainer.BackgroundColor = Color.Wheat;
-            pageContainer.Children.Add(infoGrid, new Rectangle(0, 0, 1, .1), AbsoluteLayoutFlags.All);
-            pageContainer.Children.Add(storageView, new Rectangle(.5, .9, .8, .5), AbsoluteLayoutFlags.All);
-            pageContainer.Children.Add(gridPageSelectGrid, new Rectangle(0, .07, 1, .1), AbsoluteLayoutFlags.All);
-            pageContainer.Children.Add(partialUnplacedGrid, new Rectangle(0, .25, 1, .3), AbsoluteLayoutFlags.All);
+            pageContainer.Children.Add(titleGrid, new Rectangle(0, 0, 1, TopPage.top_bar_height_proportional), AbsoluteLayoutFlags.All);
+            pageContainer.Children.Add(name, new Rectangle(0, .1, 1, .1), AbsoluteLayoutFlags.All);
+            pageContainer.Children.Add(storageView, new Rectangle(1, 1, 1, .7), AbsoluteLayoutFlags.All);
+            pageContainer.Children.Add(gridPageSelectGrid, new Rectangle(0, .175, 1, .1), AbsoluteLayoutFlags.All);
+            pageContainer.Children.Add(partialUnplacedGrid, new Rectangle(0, .3, 1, .3), AbsoluteLayoutFlags.All);
 
             Content = new AbsoluteLayout()
             {

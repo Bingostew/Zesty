@@ -125,8 +125,10 @@ namespace ZestyKitchenHelper
             }
 
             // Initialize screen width and height
-            screenHeight = _screenHeight;
-            screenWidth = _screenWidth;
+            // screenHeight = _screenHeight;
+            // screenWidth = _screenWidth;
+            screenHeight = DeviceDisplay.MainDisplayInfo.Height / DeviceDisplay.MainDisplayInfo.Density;
+            screenWidth = DeviceDisplay.MainDisplayInfo.Width / DeviceDisplay.MainDisplayInfo.Density; 
         }
         /// <summary>
         /// Returns the string that represents the storage the current user is in.

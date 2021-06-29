@@ -20,7 +20,6 @@ namespace ZestyKitchenHelper.Droid
     [Activity(MainLauncher = true, NoHistory = true, Theme = "@style/MainTheme.Splash")]
     public class SplashActivity : FragmentActivity
     {
-        Android.Support.V4.App.FragmentManager manager;
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);

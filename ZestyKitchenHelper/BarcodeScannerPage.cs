@@ -14,7 +14,7 @@ namespace ZestyKitchenHelper
         ZXingScannerView scannerView;
         ZXingDefaultOverlay scannerOverlay;
 
-        public BarcodeScannerPage(Action toAddPage) : base()
+        public BarcodeScannerPage(AddView addView) : base()
         {
             scannerView = new ZXingScannerView()
             {
@@ -23,6 +23,7 @@ namespace ZestyKitchenHelper
             scannerView.OnScanResult += async r =>
             {
                 scannerView.IsAnalyzing = false;
+                scannerView.IsScanning = false;
 
                 HttpClient httpClient = new HttpClient();
                 Uri uri = new Uri(string.Format("https://api.upcitemdb.com/prod/trial/lookup?upc={0}", r.Text));
@@ -33,9 +34,15 @@ namespace ZestyKitchenHelper
                     JsonTextReader jsonTextReader = new JsonTextReader(new System.IO.StringReader(await response.Content.ReadAsStringAsync()));
                     JsonSerializer jsonSerializer = new JsonSerializer();
                     BarcodeItem barcodeItem = jsonSerializer.Deserialize<BarcodeItem>(jsonTextReader);
-                    Device.BeginInvokeOnMainThread(async () => await ContentManager.pageController.DisplayAlert("Result", barcodeItem.items[0].title, "Cancel"));    
+                    Device.BeginInvokeOnMainThread(async () =>
+                    {
+                        var itemName = barcodeItem.items[0].title;
+                        await ContentManager.pageController.DisplayAlert("Result", barcodeItem.items[0].title, "Cancel");
+                        addView.SetProductName(itemName);
+                        ContentManager.pageController.ReturnToPrevious();
+                    });
                 }
-                toAddPage?.Invoke();
+
             };
             scannerOverlay = new ZXingDefaultOverlay()
             {
@@ -65,18 +72,13 @@ namespace ZestyKitchenHelper
             base.OnDisappearing();
 
             scannerView.IsScanning = false;
+            scannerView.IsAnalyzing = false;
         }
 
         public void StartScanning()
         {
-            Console.WriteLine("BarcodeScanner 69 start scanning ");
             scannerView.IsScanning = true;
             scannerView.IsAnalyzing = true;
         }
-        public void StopScanning()
-        {
-            scannerView.IsScanning = false;
-        }
-
     }
 }

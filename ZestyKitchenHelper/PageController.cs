@@ -10,80 +10,162 @@ using Utility;
 
 namespace ZestyKitchenHelper
 {
-    public class PageController : NavigationPage
+    public class PageController : ContentPage
     {
-
-        public async void InitializePageSequence() {
-            ContentManager.selectionPage = new SelectionPage();
-            await PushAsync(ContentManager.selectionPage);
-            SetHasNavigationBar(RootPage, false);
-        }
-
-        public async void ToMainSelectionPage()
+        private const string unplaced_page_name = "unplaced page";
+        private const string view_page_name = "view page";
+        private const string add_page_name = "add page";
+        private const string single_selection_name = "single selection page";
+        private const string edit_page_name = "edit page";
+        private const string info_page_name = "info page";
+        private const string selection_name = "selection page";
+        private const string add_view_name = "add view";
+        private const string scan_page_name = "scan page";
+        private List<string> navigationStack = new List<string>();
+        private List<List<object>> navigationParams = new List<List<object>>();
+        public void InitializePageSequence()
         {
-            await PushAsync(ContentManager.selectionPage);
+            ContentManager.selectionPage = new SelectionPage();
+            Content = ContentManager.selectionPage.Content;
+            navigationStack.Add(selection_name);
+            navigationParams.Add(new List<object>() { });
         }
 
-        public async void ToSingleSelectionPage(bool animated)
+        public void ToMainSelectionPage()
+        {
+            Content = ContentManager.selectionPage.Content;
+            navigationStack.Add(selection_name);
+            navigationParams.Add(new List<object>() { });
+        }
+
+        public void ToSingleSelectionPage()
         {
             //ContentManager.singleSelectionPage.SetView();
             if (ContentManager.storageSelection == ContentManager.StorageSelection.cabinet)
             {
-                await PushAsync(new SingleSelectionPage(LocalStorageController.DeleteCabinet, FireBaseController.DeleteCabinet), animated);
+                Content = new SingleSelectionPage(LocalStorageController.DeleteCabinet, FireBaseController.DeleteCabinet).Content;
             }
             else
             {
-                await PushAsync(new SingleSelectionPage(LocalStorageController.DeleteFridge, FireBaseController.DeleteFridge), animated);
+
+                Content = new SingleSelectionPage(LocalStorageController.DeleteFridge, FireBaseController.DeleteFridge).Content;
             }
+            navigationStack.Add(single_selection_name);
+            navigationParams.Add(new List<object>() { });
         }
-        public async void ToUnplacedPage()
+        public void ToUnplacedPage()
         {
-             await PushAsync(new UnplacedPage(FireBaseController.SaveItem, LocalStorageController.AddItem,
-                LocalStorageController.DeleteItem, FireBaseController.DeleteItem));
+            Content = new UnplacedPage(FireBaseController.SaveItem, LocalStorageController.AddItem,
+               LocalStorageController.DeleteItem, FireBaseController.DeleteItem).Content;
+
+            navigationStack.Add(unplaced_page_name);
+            navigationParams.Add(new List<object>() { });
         }
-        
-        public async void ToAddItemPage(string name)
+
+        public void ToAddItemPage(string name)
         {
             if (ContentManager.storageSelection == ContentManager.StorageSelection.fridge)
             {
-                await PushAsync(new CabinetAddPage(name));
+                Content = new CabinetAddPage(name).Content;
             }
             else
             {
-                await PushAsync(new CabinetAddPage(name));
+                Content = new CabinetAddPage(name).Content;
             }
+            navigationStack.Add(add_page_name);
+            navigationParams.Add(new List<object>() { name });
         }
 
 
-        public async void ToViewItemPage(string name, int directSelectIndex = -1, string directSelectStorageType = "")
+        public void ToViewItemPage(string name, int directSelectIndex = -1, string directSelectStorageType = "")
         {
-            await PushAsync(new CabinetViewPage(name, LocalStorageController.DeleteItem, FireBaseController.DeleteItem,
-                LocalStorageController.UpdateItem, FireBaseController.SaveItem, directSelectIndex, directSelectStorageType));
+            Content = new CabinetViewPage(name, LocalStorageController.DeleteItem, FireBaseController.DeleteItem,
+                LocalStorageController.UpdateItem, FireBaseController.SaveItem, directSelectIndex, directSelectStorageType).Content;
+
+            navigationStack.Add(view_page_name);
+            navigationParams.Add(new List<object>() { name, directSelectIndex, directSelectStorageType });
         }
-        public async void ToStorageCreationPage(bool newShelf, string name = "")
+        public void ToStorageCreationPage(bool newShelf, string name = "")
         {
             if (ContentManager.storageSelection == ContentManager.StorageSelection.cabinet)
             {
-                await PushAsync(new CabinetEditPage(newShelf, LocalStorageController.AddCabinet, FireBaseController.SaveCabinet, name));
+                Content = new CabinetEditPage(newShelf, LocalStorageController.AddCabinet, FireBaseController.SaveCabinet, name).Content;
             }
             else
             {
-                await PushAsync(new FridgeEditPage(newShelf, LocalStorageController.AddFridge, FireBaseController.SaveFridge, name));
+                Content = new FridgeEditPage(newShelf, LocalStorageController.AddFridge, FireBaseController.SaveFridge, name).Content;
             }
+            navigationStack.Add(edit_page_name);
+            navigationParams.Add(new List<object>() { newShelf, name });
         }
 
-        public async void ToInfoPage(InfoPage infoPage)
+        public void ToInfoPage(InfoPage infoPage)
         {
-            await PushAsync(infoPage);
+            Content = infoPage.Content;
+            navigationStack.Add(info_page_name);
+            navigationParams.Add(new List<object>() { infoPage });
         }
 
-        public async void ToAddView(AddView addview)
+        public void ToAddView(AddView addview)
         {
-            await PushAsync(addview);
+            Content = addview.Content;
+            navigationStack.Add(add_view_name);
+            navigationParams.Add(new List<object>() { addview });
         }
-        public async void ReturnToPrevious()
+
+        public void ToScanPage(AddView addview)
         {
-            await PopAsync();
+            var scannerPage = new BarcodeScannerPage(addview);
+            Content = scannerPage.Content;
+            scannerPage.StartScanning();
+            navigationStack.Add(scan_page_name);
+            navigationParams.Add(new List<object>() { });
+        }
+
+        public void ReturnToPrevious()
+        {
+            var contentString = navigationStack[navigationStack.Count - 2];
+            var parameters = navigationParams[navigationParams.Count - 2];
+
+            navigationStack.RemoveAt(navigationStack.Count - 1);
+            navigationParams.RemoveAt(navigationParams.Count - 1);
+
+            switch (contentString)
+            {
+                case unplaced_page_name:
+                    ToUnplacedPage();
+                    break;
+
+                case add_page_name:
+                    ToAddItemPage((string)parameters[0]);
+                    break;
+
+                case view_page_name:
+                    ToViewItemPage((string)parameters[0], (int)parameters[1], (string)parameters[2]);
+                    break;
+
+                case edit_page_name:
+                    ToStorageCreationPage((bool)parameters[0], (string)parameters[1]);
+                    break;
+
+                case single_selection_name:
+                    ToSingleSelectionPage();
+                    break;
+
+                case info_page_name:
+                    ToInfoPage((InfoPage)parameters[0]);
+                    break;
+
+                case selection_name:
+                    ToMainSelectionPage();
+                    break;
+
+                case add_view_name:
+                    ToAddView((AddView)parameters[0]);
+                    break;
+            }
+            navigationStack.Remove(contentString);
+            navigationParams.Remove(parameters);
         }
     }
 }

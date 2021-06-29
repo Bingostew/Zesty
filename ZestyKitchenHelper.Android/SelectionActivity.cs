@@ -56,7 +56,6 @@ namespace ZestyKitchenHelper.Droid
 
             ActionBar?.Hide();
             TouchEffect.activity = this;
-            ContentManager.pageController.InitializePageSequence();
 
             GetLoginResult(savedInstanceState);
 

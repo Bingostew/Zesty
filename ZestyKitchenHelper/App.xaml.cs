@@ -8,7 +8,7 @@ namespace ZestyKitchenHelper
     {
         public App()
         {
-            ContentManager.pageController.InitializePageSequence();
+            
         }
         public void SetMainPage()
         {

@@ -58,7 +58,7 @@ namespace ZestyKitchenHelper
             Console.WriteLine("EffectManager 58 already have effect  " + (tryEffect != null));
             ScreenTouch touchEvent = new ScreenTouch() { ContactView = ContentManager.GetSelectedStorage(storageName) };
             touchEvent.OnTouchEvent += (obj, args) => OnScreenTouch(args, view, storageName, updateShelf);
-            view.iconImage.Effects.Add(touchEvent);
+            view.iconImage.AddEffect(touchEvent);
 
         }
 
@@ -69,7 +69,6 @@ namespace ZestyKitchenHelper
         public static void RemoveEffect(this VisualElement element, Type effectType)
         {
             var tryEffect = element.Effects.Where(e => e.GetType() == effectType);
-            Console.WriteLine("Effect Manager 76 Removed Effect Length " + tryEffect.Count());
             if (tryEffect.Any()) { element.Effects.Remove(tryEffect.FirstOrDefault()); }
         }
         public static void RemoveEffects(this IList<View> elements, Type effectType)
