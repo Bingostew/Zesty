@@ -171,8 +171,8 @@ namespace ZestyKitchenHelper
             infoIcon.Clicked += (obj, args) =>
             {
                 Console.WriteLine("ItemLayout 173 Direct Select Index: " + ItemData.StorageCellIndex);
-                InfoPage infoPage = new InfoPage(ItemData);
-                ContentManager.pageController.ToInfoPage(infoPage);
+                InfoView infoPage = new InfoView(ItemData);
+                ContentManager.pageController.ShowInfoView(infoPage);
                 if(ItemData.StorageName != null) { infoPage.BindCabinetInfo(storageEvent, ItemData.StorageName); }
                // infoPage.SetCabinetView(); 
             };

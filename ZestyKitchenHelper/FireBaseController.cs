@@ -77,9 +77,12 @@ namespace ZestyKitchenHelper
 
         public static async Task DeleteUserItem<T>(string dataType, string key, Func<FirebaseObject<T>, bool> predicate)
         {
-            var toDelete = (await client.Child(base_child).Child(EmailToPath(ContentManager.sessionUserProfile.Email)).OnceAsync<T>()).Where(predicate);
-            if (ContentManager.sessionUserProfile != null && toDelete != null) 
-            { await client.Child(base_child).Child(EmailToPath(ContentManager.sessionUserProfile.Email)).Child(dataType).Child(key).DeleteAsync(); }
+            if (ContentManager.sessionUserProfile != null)
+            {
+                var toDelete = (await client.Child(base_child).Child(EmailToPath(ContentManager.sessionUserProfile.Email)).OnceAsync<T>()).Where(predicate);
+                if (ContentManager.sessionUserProfile != null && toDelete != null)
+                { await client.Child(base_child).Child(EmailToPath(ContentManager.sessionUserProfile.Email)).Child(dataType).Child(key).DeleteAsync(); }
+            }
         }
 
         public async Task DeleteUser()

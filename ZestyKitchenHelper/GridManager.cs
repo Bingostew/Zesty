@@ -105,7 +105,7 @@ namespace ZestyKitchenHelper
             }
 
             // Check if the grid is constrained, then constrain children output
-            if (constraintBase.ContainsKey(grid) && constraintBase[grid] < gridChildren.Count)
+            if (constraintBase.ContainsKey(grid) &&  gridChildren.Count > constraintBase[grid])
             {
                 gridChildren = gridChildren.GetRange(0, constraintBase[grid]);
                 Console.WriteLine("GridManager 57: " + constraintBase[grid] + " " + grid.Children.Count + " "+ gridChildren.Count);
@@ -142,7 +142,7 @@ namespace ZestyKitchenHelper
         /// </summary>
         /// <param name="baseGrid">grid to extract from</param>
         /// <param name="startChildIndex">index of basegrid to start extraction</param>
-        /// <param name="endChildIndex">index of basegrid to end extractionparam>
+        /// <param name="endChildIndex">index of basegrid to end extraction</param>
         /// <param name="converter">method to convert item from basegrid to something else in constrained grid</param>
         /// <param name="grid">grid to be populated</param>
         /// <param name="constrainSize">if true, then no child can added if the grid has the size over endChildIndex-startChildIndex</param>
@@ -153,12 +153,16 @@ namespace ZestyKitchenHelper
             if (!constraintBase.ContainsKey(grid) && constrainSize)
                 constraintBase.Add(grid, endChildIndex - startChildIndex + 1);
 
-            // If no child, then no constraint
+            // If no child, then clear children and no constraint
             if (children.Count == 0)
+            {
+                grid.Children.Clear();
                 return grid;
+            }
+
 
             // clamp the child indeces
-            int endIndex = children.Count >= endChildIndex ? endChildIndex: children.Count - 1;
+            int endIndex = children.Count > endChildIndex ? endChildIndex: children.Count - 1;
             int startIndex = 0 <= startChildIndex ? startChildIndex : 0;
 
             // If invalid range, then no constraint
@@ -212,12 +216,13 @@ namespace ZestyKitchenHelper
         /// <summary>
         /// Filters an ItemLayout grid by the name
         /// </summary>
-        /// <param name="grid">Grid with all its children with type ItemLayout.</param>
+        /// <param name="source">List with all its items with type ItemLayout.</param>
+        /// <param name="output">Grid that will hold the filtered items, can be the same as source grid.</param>
         /// <param name="input">The name to search for</param>
-        public static void FilterItemGrid(Grid grid, string input)
+        public static void FilterItemGrid(IEnumerable<ItemLayout> source, Grid output, string input)
         {
             List<View> results = new List<View>();
-            foreach (var item in ContentManager.MetaItemBase.Values)
+            foreach (var item in source)
             {
                 var match = 0;
                 for (int i = 0; i < input.Length; i++)
@@ -228,13 +233,20 @@ namespace ZestyKitchenHelper
                     }
                     else { match = 0; break; }
                 }
-                if ((match > 0 && !grid.Children.Contains(item)) || input == "" || input == ContentManager.defaultSearchAllBarText)
+                if ((match > 0 && !output.Children.Contains(item)) || input == "" || input == ContentManager.defaultSearchAllBarText)
                 {
-                    results.Add(item);
-                }
+                    ItemLayout itemLayoutInstance = new ItemLayout(item.Width, item.Height, item.ItemData)
+                    .AddMainImage()
+                    .AddAmountMark()
+                    .AddExpirationMark()
+                    .AddTitle()
+                    .AddInfoIcon();
 
-                AddGridItem(grid, results, true);
+                    results.Add(itemLayoutInstance);
+                }
             }
+
+            AddGridItem(output, results, true);
         }
 
         public static Grid GetGrid(string name)

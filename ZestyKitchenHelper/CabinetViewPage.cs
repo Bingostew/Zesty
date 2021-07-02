@@ -29,7 +29,7 @@ namespace ZestyKitchenHelper
             deleteItemBaseEvent = deleteItemBase;
             deleteItemLocalEvent = deleteItemLocal;
 
-            var titleGrid = new TopPage().GetGrid();
+            var titleGrid = new TopPage(name).GetGrid();
             titleGrid.HeightRequest = ContentManager.screenHeight * TopPage.top_bar_height_proportional;
 
             var backgroundImage = ContentManager.storageSelection == ContentManager.StorageSelection.fridge ? ContentManager.fridgeIcon : ContentManager.cabinetCellIcon;
@@ -58,59 +58,21 @@ namespace ZestyKitchenHelper
                 }
 
             };
-            var lastPageButton = new ImageButton() { Source = ContentManager.countIcon, BackgroundColor = Color.Transparent,
-                Rotation = 180, Aspect = Aspect.Fill };
-            lastPageButton.Clicked += (obj, args) =>
-            {
-                var index = currentGrid.GetGridChilrenList().IndexOf(currentGrid.Children[0]);
-                if (index > max_grid_count) NextPresetPage(index - max_grid_count);
-                else NextPresetPage(0);
-            };
-            var nextPageButton = new ImageButton()
-            {
-                Source = ContentManager.countIcon,
-                BackgroundColor = Color.Transparent,
-                Aspect = Aspect.Fill
-            };
-            nextPageButton.Clicked += (obj, args) =>
-            {
-                Console.WriteLine("children count " + currentGrid.GetGridChilrenList().IndexOf(currentGrid.Children[currentGrid.Children.Count - 1]));
-                var index = currentGrid.GetGridChilrenList().IndexOf(currentGrid.Children[currentGrid.Children.Count - 1]);
-                if (index < currentGrid.GetGridChilrenList().Count - 1) NextPresetPage(index + 1);
-            };
-            Grid toolGrid = new Grid()
-            {
-                Margin = new Thickness(tool_grid_margin),
-                ColumnSpacing = 20,
-                RowDefinitions =
-                {
-                    new RowDefinition()
-                },
-                ColumnDefinitions =
-                {
-                    new ColumnDefinition(),
-                    new ColumnDefinition(),
-                    new ColumnDefinition(){Width = new GridLength(3, GridUnitType.Star)}
-                }
-            };
-            toolGrid.Children.Add(lastPageButton, 0, 0);
-            toolGrid.Children.Add(nextPageButton, 1, 0);
-            toolGrid.Children.Add(sortSelector, 2, 0);
 
-            AbsoluteLayout.SetLayoutBounds(toolGrid, new Rectangle(1, 0, 0.75, 0.1));
-            AbsoluteLayout.SetLayoutFlags(toolGrid, AbsoluteLayoutFlags.All);
+            AbsoluteLayout.SetLayoutBounds(sortSelector, new Rectangle(1, 0, 0.75, 0.1));
+            AbsoluteLayout.SetLayoutFlags(sortSelector, AbsoluteLayoutFlags.All);
             AbsoluteLayout.SetLayoutBounds(backgroundCell, new Rectangle(0, 1, 1, .9));
             AbsoluteLayout.SetLayoutFlags(backgroundCell, AbsoluteLayoutFlags.All);
             viewOverlay = new AbsoluteLayout()
             {
                 IsVisible = false,
                 BackgroundColor = Color.Wheat,
-                WidthRequest = Application.Current.MainPage.Width,
+                WidthRequest = ContentManager.screenWidth,
+                HeightRequest = ContentManager.screenHeight,
                 Children =
                 {
                     backgroundCell,
-                    backButton,
-                    toolGrid
+                    backButton
                 }
             };
 

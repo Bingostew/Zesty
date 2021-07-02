@@ -22,7 +22,7 @@ namespace ZestyKitchenHelper
         const string alphaIndicatorString = "A-Z";
         public UnplacedPage(Action<Item> localUnplacedEvent, Action<Item> baseUnplaceEvent, Action<Item> deleteItemLocal, Action<Item> deleteItemBase)
         {
-            var titleGrid = new TopPage().GetGrid();
+            var titleGrid = new TopPage("Items").GetGrid();
             var addNewButton = new ImageButton() { Source = ContentManager.addIcon, BackgroundColor = Color.Transparent, Margin = new Thickness(side_margin, between_margin) };
             metaGrid = GridManager.GetGrid(ContentManager.metaGridName);
             var addView = new AddView(localUnplacedEvent, baseUnplaceEvent, "", false);
@@ -31,9 +31,8 @@ namespace ZestyKitchenHelper
             searchAllBar.TextColor = Color.Black;
             searchAllBar.Focused += (obj, args) => searchAllBar.Text = "";
             searchAllBar.Unfocused += (obj, args) => { if (searchAllBar.Text.Length == 0) searchAllBar.Text = ContentManager.defaultSearchAllBarText; };
-            searchAllBar.Unfocused += (obj, args) => GridManager.FilterItemGrid(metaGrid, searchAllBar.Text);
-            searchAllBar.TextChanged += (obj, args) => GridManager.FilterItemGrid(metaGrid, searchAllBar.Text);
-            addNewButton.Clicked += (obj, args) => { ContentManager.pageController.ToAddView(addView); };
+            searchAllBar.Unfocused += (obj, args) => GridManager.FilterItemGrid(ContentManager.MetaItemBase.Values, metaGrid, searchAllBar.Text);
+            addNewButton.Clicked += (obj, args) => { addView.ResetForm(); ContentManager.pageController.ToAddView(addView); };
 
             var sortSelector = new Picker()
             {
@@ -87,7 +86,7 @@ namespace ZestyKitchenHelper
         protected override void OnDisappearing()
         {
             base.OnDisappearing();
-            GridManager.FilterItemGrid(metaGrid, "");
+            GridManager.FilterItemGrid(ContentManager.MetaItemBase.Values, metaGrid, "");
         }
         public static void UpdateGrid(Item removed)
         {

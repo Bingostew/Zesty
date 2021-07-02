@@ -26,7 +26,8 @@ namespace ZestyKitchenHelper
             deleteStorageLocal = _deleteStorageLocal;
             deleteStorageBase = _deleteStorageBase;
 
-            var titleGrid = new TopPage().GetGrid();
+            string title = ContentManager.GetStorageType() == ContentManager.cabinetStorageType ? "My Pantry" : "My Fridge";
+            var titleGrid = new TopPage(title).GetGrid();
             titleGrid.HeightRequest = ContentManager.screenHeight * TopPage.top_bar_height_proportional;
             
             mainGrid = new Grid()

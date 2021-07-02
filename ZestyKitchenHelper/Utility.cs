@@ -162,6 +162,9 @@ namespace Utility
         public int RowSpan { get; set; }
         [Column("Grid")]
         public string GridType { get; set; } // Only applies to fridge
+        /// <summary>
+        /// For fridges: Either left, center, or right grid on the fridge
+        /// </summary>
         [Ignore]
         public Grid ParentGrid { get; set; } // Only applies to fridge
         private Vector2D<int> Position;
@@ -239,6 +242,10 @@ namespace Utility
         public void AddItem(List<View> items)
         {
             GridManager.AddGridItem(Grid, items, false);
+        }
+        public void RemoveItem(ItemLayout item)
+        {
+            GridManager.RemoveGridItem(Grid, item);
         }
         public void AddUI(Image background, ImageButton button)
         {

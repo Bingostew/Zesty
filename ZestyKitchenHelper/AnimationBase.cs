@@ -19,6 +19,10 @@ namespace ZestyKitchenHelper
             return CallAnimation(element, "ColorAnimation", transform, callBack, length, easing);
         }
 
+        public static Task<bool> Timer(this VisualElement element, Action<double> callback, uint duration, Easing easing = null)
+        {
+            return CallAnimation(element, "Timer", (t) => t, callback, duration, easing);
+        }
         public static Task<bool> QuadraticFlight(this VisualElement element, double power, double angle, double acceleration, double movementMultiplier, Action<Point> callBack,
             uint length = 250, Easing easing = null)
         {
@@ -32,7 +36,9 @@ namespace ZestyKitchenHelper
 
         public static Task<bool> LinearInterpolator(this VisualElement element, double toValue, uint duration, Action<double> callback, Easing easing = null)
         {
-            Func<double, double> transform = t => t / duration * toValue * 100;
+            Func<double, double> transform = t => {
+                Console.WriteLine("AnimationBase linear " + t); return t * toValue ;
+            };
             return CallAnimation(element, "LerpAnimation", transform, callback, duration, easing);
         }
 

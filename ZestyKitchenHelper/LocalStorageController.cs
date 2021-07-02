@@ -114,38 +114,9 @@ namespace ZestyKitchenHelper
             }
         }
 
-        /// <summary>
-        /// Updates cabinets that is already stored
-        /// </summary>
-        /// <param name="cabinet"></param>
-        /// <param name="updateItems">If true, then the cells and items are updated.</param>
-        /// <param name="updateCabinet"> If true, then the cabinet meta data is updated</param>
-        public static async void UpdateCabinetLocal(Cabinet cabinet, bool updateCabinet, bool updateItems)
+        public static async void UpdateStorageCell(StorageCell storageCell)
         {
-            if (await GetCabinetAsync(cabinet.Name) != null)
-            {
-                await SQLDatabase.UpdateAsync(cabinet);
-            }
-
-            if (updateItems)
-            {
-                await SQLDatabase.UpdateAllAsync(cabinet.GetGridCells());
-
-                foreach (StorageCell cell in cabinet.GetGridCells())
-                {
-                    foreach (ItemLayout child in cell.GetItemGrid().Children)
-                    {
-                        if (await GetItemAsync(child.ItemData.ID) != null)
-                        {
-                            await SQLDatabase.UpdateAsync(child.ItemData);
-                        }
-                        else
-                        {
-                            await SQLDatabase.InsertAsync(child.ItemData);
-                        }
-                    }
-                }
-            }
+            await SQLDatabase.UpdateAsync(storageCell);
         }
 
         //Deletion Methods

@@ -17,23 +17,43 @@ namespace ZestyKitchenHelper
         private const string add_page_name = "add page";
         private const string single_selection_name = "single selection page";
         private const string edit_page_name = "edit page";
-        private const string info_page_name = "info page";
         private const string selection_name = "selection page";
         private const string add_view_name = "add view";
         private const string scan_page_name = "scan page";
         private List<string> navigationStack = new List<string>();
         private List<List<object>> navigationParams = new List<List<object>>();
+
+        AbsoluteLayout pageContainer;
         public void InitializePageSequence()
         {
+            pageContainer = new AbsoluteLayout() { WidthRequest = ContentManager.screenWidth, HeightRequest = ContentManager.screenHeight };
             ContentManager.selectionPage = new SelectionPage();
-            Content = ContentManager.selectionPage.Content;
+            SetView(ContentManager.selectionPage.Content);
+            Content = pageContainer;
             navigationStack.Add(selection_name);
             navigationParams.Add(new List<object>() { });
         }
 
+        public void SetView(View view)
+        {
+            pageContainer.Children.Clear();
+            pageContainer.Children.Add(view, new Rectangle(0, 0, 1, 1), AbsoluteLayoutFlags.All);
+        }
+
+        public void SetViewOverlay(View viewOverlay)
+        {
+            pageContainer.Children.Add(viewOverlay, new Rectangle(0.5, 0.5, 0.75, 0.75), AbsoluteLayoutFlags.All);
+        }
+        public void RemoveViewOverlay(View viewOverlay)
+        {
+            if (pageContainer.Children.Contains(viewOverlay))
+            {
+                pageContainer.Children.Remove(viewOverlay);
+            }
+        }
         public void ToMainSelectionPage()
         {
-            Content = ContentManager.selectionPage.Content;
+            SetView(ContentManager.selectionPage.Content);
             navigationStack.Add(selection_name);
             navigationParams.Add(new List<object>() { });
         }
@@ -43,20 +63,20 @@ namespace ZestyKitchenHelper
             //ContentManager.singleSelectionPage.SetView();
             if (ContentManager.storageSelection == ContentManager.StorageSelection.cabinet)
             {
-                Content = new SingleSelectionPage(LocalStorageController.DeleteCabinet, FireBaseController.DeleteCabinet).Content;
+                SetView(new SingleSelectionPage(LocalStorageController.DeleteCabinet, FireBaseController.DeleteCabinet).Content);
             }
             else
             {
 
-                Content = new SingleSelectionPage(LocalStorageController.DeleteFridge, FireBaseController.DeleteFridge).Content;
+                SetView(new SingleSelectionPage(LocalStorageController.DeleteFridge, FireBaseController.DeleteFridge).Content);
             }
             navigationStack.Add(single_selection_name);
             navigationParams.Add(new List<object>() { });
         }
         public void ToUnplacedPage()
         {
-            Content = new UnplacedPage(FireBaseController.SaveItem, LocalStorageController.AddItem,
-               LocalStorageController.DeleteItem, FireBaseController.DeleteItem).Content;
+            SetView(new UnplacedPage(FireBaseController.SaveItem, LocalStorageController.AddItem,
+               LocalStorageController.DeleteItem, FireBaseController.DeleteItem).Content);
 
             navigationStack.Add(unplaced_page_name);
             navigationParams.Add(new List<object>() { });
@@ -66,11 +86,11 @@ namespace ZestyKitchenHelper
         {
             if (ContentManager.storageSelection == ContentManager.StorageSelection.fridge)
             {
-                Content = new CabinetAddPage(name).Content;
+                SetView(new CabinetAddPage(name).Content);
             }
             else
             {
-                Content = new CabinetAddPage(name).Content;
+                SetView(new CabinetAddPage(name).Content);
             }
             navigationStack.Add(add_page_name);
             navigationParams.Add(new List<object>() { name });
@@ -79,8 +99,8 @@ namespace ZestyKitchenHelper
 
         public void ToViewItemPage(string name, int directSelectIndex = -1, string directSelectStorageType = "")
         {
-            Content = new CabinetViewPage(name, LocalStorageController.DeleteItem, FireBaseController.DeleteItem,
-                LocalStorageController.UpdateItem, FireBaseController.SaveItem, directSelectIndex, directSelectStorageType).Content;
+            SetView(new CabinetViewPage(name, LocalStorageController.DeleteItem, FireBaseController.DeleteItem,
+                LocalStorageController.UpdateItem, FireBaseController.SaveItem, directSelectIndex, directSelectStorageType).Content);
 
             navigationStack.Add(view_page_name);
             navigationParams.Add(new List<object>() { name, directSelectIndex, directSelectStorageType });
@@ -89,26 +109,19 @@ namespace ZestyKitchenHelper
         {
             if (ContentManager.storageSelection == ContentManager.StorageSelection.cabinet)
             {
-                Content = new CabinetEditPage(newShelf, LocalStorageController.AddCabinet, FireBaseController.SaveCabinet, name).Content;
+                SetView(new CabinetEditPage(newShelf, LocalStorageController.AddCabinet, FireBaseController.SaveCabinet, name).Content);
             }
             else
             {
-                Content = new FridgeEditPage(newShelf, LocalStorageController.AddFridge, FireBaseController.SaveFridge, name).Content;
+                SetView(new FridgeEditPage(newShelf, LocalStorageController.AddFridge, FireBaseController.SaveFridge, name).Content);
             }
             navigationStack.Add(edit_page_name);
             navigationParams.Add(new List<object>() { newShelf, name });
         }
 
-        public void ToInfoPage(InfoPage infoPage)
-        {
-            Content = infoPage.Content;
-            navigationStack.Add(info_page_name);
-            navigationParams.Add(new List<object>() { infoPage });
-        }
-
         public void ToAddView(AddView addview)
         {
-            Content = addview.Content;
+            SetView(addview.Content);
             navigationStack.Add(add_view_name);
             navigationParams.Add(new List<object>() { addview });
         }
@@ -116,10 +129,27 @@ namespace ZestyKitchenHelper
         public void ToScanPage(AddView addview)
         {
             var scannerPage = new BarcodeScannerPage(addview);
-            Content = scannerPage.Content;
+            SetView(scannerPage.Content);
             scannerPage.StartScanning();
             navigationStack.Add(scan_page_name);
             navigationParams.Add(new List<object>() { });
+        }
+
+        bool hasShownInfoView;
+        public async void ShowInfoView(InfoView infoView)
+        {
+            if (hasShownInfoView)
+                return;
+            hasShownInfoView = true;
+            SetViewOverlay(infoView.GetView());
+            await infoView.GetView().LinearInterpolator(1, 150, (d) => infoView.GetView().Scale = d);
+
+        }
+
+        public void RemoveInfoView(InfoView infoView)
+        {
+            hasShownInfoView = false;
+            RemoveViewOverlay(infoView.GetView());
         }
 
         public void ReturnToPrevious()
@@ -150,10 +180,6 @@ namespace ZestyKitchenHelper
 
                 case single_selection_name:
                     ToSingleSelectionPage();
-                    break;
-
-                case info_page_name:
-                    ToInfoPage((InfoPage)parameters[0]);
                     break;
 
                 case selection_name:
