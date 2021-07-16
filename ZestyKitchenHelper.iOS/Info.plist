@@ -40,5 +40,9 @@
 	<false/>
 	<key>CustomProperty</key>
 	<string>Zesty requires Camera to scan barcodes</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+	</array>
 </dict>
 </plist>

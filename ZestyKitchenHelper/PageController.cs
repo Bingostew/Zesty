@@ -20,18 +20,30 @@ namespace ZestyKitchenHelper
         private const string selection_name = "selection page";
         private const string add_view_name = "add view";
         private const string scan_page_name = "scan page";
+        private const string preference_page_name = "preference page";
         private List<string> navigationStack = new List<string>();
         private List<List<object>> navigationParams = new List<List<object>>();
 
         AbsoluteLayout pageContainer;
         public void InitializePageSequence()
         {
-            pageContainer = new AbsoluteLayout() { WidthRequest = ContentManager.screenWidth, HeightRequest = ContentManager.screenHeight };
-            ContentManager.selectionPage = new SelectionPage();
-            SetView(ContentManager.selectionPage.Content);
+            Console.WriteLine("PageController 32 []]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]] " + ContentManager.isUserNew + ContentManager.isLocal);
+            pageContainer = new AbsoluteLayout() { WidthRequest = ContentManager.screenWidth, HeightRequest = ContentManager.screenHeight, BackgroundColor = Color.Wheat };
+            if(Device.RuntimePlatform == Device.iOS)
+            {
+                pageContainer.Effects.Add(new SafeAreaPadding());
+            }
+            ContentManager.AddOnBackgroundChangeListener(c => pageContainer.BackgroundColor = c);
+            if (ContentManager.isUserNew)
+            {
+                SetUpPage setupPage = new SetUpPage();
+                SetView(setupPage.Content);
+            }
+            else
+            {
+                ToMainSelectionPage();
+            }
             Content = pageContainer;
-            navigationStack.Add(selection_name);
-            navigationParams.Add(new List<object>() { });
         }
 
         public void SetView(View view)
@@ -40,20 +52,18 @@ namespace ZestyKitchenHelper
             pageContainer.Children.Add(view, new Rectangle(0, 0, 1, 1), AbsoluteLayoutFlags.All);
         }
 
-        public void SetViewOverlay(View viewOverlay)
+        public void SetViewOverlay(View viewOverlay, double widthProportional, double heightProportional, double xProportional = 0.5, double yProportional = 0.5)
         {
-            pageContainer.Children.Add(viewOverlay, new Rectangle(0.5, 0.5, 0.75, 0.75), AbsoluteLayoutFlags.All);
+            Console.WriteLine("PageController 60 View Overlay Set");
+            pageContainer.Children.Add(viewOverlay, new Rectangle(xProportional, yProportional, widthProportional, heightProportional), AbsoluteLayoutFlags.All);
         }
         public void RemoveViewOverlay(View viewOverlay)
         {
-            if (pageContainer.Children.Contains(viewOverlay))
-            {
-                pageContainer.Children.Remove(viewOverlay);
-            }
+            pageContainer.Children.Remove(viewOverlay);
         }
         public void ToMainSelectionPage()
         {
-            SetView(ContentManager.selectionPage.Content);
+            SetView(new SelectionPage().Content);
             navigationStack.Add(selection_name);
             navigationParams.Add(new List<object>() { });
         }
@@ -63,12 +73,12 @@ namespace ZestyKitchenHelper
             //ContentManager.singleSelectionPage.SetView();
             if (ContentManager.storageSelection == ContentManager.StorageSelection.cabinet)
             {
-                SetView(new SingleSelectionPage(LocalStorageController.DeleteCabinet, FireBaseController.DeleteCabinet).Content);
+                SetView(new SingleSelectionPage(LocalStorageController.DeleteCabinetSynchronous, FireBaseController.DeleteCabinetSynchronous).Content);
             }
             else
             {
 
-                SetView(new SingleSelectionPage(LocalStorageController.DeleteFridge, FireBaseController.DeleteFridge).Content);
+                SetView(new SingleSelectionPage(LocalStorageController.DeleteFridgeSynchronous, FireBaseController.DeleteFridgeSynchronous).Content);
             }
             navigationStack.Add(single_selection_name);
             navigationParams.Add(new List<object>() { });
@@ -135,13 +145,20 @@ namespace ZestyKitchenHelper
             navigationParams.Add(new List<object>() { });
         }
 
+        public void ToPreferencePage(PreferencePage preferencePage)
+        {
+            SetView(preferencePage.Content);
+            navigationStack.Add(preference_page_name);
+            navigationParams.Add(new List<object>() { preferencePage });
+        }
+
         bool hasShownInfoView;
         public async void ShowInfoView(InfoView infoView)
         {
             if (hasShownInfoView)
                 return;
             hasShownInfoView = true;
-            SetViewOverlay(infoView.GetView());
+            SetViewOverlay(infoView.GetView(), InfoView.info_view_width_proportional, InfoView.info_view_height_proportional);
             await infoView.GetView().LinearInterpolator(1, 150, (d) => infoView.GetView().Scale = d);
 
         }
@@ -150,6 +167,14 @@ namespace ZestyKitchenHelper
         {
             hasShownInfoView = false;
             RemoveViewOverlay(infoView.GetView());
+        }
+
+        public async void OverlayAnimation(View animatedView, Rect bounds, Task<bool> animateAction, Action onFinishAction = null)
+        {
+            SetViewOverlay(animatedView, bounds.Width, bounds.Height, bounds.X, bounds.Y);
+            await animateAction;
+            RemoveViewOverlay(animatedView);
+            onFinishAction?.Invoke();
         }
 
         public void ReturnToPrevious()
@@ -188,6 +213,9 @@ namespace ZestyKitchenHelper
 
                 case add_view_name:
                     ToAddView((AddView)parameters[0]);
+                    break;
+                case preference_page_name:
+                    ToPreferencePage((PreferencePage)parameters[0]);
                     break;
             }
             navigationStack.Remove(contentString);

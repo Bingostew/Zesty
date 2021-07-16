@@ -74,8 +74,7 @@ namespace ZestyKitchenHelper
             mainGrid.Children.Clear();
             gridList.Clear();
             gridList.Add(newSelectionButton);
-            var itemBase = ContentManager.storageSelection == ContentManager.StorageSelection.cabinet ? ContentManager.CabinetMetaBase.Keys.ToList()
-                : ContentManager.FridgeMetaBase.Keys.ToList();
+            var itemBase = ContentManager.storageSelection == ContentManager.StorageSelection.cabinet ? ContentManager.CabinetMetaBase.Keys.ToList() : ContentManager.FridgeMetaBase.Keys.ToList();
 
             foreach (var key in itemBase)
             {
@@ -131,7 +130,7 @@ namespace ZestyKitchenHelper
                 var changeNameButton = new Button()
                 {
                     BackgroundColor = Color.DeepSkyBlue,
-                    Text = "Name",
+                    Text = "Rename",
                     TextColor = Color.Black,
                     HeightRequest = 30,
                     WidthRequest = 60,
@@ -150,9 +149,15 @@ namespace ZestyKitchenHelper
                 };
                 deleteButton.Clicked += async (obj, args) =>
                 {
-                    var confirm = await DisplayAlert("Caution", "Are you sure you want to delete this layout?", "Delete", "Cancel");
+                    var confirm = await ContentManager.pageController.DisplayAlert("Caution", "Are you sure you want to delete this layout?", "Delete", "Cancel");
                     if (confirm)
                     {
+                        if (ContentManager.isLocal)
+                            deleteStorageLocal?.Invoke(key);
+                        else
+                            deleteStorageBase?.Invoke(key);
+                        
+
                         foreach (var cell in ContentManager.GetSelectedStorage(key).GetGridCells())
                         {
                             foreach (var child in cell.GetChildren())
@@ -163,9 +168,8 @@ namespace ZestyKitchenHelper
                                 }
                             }
                         }
-                        deleteStorageBase?.Invoke(key);
-                        deleteStorageLocal?.Invoke(key);
-                        itemBase.Remove(key);
+
+                        ContentManager.RemoveSelectedStorage(key);
                         foreach (var child in mainGridChildren[key])
                         {
                             mainGrid.Children.Remove(child);
@@ -183,6 +187,7 @@ namespace ZestyKitchenHelper
                     if (changeNameField.Text != null && !itemBase.Contains(changeNameField.Text))
                     {
                         var itemStorage = ContentManager.GetSelectedStorage(metaName);
+                        ContentManager.RemoveSelectedStorage(metaName);
                         metaName = changeNameField.Text;
                         ContentManager.AddSelectedStorage(metaName, itemStorage);
                         name.Text = metaName;

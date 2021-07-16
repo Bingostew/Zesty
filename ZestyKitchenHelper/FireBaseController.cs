@@ -30,14 +30,35 @@ namespace ZestyKitchenHelper
             return (await client.Child(base_child).OnceAsync<UserProfile>()).
                 Select(user => new UserProfile { Name = user.Object.Name, Email = user.Object.Email}).ToList();
         }
-        public static async Task AddUser(string user, string email)
+        public static async Task AddUser(UserProfile userProfile)
         {
-            string emailPath = EmailToPath(email);
-            await client.Child(base_child).Child(emailPath).PutAsync(new UserProfile() { Name = user, Email = email });
+            string emailPath = EmailToPath(userProfile.Email);
+            await client.Child(base_child).Child(emailPath).PutAsync(userProfile);
          //   await client.Child(base_child).Child(emailPath).PutAsync(item_list_key + ":");
           //  await client.Child(base_child).Child(emailPath).PutAsync(cabinet_list_key);
           //  await client.Child(base_child).Child(emailPath).PutAsync(fridge_list_key);
           //  await client.Child(base_child).Child(emailPath).PutAsync(storage_cell_list_key);
+        }
+        public static async Task UpdateUser(UserProfile userProfile)
+        {
+            var cabinets = await GetCabinets();
+            var fridges = await GetFridges();
+            var items = await GetItems();
+
+            await client.Child(base_child).Child(EmailToPath(userProfile.Email)).DeleteAsync();
+            await AddUser(userProfile);
+            foreach(var c in cabinets)
+            {
+                SaveCabinet(c.Object.Name);
+            }
+            foreach (var f in fridges)
+            {
+                SaveFridge(f.Object.Name);
+            }
+            foreach (var i in items)
+            {
+                SaveItem(i.Object);
+            }
         }
         public static async Task<bool> HasUser(string email)
         {
@@ -122,13 +143,13 @@ namespace ZestyKitchenHelper
         {
             await DeleteUserItem<Item>(item_list_key, item.ID.ToString(), i => i.Object.ID == item.ID);
         }
-        public static async void DeleteCabinet(string cabinetName)
+        public static void DeleteCabinetSynchronous(string cabinetName)
         {
-            await DeleteUserItem<Cabinet>(cabinet_list_key, cabinetName, i => i.Object.Name == cabinetName);
+            DeleteUserItem<Cabinet>(cabinet_list_key, cabinetName, i => i.Object.Name == cabinetName);
         }
-        public static async void DeleteFridge(string fridgeName)
+        public static void DeleteFridgeSynchronous(string fridgeName)
         {
-            await DeleteUserItem<Fridge>(fridge_list_key, fridgeName, i => i.Object.Name == fridgeName);
+            DeleteUserItem<Fridge>(fridge_list_key, fridgeName, i => i.Object.Name == fridgeName);
         }
 
         // Retrieval methods

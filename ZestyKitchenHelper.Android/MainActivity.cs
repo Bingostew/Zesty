@@ -29,7 +29,8 @@ namespace ZestyKitchenHelper.Droid
     {
         public static Auth0Client client;
         protected Android.Widget.Button loginButton;
-        protected TextView skipLoginField;
+        protected Android.Widget.Button skipLoginField;
+        protected TextView helpText;
         protected TextView loadingOverlay;
         protected TextView loadingText;
         private UserProfile userProfile;
@@ -40,7 +41,7 @@ namespace ZestyKitchenHelper.Droid
 
             ActivityMediator.Instance.Send(intent.DataString);
         }
-        protected override void OnResume()
+        protected async override void OnResume()
         {
             base.OnResume();
             Platform.OnResume();
@@ -57,22 +58,26 @@ namespace ZestyKitchenHelper.Droid
 
             SetContentView(Resource.Layout.LoginPage);
             loadingOverlay = FindViewById<TextView>(Resource.Id.loadingOverlay);
-            skipLoginField = FindViewById<TextView>(Resource.Id.skipLoginButton);
+            skipLoginField = FindViewById<Android.Widget.Button>(Resource.Id.skipLoginButton);
             loadingText = FindViewById<TextView>(Resource.Id.loadingText);
             loginButton = FindViewById<Android.Widget.Button>(Resource.Id.loginButton);
+            helpText = FindViewById<TextView>(Resource.Id.infoText);
 
             RemoveLoadingPage();
-            loginButton.Click += (obj, args) => { Login(); loginButton.Enabled = false; };
-            skipLoginField.Click += (obj, args) => 
+
+            helpText.Click += (obj, arg) =>
             {
                 Android.App.AlertDialog.Builder dialogBuilder = new Android.App.AlertDialog.Builder(this);
                 Android.App.AlertDialog alert = dialogBuilder.Create();
-                alert.SetTitle("Skip Log In?");
-                alert.SetButton2("Skip", (o,a) => ToSelectionActivity());
-                alert.SetButton("Cancel", (o, a) => alert.Hide());
-                alert.SetMessage("Logging in allows the same information to be edited on multiple devices.");
+                alert.SetTitle("Account Information");
+                alert.SetButton("OK", (o, a) => alert.Hide());
+                alert.SetMessage("Local Account can only be used on this device. Cloud Account allows information to be edited on multiple devices.");
                 alert.Show();
             };
+
+            loginButton.Click += (obj, args) => { ContentManager.isLocal = false; Login(); loginButton.Enabled = false; };
+            skipLoginField.Click += (obj, args) => { ContentManager.isLocal = true; ToSelectionActivity(); };
+            
         }
         private void StartBackgroundCheck()
         {
@@ -98,13 +103,13 @@ namespace ZestyKitchenHelper.Droid
                 {
                     Email = email,
                     Name = name,
+                    IconImage = ContentManager.addIcon
                 };
-                
-                
+
+
                 if (!await FireBaseController.HasUser(email))
                 {
                     ContentManager.isUserNew = true;
-                    await FireBaseController.AddUser(name, email);
                 }
 
               //  var serializedLoginResponse = JsonConvert.SerializeObject(userProfile);
@@ -146,20 +151,17 @@ namespace ZestyKitchenHelper.Droid
         private async void Login()
         {
             await LoginAsync();
-            if (!await FireBaseController.HasUser(userProfile.Email))
-            {
-                await FireBaseController.AddUser(userProfile.Name, userProfile.Email);
-            }
             ToSelectionActivity();
         }
 
         private void ToSelectionActivity()
         {
-            ContentManager.InitializeApp(Resources.DisplayMetrics.WidthPixels, Resources.DisplayMetrics.HeightPixels);
+            ContentManager.InitializeApp();
             ContentManager.pageController.InitializePageSequence();
             LoadingPage();
             StartBackgroundCheck();
             StartActivity(new Intent(this, typeof(SelectionActivity)));
+            RemoveLoadingPage();
         }
 
         protected async Task<BrowserResultType> Logout()

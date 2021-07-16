@@ -13,13 +13,13 @@ namespace ZestyKitchenHelper
 {
     public class SelectionPage : ContentPage
     {
-        public class TestCarousel
-        {
-            public string Image { get; set; }
-            public string Name { get; set; }
-        }
+        private const int grid_margin = 10;
+        private const string main_label_font = "Raleway_Regular";
+
+        StackLayout content;
         private ImageButton cabinetButton = new ImageButton()
         {
+            Margin = new Thickness(0, grid_margin),
             Source = ContentManager.pantryIcon,
             Aspect = Aspect.AspectFill,
             BackgroundColor = Color.Transparent,
@@ -27,6 +27,7 @@ namespace ZestyKitchenHelper
         };
         private ImageButton fridgeButton = new ImageButton()
         {
+            Margin = new Thickness(0, grid_margin),
             Source = ContentManager.refridgeIcon,
             Aspect = Aspect.AspectFill,
             BackgroundColor = Color.Transparent,
@@ -35,37 +36,48 @@ namespace ZestyKitchenHelper
         };
         private ImageButton addUnplaceButton = new ImageButton()
         {
+            Margin = new Thickness(0, grid_margin),
             Source = ContentManager.addIcon,
             BackgroundColor = Color.Transparent
         };
         private Label cabinetLabel = new Label()
         {
+            Margin = new Thickness(grid_margin),
             FontSize = 30,
             TextColor = Color.Black,
             HorizontalOptions = LayoutOptions.Center,
-            Text = "My Pantries"
+            Text = "My Pantries",
+            FontFamily = main_label_font
         };
         private Label fridgeLabel = new Label()
         {
+            Margin = new Thickness(grid_margin),
             FontSize = 30,
             TextColor = Color.Black,
             HorizontalOptions = LayoutOptions.Center,
-            Text = "My Fridges"
+            Text = "My Fridges",
+            FontFamily = main_label_font
         };
         private Label unplacedLabel = new Label()
         {
+            Margin = new Thickness(grid_margin),
             FontSize = 30,
             HorizontalOptions = LayoutOptions.Center,
             TextColor = Color.Black,
-            Text = "All Items"
+            Text = "All Items",
+            FontFamily = main_label_font
         };
+
 
 
         public SelectionPage()
         {
+            var titleGrid = new TopPage("Main Page").GetGrid();
+            titleGrid.HeightRequest = ContentManager.screenHeight * TopPage.top_bar_height_proportional;
+
             Grid grid = new Grid()
             {
-                BackgroundColor = Color.Wheat,
+                BackgroundColor = ContentManager.ThemeColor,
                 RowDefinitions =
                 {
                     new RowDefinition(){Height = GridLength.Auto },
@@ -79,7 +91,7 @@ namespace ZestyKitchenHelper
                     new ColumnDefinition()
                 }
             };
-
+            ContentManager.AddOnBackgroundChangeListener(c => grid.BackgroundColor = c);
             List<View> gridChildren = new List<View>(){ cabinetLabel, cabinetButton, fridgeLabel, fridgeButton, unplacedLabel, addUnplaceButton, 
                 new Label() { Text = "Testing Page" }};
             grid.OrganizeGrid(gridChildren, GridOrganizer.OrganizeMode.TwoRowSpanLeft);
@@ -94,7 +106,17 @@ namespace ZestyKitchenHelper
             fridgeButton.Clicked += (obj, args) => SetSelection(ContentManager.StorageSelection.fridge);
             fridgeButton.Clicked += (obj, args) => ContentManager.pageController.ToSingleSelectionPage();
             addUnplaceButton.Clicked += (o,a) => ContentManager.pageController.ToUnplacedPage();
-            Content = grid;
+
+            content = new StackLayout()
+            {
+                WidthRequest = ContentManager.screenWidth,
+                HeightRequest = ContentManager.screenHeight,
+                Children =
+                {
+                    titleGrid, grid
+                }
+            };
+            Content = content;
         }
     }
 }

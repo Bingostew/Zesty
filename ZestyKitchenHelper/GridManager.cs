@@ -237,7 +237,6 @@ namespace ZestyKitchenHelper
                 {
                     ItemLayout itemLayoutInstance = new ItemLayout(item.Width, item.Height, item.ItemData)
                     .AddMainImage()
-                    .AddAmountMark()
                     .AddExpirationMark()
                     .AddTitle()
                     .AddInfoIcon();

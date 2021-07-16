@@ -72,4 +72,10 @@ namespace ZestyKitchenHelper
         }
     }
 
+    public class SafeAreaPadding : RoutingEffect
+    {
+        public SafeAreaPadding() : base("Zesty.SafeAreaPaddingEvent") { }
+    }
+
+
 }

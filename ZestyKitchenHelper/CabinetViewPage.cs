@@ -66,7 +66,7 @@ namespace ZestyKitchenHelper
             viewOverlay = new AbsoluteLayout()
             {
                 IsVisible = false,
-                BackgroundColor = Color.Wheat,
+                BackgroundColor = ContentManager.ThemeColor,
                 WidthRequest = ContentManager.screenWidth,
                 HeightRequest = ContentManager.screenHeight,
                 Children =
@@ -75,8 +75,7 @@ namespace ZestyKitchenHelper
                     backButton
                 }
             };
-
-            viewOverlay.ChildAdded += (obj, args) => viewOverlay.ForceLayout();
+            ContentManager.AddOnBackgroundChangeListener(c => viewOverlay.BackgroundColor = c);
 
             var storageLabel = new Label() { Text = name, FontSize = 40, TextColor = Color.Black, HorizontalTextAlignment = TextAlignment.Center };
             var storageView = ContentManager.GetStorageView(name);
@@ -84,13 +83,15 @@ namespace ZestyKitchenHelper
             storageView.HorizontalOptions = LayoutOptions.CenterAndExpand;
             storageView.WidthRequest = Application.Current.MainPage.Width * .8;
             storageView.HeightRequest = 7 * Application.Current.MainPage.Height / 8;
-
+            var storageViewFrame = new Frame() { BorderColor = Color.Black, Content = storageView };
             foreach (var cell in ContentManager.GetSelectedStorage(name).GetGridCells())
             {
+                // Set up listener to show overlay
                 ImageButton button = cell.GetButton();
                 var grid = cell.GetItemGrid();
                 ScrollView gridContainer = new ScrollView() { Content = grid };
                 viewOverlay.Children.Add(gridContainer, AbsoluteLayout.GetLayoutBounds(backgroundCell), AbsoluteLayout.GetLayoutFlags(backgroundCell));
+                
                 button.Clicked += (obj, args) =>
                     {
                         viewOverlay.IsVisible = true;
@@ -126,99 +127,12 @@ namespace ZestyKitchenHelper
                         {
                             titleGrid,
                             storageLabel,
-                            storageView,
+                            storageViewFrame
                         }
                     },
                     viewOverlay
                 }
             };
-        }
-        private void NextPresetPage(int currentAmount)
-        {
-            currentGrid.Children.Clear();
-            //var currentAmount = presetResult.IndexOf(presetSelectGrid.Children.Last() as IconLayout);
-            List<View> results = new List<View>();
-            var max = max_grid_count + currentAmount < currentGrid.GetGridChilrenList().Count ? max_grid_count + currentAmount : currentGrid.GetGridChilrenList().Count;
-            for (int i = currentAmount; i < max; i++)
-            {
-                results.Add(currentGrid.GetGridChilrenList()[i] as View);
-            }
-            currentGrid.OrganizeGrid(results, GridOrganizer.OrganizeMode.HorizontalLeft);
-        }
-
-        private Grid GetItemGrid(List<ItemLayout> itemList)
-        {
-            List<ItemLayout> list = new List<ItemLayout>();
-            List<ItemLayout> resultList = new List<ItemLayout>();
-            Grid cellItemGrid = new Grid()
-            {
-                ColumnSpacing = 5,
-                IsVisible = false,
-                RowDefinitions =
-                {
-                    new RowDefinition(), new RowDefinition(), new RowDefinition(), new RowDefinition(), new RowDefinition()
-                },
-                ColumnDefinitions =
-                {
-                    new ColumnDefinition(),  new ColumnDefinition(),  new ColumnDefinition(),  new ColumnDefinition()
-                }
-            };
-
-
-            foreach (var item in itemList)
-            {
-                ItemLayout itemInstance = new ItemLayout();
-                itemInstance.ItemData = item.ItemData;
-                itemInstance.AddMainImage().AddAmountMark().AddExpirationMark().AddTitle();
-                list.Add(itemInstance);
-                if (list.Count <= max_grid_count) resultList.Add(itemInstance);
-
-                itemInstance.AddDeleteButton();
-                itemInstance.deleteButton.IsVisible = false;
-                itemInstance.iconImage.Clicked += (obj, args) =>
-                {
-                    itemInstance.iconImage.ToggleEffects(
-                        new ImageTint() { tint = Color.FromRgba(100, 50, 50, 80), ImagePath = ContentManager.buttonTintImage }, new List<VisualElement>() { itemInstance.deleteButton });
-                    Console.WriteLine("the icon image clicked");
-                };
-
-            
-                itemInstance.deleteButton.Clicked += (obj, args) =>
-                {
-                    if (itemInstance.ItemData.Amount > 1)
-                    {
-                        item.SubtractAmount();
-                        itemInstance.amountLabel.Text = item.amountLabel.Text;
-                        updateItemBaseEvent.Invoke(item.ItemData);
-                        updateItemLocalEvent.Invoke(item.ItemData);
-                    }
-                    else
-                    {
-                        var index = cellItemGrid.GetGridChilrenList().IndexOf(cellItemGrid.Children[0]);
-                        cellItemGrid.Children.Clear();
-                        var removedList = cellItemGrid.GetGridChilrenList() as List<ItemLayout>;
-                        removedList.Remove(itemInstance);
-                        cellItemGrid.SetGridChildrenList(removedList);
-                        NextPresetPage(index);
-                       // ContentManager.GetInfoBase()[storageName][item.ParentCellIndex].Children.Remove(item);
-                       // ContentManager.GetItemBase()[storageName][item.ParentCellIndex][item.ParentButton].Remove(item);
-                        ContentManager.MetaItemBase.Remove(item.ItemData.ID);
-                        string itemInfo, rowInfo;
-                       // ContentManager.SetLocalCabinet(item.StorageName, out rowInfo, out itemInfo);
-                       // saveStorageLocalEvent?.Invoke(item.StorageName, rowInfo, itemInfo);
-                       // saveStorageBaseEvent?.Invoke(item.StorageName, rowInfo, itemInfo);
-                        deleteItemLocalEvent?.Invoke(item.ItemData); 
-                        deleteItemBaseEvent?.Invoke(item.ItemData);
-                        item.ItemData.SetStorage(string.Empty, 0, ContentManager.GetStorageType()); 
-                    }
-                };
-            }
-
-            cellItemGrid.SetGridChildrenList(list);
-            cellItemGrid.OrganizeGrid(resultList, GridOrganizer.OrganizeMode.HorizontalLeft);
-            AbsoluteLayout.SetLayoutBounds(cellItemGrid, new Rectangle(0, 100, 1, Application.Current.MainPage.Height - 100));
-            AbsoluteLayout.SetLayoutFlags(cellItemGrid, AbsoluteLayoutFlags.WidthProportional); ;
-            return cellItemGrid;
         }
    }
 }

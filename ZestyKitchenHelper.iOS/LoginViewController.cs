@@ -6,11 +6,13 @@ using Foundation;
 using UIKit;
 using Auth0.OidcClient;
 using System.Threading.Tasks;
+using UserNotifications;
+using Xamarin.Forms.Platform.iOS;
 
 namespace ZestyKitchenHelper.iOS
 {
-	public partial class LoginViewController : UITableViewController
-	{
+    public partial class LoginViewController : UITableViewController
+    {
         private Auth0Client client;
         private UserProfile userProfile;
 
@@ -37,19 +39,22 @@ namespace ZestyKitchenHelper.iOS
 
             LoginButton.TouchUpInside += async (o, a) =>
             {
+                ContentManager.isLocal = false;
                 await LoginAsync();
             };
 
-            SkipLoginButton.TouchUpInside += async (o, a) =>
+            SkipLoginButton.TouchUpInside += (o, a) =>
             {
+                ContentManager.isLocal = true;
                 UIAlertController loginAlert = UIAlertController.Create("Skip Log In", "Logging in allows the same information to be edited on multiple devices.", UIAlertControllerStyle.Alert);
                 loginAlert.AddAction(UIAlertAction.Create("Skip", UIAlertActionStyle.Default, (action) => AppDelegate.ToPageControllerAction.Invoke()));
                 loginAlert.AddAction(UIAlertAction.Create("Cancel", UIAlertActionStyle.Cancel, null));
                 PresentViewController(loginAlert, true, null);
             };
-
-
         }
+
+
+
 
         private async Task LoginAsync()
         {
@@ -65,13 +70,13 @@ namespace ZestyKitchenHelper.iOS
                 {
                     Email = email,
                     Name = name,
+                    IconImage = ContentManager.addIcon
                 };
 
 
                 if (!await FireBaseController.HasUser(email))
                 {
                     ContentManager.isUserNew = true;
-                    await FireBaseController.AddUser(name, email);
                 }
 
                 //  var serializedLoginResponse = JsonConvert.SerializeObject(userProfile);
@@ -85,9 +90,11 @@ namespace ZestyKitchenHelper.iOS
             }
         }
 
+
         public async Task<IdentityModel.OidcClient.Browser.BrowserResultType> LogoutAsync()
         {
             return await client.LogoutAsync();
         }
     }
 }
+

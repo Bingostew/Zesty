@@ -133,7 +133,7 @@ namespace ZestyKitchenHelper.Droid.Effects
 
                 foreach (var cell in contactBase.GetGridCells())
                 {
-                    var child = cell.GetBackground();
+                    var child = cell.GetButton();
 
                     var contactRect = new Rectangle(child.GetAbsolutePosition().X, child.GetAbsolutePosition().Y, child.Width, child.Height);
                     if (contactRect.IntersectsWith(controlRect))

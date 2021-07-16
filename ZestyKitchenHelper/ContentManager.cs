@@ -15,7 +15,21 @@ namespace ZestyKitchenHelper
     public class ContentManager
     {
         public static UserProfile sessionUserProfile;
+        public static bool isLocal;
         public static bool isUserNew;
+        private static Color _themeColor = Color.Wheat;
+        public static Color ThemeColor
+        {
+            get { return _themeColor; }
+            set
+            {
+                _themeColor = value;
+                foreach (var listener in OnColorChangeEvents)
+                {
+                    listener?.Invoke(_themeColor);
+                }
+            }
+        }
 
         public static double screenWidth;
         public static double screenHeight;
@@ -40,7 +54,8 @@ namespace ZestyKitchenHelper
         public const string countIcon = "small_arrow.png";
 
         public const string defaultSearchAllBarText = "Search item...";
-        
+        public const string exp_notification_title = "Zesty's Expiration Warning";
+
         public const string cabinetStorageType = "Cabinet";
         public const string fridgeStorageType = "Fridge";
         public const string metaGridName = "Meta Grid";
@@ -53,11 +68,11 @@ namespace ZestyKitchenHelper
         public const string fridgeEditIdGenerator = "Fridge";
 
         public static PageController pageController = new PageController();
-        public static SelectionPage selectionPage;
 
         public static Dictionary<string, Cabinet> CabinetMetaBase = new Dictionary<string, Cabinet>();
         public static Dictionary<string, Fridge> FridgeMetaBase = new Dictionary<string, Fridge>();
-        public static async void InitializeApp(double _screenWidth, double _screenHeight)
+        private static List<Action<Color>> OnColorChangeEvents = new List<Action<Color>>();
+        public static async void InitializeApp()
         {
             // Initialize ID Groups
             IDGenerator.InitializeIDGroup(itemStorageIdGenerator);
@@ -71,7 +86,7 @@ namespace ZestyKitchenHelper
             GridManager.InitializeGrid(metaGridName, 9, 4, GridLength.Auto, GridLength.Star);
             GridManager.InitializeGrid(unplacedGridName, 0, 4, GridLength.Star, GridLength.Star);
 
-
+            Console.WriteLine("ContentManger 75 is user new -=================================================================== " + ContentManager.isUserNew + ContentManager.isLocal);
             // Load saved data
             if (!isUserNew)
             {
@@ -84,7 +99,7 @@ namespace ZestyKitchenHelper
                 List<StorageCell> baseStorageCells = new List<StorageCell>();
                 List<Item> baseItems = new List<Item>();
 
-                if (sessionUserProfile != null)
+                if (!isLocal)
                 {
                     // Populating list with firebase data 
                     baseCabinets = (await FireBaseController.GetCabinets()).ToList().ConvertAll(o => o.Object);
@@ -128,7 +143,7 @@ namespace ZestyKitchenHelper
             // screenHeight = _screenHeight;
             // screenWidth = _screenWidth;
             screenHeight = DeviceDisplay.MainDisplayInfo.Height / DeviceDisplay.MainDisplayInfo.Density;
-            screenWidth = DeviceDisplay.MainDisplayInfo.Width / DeviceDisplay.MainDisplayInfo.Density; 
+            screenWidth = DeviceDisplay.MainDisplayInfo.Width / DeviceDisplay.MainDisplayInfo.Density;
         }
         /// <summary>
         /// Returns the string that represents the storage the current user is in.
@@ -213,393 +228,22 @@ namespace ZestyKitchenHelper
                 FridgeMetaBase.Add(name, (Fridge)storage);
             }
         }
-        /*
-        public static void SetLocalCabinet(string name, out string rowInfo, out string itemInfo)
+        public static void RemoveSelectedStorage(string name)
         {
-            var itemContent = cabinetItemBase[name];
-            rowInfo = "";
-            itemInfo = "";
-
-            var rowList = cabinetInfo[name].Keys.ToList();
-            for (int i = 0; i < rowList.Count; i++)
+            if (storageSelection == StorageSelection.cabinet)
             {
-                var index = rowList[i];
-                var buttonList = itemContent[index].Keys.ToArray();
-                var buttonCount = itemContent[index].Values.Count;
-                rowInfo += "(";
-                itemInfo += i.ToString() + "(";
-                for (int j = 0; j < buttonCount; j++)
-                {
-                    rowInfo += Math.Round(buttonList[j].GetAbsolutePosition().X / (buttonList[j].Parent as View).Width, 2);
-                    if (j != buttonCount - 1) rowInfo += "+";
-                    for (int k = 0; k < itemContent[index][buttonList[j]].Count; k++)
-                    {
-                        itemInfo += itemContent[index][buttonList[j]][k].ItemData.ID + "+";
-                    }
-                }
-                 itemInfo += ")";
-                rowInfo += ")";
-                if (i != rowList.Count - 1) { rowInfo += ","; itemInfo += ","; }
+                CabinetMetaBase.Remove(name);
             }
-        }
-        public static void SetLocalFridge(string name, out string rowInfo, out string itemInfo)
-        {
-            var itemContent = fridgeItemBase[name];
-            rowInfo = "";
-            itemInfo = "";
-
-            var rowList = fridgeInfo[name].Keys.ToList();
-            rowInfo += "(" + fridgeInfo[name][0].Children.Where(e => e.GetType() == typeof(ImageButton)).Count() + "),";
-            itemInfo += "(";
-            foreach (var side in fridgeInfo[name][0].Children)
+            else
             {
-                if (side.GetType() == typeof(ItemLayout))
-                    itemInfo += (side as ItemLayout).ItemData.ID + "+";
-            }
-            itemInfo += "),";
-            rowInfo += "(" + fridgeInfo[name][1].Children.Where(e => e.GetType() == typeof(ImageButton)).Count() + "),";
-            itemInfo += "(";
-            foreach (var side in fridgeInfo[name][1].Children)
-            {
-                if (side.GetType() == typeof(ItemLayout))
-                    itemInfo += (side as ItemLayout).ItemData.ID + "+";
-            }
-            itemInfo += "),";
-            for (int i = 2; i < rowList.Count; i++)
-            {
-                var index = rowList[i];
-                var buttonList = itemContent[index].Keys.ToArray();
-                var buttonCount = itemContent[index].Values.Count;
-                rowInfo += "(";
-                itemInfo += i.ToString() + "(";
-                for (int j = 0; j < buttonCount; j++)
-                {
-                    rowInfo += Math.Round((buttonList[j].GetAbsolutePosition().X - buttonList[j].Width / 2) / (buttonList[j].Parent as View).Width, 2);
-                    if (j != buttonCount - 1) rowInfo += "+";
-                    for (int k = 0; k < itemContent[index][buttonList[j]].Count; k++)
-                    {
-                        itemInfo += itemContent[index][buttonList[j]][k].ItemData.ID + "+";
-                    }
-                }
-                itemInfo += ")";
-                rowInfo += ")";
-                if (i != rowList.Count - 1) { rowInfo += ","; itemInfo += ","; }
+                FridgeMetaBase.Remove(name);
             }
         }
 
-        public static void ParseLocalItems(List<Item> itemList)
+        public static void AddOnBackgroundChangeListener(Action<Color> listener)
         {
-            foreach (var item in itemList)
-            {
-                if (!MetaItemBase.ContainsKey(item.ID))
-                {
-                    ItemLayout itemLayout = new ItemLayout(50, 50, item)
-                                .AddMainImage()
-                                .AddAmountMark()
-                                .AddExpirationMark()
-                                .AddTitle()
-                                .AddInfoIcon();
-                    MetaItemBase.Add(item.ID, itemLayout);
-                    if (!item.stored) UnplacedItemBase.Add(item.ID, itemLayout);
-                }
-            }
+            OnColorChangeEvents.Add(listener);
         }
-
-        public static void ParseLocalCabinets(List<Cabinet> cabinetList, List<Item> itemList)
-        {
-            foreach (var cabinet in cabinetList)
-            {
-               if (cabinet == null || cabinet.Name == null || cabinetInfo.ContainsKey(cabinet.Name)) { break; }
-                AbsoluteLayout cabinetLayout = new AbsoluteLayout() { HeightRequest = 400 };
-                cabinetLayout.WidthRequest = DeviceDisplay.MainDisplayInfo.Width / DeviceDisplay.MainDisplayInfo.Density;
-                var cellIndexer = 0;
-                var name = cabinet.Name;
-                string[] cabinetRows = cabinet.RowInfo.Split(',');
-                string[] itemString = cabinet.RowItems.Split(',');
-                cabinetInfo.Add(name, new Dictionary<int, AbsoluteLayout>());
-                cabinetItemBase.Add(name, new Dictionary<int, Dictionary<ImageButton, List<ItemLayout>>>());
-                
-                foreach (var row in cabinetRows)
-                {
-
-                    string[] rowParsable = row.TrimStart('(').TrimEnd(')').Split('+');
-                    var background = new Image() { Source = cabinetIcon, Aspect = Aspect.Fill };
-                    int amount = rowParsable.Length;
-
-                    cabinetItemBase[name].Add(cellIndexer, new Dictionary<ImageButton, List<ItemLayout>>());
-                    AbsoluteLayout rowLayout = new AbsoluteLayout() { HeightRequest = 50 };
-                    cabinetLayout.Children.Insert(0, rowLayout);
-                    if (cabinetLayout.Children.Count > 0)
-                    {
-                        AbsoluteLayout.SetLayoutBounds(rowLayout, new Rectangle(0, CabinetEditPage.cabinet_height / cabinetLayout.HeightRequest * cabinetLayout.Children.Count,
-                            1, CabinetEditPage.cabinet_height / cabinetLayout.HeightRequest));
-                    }
-                    else
-                    {
-                        AbsoluteLayout.SetLayoutBounds(rowLayout, new Rectangle(0, 0, 1, CabinetEditPage.cabinet_height / cabinetLayout.HeightRequest));
-                    }
-                    AbsoluteLayout.SetLayoutFlags(rowLayout, AbsoluteLayoutFlags.All);
-                    cabinetInfo[name].Add(cellIndexer, rowLayout);
-                    rowLayout.Children.Add(background, new Rectangle(0, 0, 1, 1), AbsoluteLayoutFlags.All);
-                    for (int i = 0; i < amount; i++)
-                    {
-                        double offset = double.Parse(rowParsable[i], CultureInfo.InvariantCulture); 
-                        var cellButton = new ImageButton() { Source = transIcon, Aspect = Aspect.Fill };
-                        var button = new ImageButton() { Source = transIcon, Aspect = Aspect.Fill };
-                        button.AnchorX = .5;
-                        Image divider = new Image() { Aspect = Aspect.Fill };
-                        var lastButtonWidth = 1 - double.Parse(rowParsable[rowParsable.Length - 1]);
-                        var buttonWidth = i < rowParsable.Length - 1 ? double.Parse(rowParsable[i + 1]) - double.Parse(rowParsable[i]) : i == rowParsable.Length - 1 ? lastButtonWidth: 0;
-                        double buttonX = i == 0 ? 0 : i == rowParsable.Length - 1 ? 1 : offset / (1 - buttonWidth);
-                        AbsoluteLayout.SetLayoutBounds(button, new Rectangle(buttonX, 0, buttonWidth, 1));
-                        AbsoluteLayout.SetLayoutFlags(button, AbsoluteLayoutFlags.All);
-                        rowLayout.Children.Add(button);
-                        cabinetItemBase[name][cellIndexer].Add(button, new List<ItemLayout>());
-
-                        if (i != 0)
-                        {
-                            rowLayout.Children.Add(divider);
-                            var dividerX = button.GetAbsolutePosition().X;
-                            if (amount % 2 == 0)
-                            {
-                                divider.Source = offset < .5 ? cabinetLeftIcon : offset == .5 ? cabinetMiddleIcon : cabinetRightIcon;
-                            }
-                            else
-                            {
-                                divider.Source = offset < .5 ? cabinetLeftIcon : cabinetRightIcon;
-                            }
-
-                            if (divider.Source.ToString() != cabinetMiddleIcon)
-                            {
-                                divider.ScaleX = Math.Abs((.5 - offset) / .5);
-                                if (divider.ScaleX < 0.2) { divider.ScaleX = 0.2; }
-                            }
-                            else { divider.ScaleX = 0.3; }
-                            AbsoluteLayout.SetLayoutBounds(divider, new Rectangle(offset, 0, .05, 1));
-                            AbsoluteLayout.SetLayoutFlags(divider, AbsoluteLayoutFlags.All);
-                        }
-                        button.Clicked += (o, a) =>
-                        {
-                            foreach (Layout<View> element in cabinetLayout.Children)
-                            {
-                                 element.Children.RemoveEffects(typeof(ImageTint));
-                            }
-                            button.ToggleEffects((new ImageTint() { tint = Color.FromHsla(1, .1, .5, .5) }), null);
-                        };
-
-                        var itemParsable = "";
-                        if (itemString != null) itemParsable = itemString[cellIndexer].Length > 2 ? itemString[cellIndexer].TrimEnd(')').Substring(2) : "";
-                        var itemIterator = 0;
-                        
-                        if (itemParsable.Length > 2)
-                            foreach (var itemID in itemParsable.Split('+'))
-                            {
-                                if (itemID.Length > 0)
-                                {
-                                    int id = int.Parse(itemID);
-                                    var item = itemList.Where(t => t.ID == id).FirstOrDefault();
-                                    if (item != null)
-                                    {
-                                        ItemLayout itemLayout = new ItemLayout(50, 50, item)
-                                        .AddMainImage()
-                                        .AddAmountMark()
-                                        .AddExpirationMark()
-                                        .AddTitle();
-                                        itemLayout.BindCabinetInfo(button.GetAbsolutePosition().X, cellIndexer, button, name, GetCabinetView);
-                                        itemLayout.StorageName = name;
-                                        itemLayout.RecalculateDate();
-                                        itemLayout.AddInfoIcon();
-                                        cabinetItemBase[name][cellIndexer][button].Add(itemLayout);
-                                        UnplacedItemBase.Remove(item.ID);
-                                        itemIterator++;
-                                    }
-                                }
-                            }
-                    }
-                    cellIndexer++;
-                }
-            }
-        }
-        public static void ParseLocalFridge(List<Fridge> fridgeList, List<Item> itemList)
-        {
-             foreach (var fridge in fridgeList)
-            {
-                if (fridge == null || fridge.Name == null || fridgeInfo.ContainsKey(fridge.Name)) { break; }
-                AbsoluteLayout fridgeLayout = new AbsoluteLayout() { HeightRequest = 400 };
-                fridgeLayout.WidthRequest = DeviceDisplay.MainDisplayInfo.Width / DeviceDisplay.MainDisplayInfo.Density;
-                var cellIndexer = 0;
-                var name = fridge.Name;
-                string[] fridgeRows = fridge.RowInfo.Split(',');
-                string[] itemString = fridge.RowItems.Split(',');
-                fridgeInfo.Add(name, new Dictionary<int, AbsoluteLayout>());
-                fridgeItemBase.Add(name, new Dictionary<int, Dictionary<ImageButton, List<ItemLayout>>>());
-                fridgeLayout.HeightRequest = 400;
-                var height = (fridgeRows.Length - 2) * FridgeEditPage.fridge_height / fridgeLayout.HeightRequest;
-                var leftRowLayout = new AbsoluteLayout() { HeightRequest = height };
-                var rightRowLayout = new AbsoluteLayout() { HeightRequest = height };
-                fridgeLayout.Children.Add(leftRowLayout, new Rectangle(0, 0, 1 / FridgeEditPage.Side_Cell_Width_Div, height), AbsoluteLayoutFlags.All);
-                fridgeLayout.Children.Add(rightRowLayout, new Rectangle(1, 0, 1 / FridgeEditPage.Side_Cell_Width_Div, height), AbsoluteLayoutFlags.All);
-                setSideShelf(true); setSideShelf(false);
-                void setSideShelf(bool left)
-                {
-                    var container = leftRowLayout;
-                    var tag =  FridgeEditPage.Left_Cell_Tag;
-                    var count = double.Parse(fridgeRows[0].TrimStart('(').TrimEnd(')'));
-                    if (!left)
-                    {
-                        container = rightRowLayout; 
-                        tag = FridgeEditPage.Right_Cell_Tag;
-                        count = double.Parse(fridgeRows[1].TrimStart('(').TrimEnd(')'));
-                    }
-                    var parentHeight = container.HeightRequest;
-                    var parentWidth = container.Width;
-                    fridgeInfo[name].Add(cellIndexer, container);
-
-                    List<ImageButton> buttonList = new List<ImageButton>();
-                    fridgeItemBase[name].Add(cellIndexer, new Dictionary<ImageButton, List<ItemLayout>>());
-                    for (int j = 0; j < count; j++)
-                    {
-                        var cell = new Image() { Source = fridgeSideIcon, Aspect = Aspect.Fill };
-                        var button = new ImageButton() { Source = transIcon, Aspect = Aspect.Fill };
-                        buttonList.Add(button);
-                        button.Clicked += (obj, args) =>
-                        {
-                            foreach (View element in container.Children)
-                            {
-                                if (element.GetType() == typeof(ImageButton) && element != button) element.RemoveEffect(typeof(ImageTint));
-                            }
-                            button.ToggleEffects(new ImageTint() { tint = Color.FromHsla(1, .1, .5, .5) }, null);
-                        };
-                        cell.SetElementTag(tag);
-                        button.SetElementTag(tag);
-                        var y = j == 0 ? 0 : parentHeight / count * j / (parentHeight - (parentHeight / count));
-                        container.Children.Add(cell, new Rectangle(0, y, 1, 1/count), AbsoluteLayoutFlags.All);
-                        container.Children.Add(button, new Rectangle(0, y, 1, 1/count), AbsoluteLayoutFlags.All);
-                        fridgeItemBase[name][cellIndexer].Add(button, new List<ItemLayout>());
-                    }
-                    cellIndexer++;
-                }
-
-                for (int k = 2; k < fridgeRows.Length; k ++)
-                {
-                    string[] rowParsable = fridgeRows[k].TrimStart('(').TrimEnd(')').Split('+');
-                    var background = new Image() { Source = fridgeIcon, Aspect = Aspect.Fill };
-                    int amount = rowParsable.Length;
-
-                    fridgeItemBase[name].Add(cellIndexer, new Dictionary<ImageButton, List<ItemLayout>>());
-                    AbsoluteLayout rowLayout = new AbsoluteLayout() { HeightRequest = 50 };
-
-                    if (fridgeLayout.Children.Count > 2)
-                    {
-                        AbsoluteLayout.SetLayoutBounds(rowLayout, new Rectangle(.5, FridgeEditPage.fridge_height / fridgeLayout.HeightRequest * (fridgeLayout.Children.Count - 2),
-                            1 / FridgeEditPage.Main_Cell_Width_Div, FridgeEditPage.fridge_height / fridgeLayout.HeightRequest));
-                    }
-                    else
-                    {
-                        AbsoluteLayout.SetLayoutBounds(rowLayout, new Rectangle(.5, 0,1 / FridgeEditPage.Main_Cell_Width_Div, FridgeEditPage.fridge_height / fridgeLayout.HeightRequest));
-                    }
-                    fridgeLayout.Children.Insert(2, rowLayout);
-                    AbsoluteLayout.SetLayoutFlags(rowLayout, AbsoluteLayoutFlags.All);
-                    fridgeInfo[name].Add(cellIndexer, rowLayout);
-                    rowLayout.Children.Add(background, new Rectangle(0, 0, 1, 1), AbsoluteLayoutFlags.All);
-                    for (int i = 0; i < amount; i++)
-                    {
-                        double offset = double.Parse(rowParsable[i], CultureInfo.InvariantCulture); 
-                        var button = new ImageButton() { Source = transIcon, Aspect = Aspect.Fill };
-                        Image divider = new Image() { Aspect = Aspect.Fill };
-                        var lastButtonWidth = 1 - double.Parse(rowParsable[rowParsable.Length - 1]);
-
-                        var buttonWidth = i < amount - 1 ? double.Parse(rowParsable[i + 1]) - double.Parse(rowParsable[i]) : i == amount - 1 ? lastButtonWidth: 0;
-                        double buttonX = i == amount - 1 ? 0 : offset / (1 - lastButtonWidth);
-                        AbsoluteLayout.SetLayoutBounds(button, new Rectangle(buttonX, 0, buttonWidth, 1));
-                        AbsoluteLayout.SetLayoutFlags(button, AbsoluteLayoutFlags.All);
-                        rowLayout.Children.Add(button);
-                        fridgeItemBase[name][cellIndexer].Add(button, new List<ItemLayout>());
-
-
-                      //  Console.WriteLine("parse num " + buttonWidth + " offset "+ buttonX);
-                      
-                        if (i != 0)
-                        {
-                            rowLayout.Children.Add(divider);
-                            var dividerX = button.GetAbsolutePosition().X;
-                            if (amount % 2 == 0)
-                            {
-                                divider.Source = offset < .5 ? cabinetLeftIcon : offset == .5 ? cabinetMiddleIcon : cabinetRightIcon;
-                            }
-                            else
-                            {
-                                divider.Source = offset < .5 ? cabinetLeftIcon : cabinetRightIcon;
-                            }
-
-                            if (divider.Source.ToString() != cabinetMiddleIcon)
-                            {
-                                divider.ScaleX = Math.Abs((.5 - offset) / .5);
-                                if (divider.ScaleX < 0.2) { divider.ScaleX = 0.2; }
-                            }
-                            else { divider.ScaleX = 0.3; }
-                            AbsoluteLayout.SetLayoutBounds(divider, new Rectangle(offset, 0, .05, 1));
-                            AbsoluteLayout.SetLayoutFlags(divider, AbsoluteLayoutFlags.All);
-                        }
-                        button.Clicked += (o, a) =>
-                        {
-                            foreach (Layout<View> element in fridgeLayout.Children)
-                            {
-                                element.Children.RemoveEffects(typeof(ImageTint));
-                            }
-                            button.ToggleEffects((new ImageTint() { tint = Color.FromHsla(1, .1, .5, .5) }), null);
-                        };
-
-                        
-
-                        var itemParsable = "";
-                        if (itemString != null) itemParsable = itemString[cellIndexer].Length > 2 ? itemString[cellIndexer].TrimEnd(')').Substring(2) : "";
-                        var itemIterator = 0;
-
-                        if (itemParsable.Length > 2)
-                            foreach (var itemID in itemParsable.Split('+'))
-                            {
-                                if (itemID.Length > 0)
-                                {
-                                    int id = int.Parse(itemID);
-                                    var item = itemList.Where(t => t.ID == id).FirstOrDefault();
-                                    if (item != null)
-                                    {
-                                        ItemLayout itemLayout = new ItemLayout(50, 50, item)
-                                            .AddMainImage()
-                                            .AddAmountMark()
-                                            .AddExpirationMark()
-                                            .AddTitle();
-                                        item.ID = id;
-                                        itemLayout.BindCabinetInfo(button.GetAbsolutePosition().X, cellIndexer, button, name, GetFridgeView);
-                                        itemLayout.StorageName = name;
-                                        itemLayout.RecalculateDate();
-                                        itemLayout.AddInfoIcon();
-                                        fridgeItemBase[name][cellIndexer][button].Add(itemLayout);
-                                        UnplacedItemBase.Remove(item.ID);
-                                        itemIterator++;
-                                    }
-                                }
-                            }
-                    }
-                    cellIndexer++;
-                }
-            }
-        }
-
-        */
-
-        /*
-        public static Dictionary<int, List<ImageButton>> GetContactViews(string cabinetName)
-        {
-            Dictionary<int, List<ImageButton>> dict = new Dictionary<int, List<ImageButton>>();
-            foreach (int index in GetItemBase()[cabinetName].Keys)
-            {
-                dict.Add(index, GetItemBase()[cabinetName][index].Keys.ToList());
-            }
-            return dict;
-        }*/
-       
 
         public static readonly Dictionary<string, IconLayout> PresetIcons = new Dictionary<string, IconLayout>()
         { 
@@ -639,7 +283,12 @@ namespace ZestyKitchenHelper
             {"potatoe", $"Potatoes last 3 weeks in pantry (until {DateCalculator.GetDateIn(21)}) and 2 months in fridge (until {DateCalculator.GetDateIn(60)})." },
         };
 
-
+        public static readonly List<string> ProfileIcons = new List<string>()
+        {
+            addIcon,
+            "apple.png",
+            "potato.png"
+        };
         public static Dictionary<int, ItemLayout> UnplacedItemBase = new Dictionary<int, ItemLayout>();
         public static Dictionary<int, ItemLayout> MetaItemBase = new Dictionary<int, ItemLayout>();
 

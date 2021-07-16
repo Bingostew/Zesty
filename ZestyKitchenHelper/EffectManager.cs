@@ -27,13 +27,14 @@ namespace ZestyKitchenHelper
                 itemIcon.TranslationY = 0;
             }
 
+
             if (args.IsInContact)
             {
                 foreach (StorageCell cell in itemStorage.GetGridCells())
                 {
                     cell.GetButton().RemoveEffect(typeof(ImageTint));
                 }
-                args.ContactView[0].AddEffect(new ImageTint() { tint = Color.FromRgba(100, 30, 30, 70), ImagePath = ContentManager.buttonTintImage });
+                args.ContactView[0].AddEffect(new ImageTint() { tint = Color.FromHsla(1, .1, .5, .5), ImagePath = ContentManager.buttonTintImage });
                 if (args.Type == TouchActionEventArgs.TouchActionType.Released)
                 {
                     args.ContactView[0].RemoveEffect(typeof(ImageTint));
@@ -53,9 +54,7 @@ namespace ZestyKitchenHelper
         /// <param name="storageName">Name of storage the view belongs to</param>
         public static void UpdateScreenTouchBounds(ItemLayout view, string storageName, Action<string, ItemLayout, int> updateShelf)
         {
-            Console.WriteLine("Updated Screen Touch Bounds");
             var tryEffect = view.GetEffect(typeof(ScreenTouch)) as ScreenTouch;
-            Console.WriteLine("EffectManager 58 already have effect  " + (tryEffect != null));
             ScreenTouch touchEvent = new ScreenTouch() { ContactView = ContentManager.GetSelectedStorage(storageName) };
             touchEvent.OnTouchEvent += (obj, args) => OnScreenTouch(args, view, storageName, updateShelf);
             view.iconImage.AddEffect(touchEvent);
@@ -69,7 +68,7 @@ namespace ZestyKitchenHelper
         public static void RemoveEffect(this VisualElement element, Type effectType)
         {
             var tryEffect = element.Effects.Where(e => e.GetType() == effectType);
-            if (tryEffect.Any()) { element.Effects.Remove(tryEffect.FirstOrDefault()); }
+            if (tryEffect.Any()) { element.Effects.Remove(tryEffect.FirstOrDefault()); Console.WriteLine("EffectManager 72 remove effect"); }
         }
         public static void RemoveEffects(this IList<View> elements, Type effectType)
         {

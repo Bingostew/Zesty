@@ -13,6 +13,7 @@ namespace ZestyKitchenHelper
     public class CabinetAddPage : ContentPage
     {
         private const int storage_margin = 10;
+        private const int grid_margin = 5;
         private const double animation_offestX = 1000;
 
         Converter<View, ItemLayout> itemLayoutCopier;
@@ -45,6 +46,7 @@ namespace ZestyKitchenHelper
             //-- set up unplaced grid
             unplacedGrid = GridManager.GetGrid(ContentManager.unplacedGridName);
             partialUnplacedGrid = GridManager.InitializeGrid(ContentManager.pUnplacedGridName, 2, 4, GridLength.Star, GridLength.Star);
+            partialUnplacedGrid.Margin = new Thickness(grid_margin, 0);
             // add listener to set TouchEffect for each new item added. If grid already exist
             partialUnplacedGrid.ChildAdded += (o, v) =>
             {
@@ -68,7 +70,6 @@ namespace ZestyKitchenHelper
             {
                 return new ItemLayout(50, 50, (v as ItemLayout).ItemData)
                                 .AddMainImage()
-                                .AddAmountMark()
                                 .AddExpirationMark()
                                 .AddTitle()
                                 .AddInfoIcon();
@@ -94,14 +95,14 @@ namespace ZestyKitchenHelper
             gridFootIndex = directGridFootIndex;
             var gridPageSelectGrid = new Grid()
             {
+                Margin = new Thickness(grid_margin, 0),
                 ColumnDefinitions =
                 {
                     new ColumnDefinition() { Width = 50 },
                     new ColumnDefinition() { Width = 30 },
                     new ColumnDefinition() { Width = 30 },
-                    new ColumnDefinition() { Width = GridLength.Auto}
-                },
-                HeightRequest = 50
+                    new ColumnDefinition() { Width = GridLength.Auto }
+                }
             };
             var nextPage = new ImageButton() { Source = ContentManager.countIcon };
             nextPage.Clicked += (obj, args) =>
@@ -134,11 +135,12 @@ namespace ZestyKitchenHelper
             gridPageSelectGrid.Children.Add(searchBar, 3, 0);
 
             pageContainer = new AbsoluteLayout();
-            pageContainer.BackgroundColor = Color.Wheat;
+            pageContainer.BackgroundColor = ContentManager.ThemeColor;
+            ContentManager.AddOnBackgroundChangeListener(c => pageContainer.BackgroundColor = c);
             pageContainer.Children.Add(titleGrid, new Rectangle(0, 0, 1, TopPage.top_bar_height_proportional), AbsoluteLayoutFlags.All);
             pageContainer.Children.Add(storageView, new Rectangle(1, 1, 1, .5), AbsoluteLayoutFlags.All);
-            pageContainer.Children.Add(gridPageSelectGrid, new Rectangle(0, .12, 1, .1), AbsoluteLayoutFlags.All);
-            pageContainer.Children.Add(partialUnplacedGrid, new Rectangle(0, .275, 1, .3), AbsoluteLayoutFlags.All);
+            pageContainer.Children.Add(gridPageSelectGrid, new Rectangle(0, .12, 1, .09), AbsoluteLayoutFlags.All);
+            pageContainer.Children.Add(partialUnplacedGrid, new Rectangle(0, .28, 1, .3), AbsoluteLayoutFlags.All);
 
             Content = new AbsoluteLayout()
             {
@@ -176,8 +178,10 @@ namespace ZestyKitchenHelper
 
             storage.AddGridItems(cellIndex, new List<View>() { itemLayout });
 
-            LocalStorageController.UpdateItem(itemLayout.ItemData);
-            FireBaseController.SaveItem(itemLayout.ItemData);
+            if (ContentManager.isLocal)
+                LocalStorageController.UpdateItem(itemLayout.ItemData);
+            else
+                FireBaseController.SaveItem(itemLayout.ItemData);
         }
     }
 }

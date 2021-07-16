@@ -16,7 +16,6 @@ namespace ZestyKitchenHelper
             {
                 // Create Itemlayout from item
                 ItemLayout itemLayout = new ItemLayout(100, 100, item).AddMainImage()
-                                        .AddAmountMark()
                                         .AddExpirationMark()
                                         .AddTitle();
                 itemLayout.RecalculateDate();

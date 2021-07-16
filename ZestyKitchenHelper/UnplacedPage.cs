@@ -24,7 +24,10 @@ namespace ZestyKitchenHelper
         {
             var titleGrid = new TopPage("Items").GetGrid();
             var addNewButton = new ImageButton() { Source = ContentManager.addIcon, BackgroundColor = Color.Transparent, Margin = new Thickness(side_margin, between_margin) };
+            // Renewing contents in meta grid
             metaGrid = GridManager.GetGrid(ContentManager.metaGridName);
+            GridManager.AddGridItem(metaGrid, ContentManager.MetaItemBase.Values, true);
+
             var addView = new AddView(localUnplacedEvent, baseUnplaceEvent, "", false);
             searchAllBar = new SearchBar() { Margin = new Thickness(side_margin, 0) };
             searchAllBar.Text = ContentManager.defaultSearchAllBarText;

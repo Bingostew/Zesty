@@ -14,6 +14,9 @@ namespace ZestyKitchenHelper
         protected const int side_margin = 8;
         protected const int bottom_margin = 10;
         protected const int top_margin = 5;
+        protected const int name_height = 50;
+        protected const double storage_height_proportional = 0.75;
+        protected const int asset_grid_spacing = 10;
 
         protected ImageSource cabinetCellImage = ContentManager.cabinetCellIcon;
         protected ImageSource cabinetDividerLeft = "cabinet_divider_left.png";
@@ -26,7 +29,7 @@ namespace ZestyKitchenHelper
         protected Grid assetGrid;
         protected Grid storageGrid;
 
-        protected StackLayout pageContent = new StackLayout() { BackgroundColor = Color.Wheat };
+        protected StackLayout pageContent = new StackLayout() { BackgroundColor = ContentManager.ThemeColor };
 
         protected Action<string> storageSaveLocalEvent, storageSaveBaseEvent;
         protected int selectedCellIndex = -1;
@@ -39,10 +42,10 @@ namespace ZestyKitchenHelper
         {
             name = storageName;
             nameLegacy = storageName;
-            var nameEntry = new Entry() { Text = "untitled", Margin = new Thickness(0, top_margin, 0, 0) };
+            var nameEntry = new Entry() { Text = "untitled", Margin = new Thickness(side_margin, top_margin, side_margin, 0), HeightRequest = name_height };
             nameEntry.TextChanged += (obj, args) => name = args.NewTextValue;
             nameEntry.Completed += (obj, arg) => {
-                StoreCabinetInfo();
+                SaveStorageInfo();
             };
 
 
@@ -86,9 +89,9 @@ namespace ZestyKitchenHelper
         protected virtual void SetBasicView(bool newShelf)
         {
             storageGrid.WidthRequest = ContentManager.screenWidth;
-            storageGrid.HeightRequest = ContentManager.screenHeight * 0.75;
+            storageGrid.HeightRequest = ContentManager.screenHeight * storage_height_proportional;
             storageGrid.BackgroundColor = Color.SaddleBrown;
-            storageGrid.Margin = new Thickness(side_margin);
+            storageGrid.Margin = new Thickness(side_margin, top_margin, side_margin, bottom_margin);
 
             pageContent.Children.Add(GetAssetGrid());
             pageContent.Children.Add(storageGrid);
@@ -96,7 +99,7 @@ namespace ZestyKitchenHelper
         protected abstract void SaveGridState(string name);
 
         protected abstract Grid GetAssetGrid();
-        protected abstract void StoreCabinetInfo();
+        protected abstract void SaveStorageInfo();
 
 
         public abstract void DeleteStorage();
@@ -107,7 +110,7 @@ namespace ZestyKitchenHelper
             IDGenerator.DeleteIDGroup(name);
         }
 
-        protected abstract void DeleteCell();
+        protected abstract void ResetCell();
         protected bool CanTransform(){ return true; }
     }
 
@@ -184,7 +187,8 @@ namespace ZestyKitchenHelper
         {
             Grid assetGrid = new Grid()
             {
-                Margin = new Thickness(side_margin, 0),
+                Margin = new Thickness(side_margin, bottom_margin),
+                RowSpacing = asset_grid_spacing,
                 RowDefinitions =
                 {
                     new RowDefinition() {Height = 50 },
@@ -194,8 +198,10 @@ namespace ZestyKitchenHelper
                 {
                     new ColumnDefinition(),
                     new ColumnDefinition(),
+                    new ColumnDefinition(){Width = 2 },
                     new ColumnDefinition(),
                     new ColumnDefinition(),
+                    new ColumnDefinition(){Width = 2 },
                     new ColumnDefinition()
                 }
             };
@@ -203,31 +209,38 @@ namespace ZestyKitchenHelper
             var dividerImage = new Image() { BackgroundColor = Color.Gray };
             var subdivideButton = new ImageButton() { Source = subdivideIcon, BackgroundColor = Color.Transparent, };
             subdivideButton.Clicked += (object obj, EventArgs args) => { if (CanTransform()) { SubdivideCellHorizontal(); } };
-            var subdivideLabel = new Label() { Text = "Subdivide Column", HorizontalOptions = LayoutOptions.CenterAndExpand, FontSize = 15 };
+            var subdivideLabel = new Label() { Text = "Subdivide", HorizontalTextAlignment = TextAlignment.Center, FontSize = 15 };
             var subdivideVerticalButton = new ImageButton() { Source = subdivideIcon, Rotation = 90, BackgroundColor = Color.Transparent, };
             subdivideVerticalButton.Clicked += (object obj, EventArgs args) => { if (CanTransform()) { SubdivideCellVertical(); } };
-            var subdivideVerticalLabel = new Label() { Text = "Subdivide Row", HorizontalOptions = LayoutOptions.CenterAndExpand, FontSize = 15 };
+            var subdivideDivider = new BoxView() { BackgroundColor = Color.Gray };
+
             var mergeColumnButton = new ImageButton() { Source = mergeIcon, Rotation = 90, BackgroundColor = Color.Transparent, };
             mergeColumnButton.Clicked += (obk, args) => { if (CanTransform()) { MergeCellVertical(); } };
-            var mergeColumnLabel = new Label() { Text = "Merge Column", HorizontalOptions = LayoutOptions.CenterAndExpand, FontSize = 15 };
+            var mergeLabel = new Label() { Text = "Merge", HorizontalTextAlignment = TextAlignment.Center, FontSize = 15 };
             var mergeRowButton = new ImageButton() { Source = mergeIcon, BackgroundColor = Color.Transparent, };
             mergeRowButton.Clicked += (obj, args) => { if (CanTransform()) MergeCellHorizontal(); };
-            var mergeRowLabel = new Label() { Text = "Merge Row", HorizontalOptions = LayoutOptions.CenterAndExpand, FontSize = 15 };
-            var deleteButton = new ImageButton() { Source = ContentManager.deleteCellIcon, BackgroundColor = Color.Transparent, };
-            deleteButton.Clicked += (obj, args) => { if (CanTransform()) DeleteCell(); };
-            var deleteLabel = new Label() { Text = "Delete", HorizontalOptions = LayoutOptions.CenterAndExpand, FontSize = 15 };
+            var mergeDivider = new BoxView() { BackgroundColor = Color.Gray };
 
+            var deleteButton = new ImageButton() { Source = ContentManager.deleteCellIcon, BackgroundColor = Color.Transparent, };
+            deleteButton.Clicked += (obj, args) => { if (CanTransform()) ResetCell(); };
+            var deleteLabel = new Label() { Text = "Reset", HorizontalOptions = LayoutOptions.CenterAndExpand, FontSize = 15 };
 
             assetGrid.Children.Add(subdivideButton, 0, 0);
             assetGrid.Children.Add(subdivideLabel, 0, 1);
+            Grid.SetColumnSpan(subdivideLabel, 2);
             assetGrid.Children.Add(subdivideVerticalButton, 1, 0);
-            assetGrid.Children.Add(subdivideVerticalLabel, 1, 1);
-            assetGrid.Children.Add(mergeColumnButton, 2, 0);
-            assetGrid.Children.Add(mergeColumnLabel, 2, 1);
-            assetGrid.Children.Add(mergeRowButton, 3, 0);
-            assetGrid.Children.Add(mergeRowLabel, 3, 1);
-            assetGrid.Children.Add(deleteButton, 4, 0);
-            assetGrid.Children.Add(deleteLabel, 4, 1);
+            assetGrid.Children.Add(subdivideDivider, 2, 0);
+            Grid.SetRowSpan(subdivideDivider, 2);
+
+            assetGrid.Children.Add(mergeColumnButton, 3, 0);
+            assetGrid.Children.Add(mergeLabel, 3, 1);
+            Grid.SetColumnSpan(mergeLabel, 2);
+            assetGrid.Children.Add(mergeRowButton, 4, 0);
+            assetGrid.Children.Add(mergeDivider, 5, 0);
+            Grid.SetRowSpan(mergeDivider, 2);
+
+            assetGrid.Children.Add(deleteButton, 6, 0);
+            assetGrid.Children.Add(deleteLabel, 6, 1);
             return assetGrid;
         }
 
@@ -450,7 +463,7 @@ namespace ZestyKitchenHelper
             MergeCell(storageGrid.RowDefinitions.Count, v => v.X, v => v.Y, c => c.ColumnSpan, c => c.RowSpan, (c, i) => c.SetRowSpan(i), c => c.SetColumnSpan(c.ColumnSpan));
         }
 
-        protected override void DeleteCell()
+        protected override void ResetCell()
         {
             foreach (int index in cabinet.GetGridIDs())
             {
@@ -497,13 +510,13 @@ namespace ZestyKitchenHelper
             {
                 storageGrid.Children.RemoveEffects(typeof(ImageTint));
 
-                StoreCabinetInfo();
+                SaveStorageInfo();
                 finishEvent.Invoke();
             }
 
         }
 
-        protected override void StoreCabinetInfo()
+        protected override void SaveStorageInfo()
         {
             if (nameLegacy != name)
             {
@@ -512,8 +525,10 @@ namespace ZestyKitchenHelper
             }
             nameLegacy = name;
 
-            storageSaveLocalEvent(name);
-            storageSaveBaseEvent(name);
+            if(ContentManager.isLocal)
+                storageSaveLocalEvent(name);
+            else
+                storageSaveBaseEvent(name);
         }
     }
 
@@ -528,7 +543,7 @@ namespace ZestyKitchenHelper
     public class FridgeEditPage : EditPage
     {
         private const double main_fridge_width_percentage = 0.6;
-        private const double fridge_grid_height_percentage = 1;
+        private const double fridge_height_proportional = 0.6;
         private const double fridge_grid_spacing = 12;
         protected override string cellImageSource => ContentManager.fridgeIcon;
 
@@ -571,19 +586,18 @@ namespace ZestyKitchenHelper
 
             Grid containerGrid = new Grid()
             {
+                ColumnSpacing = fridge_grid_spacing,
                 RowDefinitions = new RowDefinitionCollection()
                 {
-                    new RowDefinition(){Height = GridLength.Star}
+                    new RowDefinition(){Height = ContentManager.screenHeight * fridge_height_proportional}
                 },
-                ColumnDefinitions = new ColumnDefinitionCollection() 
+                ColumnDefinitions = new ColumnDefinitionCollection()
                 {
-                    new ColumnDefinition() { Width = GridLength.Star }, 
+                    new ColumnDefinition() { Width = GridLength.Star },
                     new ColumnDefinition(){Width = main_fridge_width_percentage * ContentManager.screenWidth },
                     new ColumnDefinition(){Width = GridLength.Star}
                 }
             };
-            containerGrid.ColumnSpacing = fridge_grid_spacing;
-            containerGrid.HeightRequest = fridge_grid_height_percentage * ContentManager.screenHeight;
 
             GridManager.AddGridItem(containerGrid, new List<View>() { leftSideStorageGrid, storageGrid, rightSideStorageGrid }, false);
 
@@ -597,7 +611,9 @@ namespace ZestyKitchenHelper
                 int id = IDGenerator.GetID(ContentManager.fridgeEditIdGenerator);
                 storageGrid = GridManager.InitializeGrid("fridge" + id, 0, 0, GridLength.Star, GridLength.Star);
                 leftSideStorageGrid = GridManager.InitializeGrid("fridge left" + id, 0, 0, GridLength.Star, GridLength.Star);
+                leftSideStorageGrid.Margin = new Thickness(side_margin, top_margin, 0, bottom_margin);
                 rightSideStorageGrid = GridManager.InitializeGrid("fridge right" + id, 0, 0, GridLength.Star, GridLength.Star);
+                rightSideStorageGrid.Margin = new Thickness(0, top_margin, side_margin, bottom_margin);
                 leftSideStorageGrid.RowSpacing = 0;
                 leftSideStorageGrid.ColumnSpacing = 0;
                 rightSideStorageGrid.RowSpacing = 0;
@@ -665,7 +681,8 @@ namespace ZestyKitchenHelper
         {
             Grid assetGrid = new Grid()
             {
-                Margin = new Thickness(side_margin, 0),
+                Margin = new Thickness(side_margin, top_margin),
+                RowSpacing = asset_grid_spacing,
                 RowDefinitions =
                 {
                     new RowDefinition() {Height = 50 },
@@ -675,8 +692,10 @@ namespace ZestyKitchenHelper
                 {
                     new ColumnDefinition(),
                     new ColumnDefinition(),
+                    new ColumnDefinition(){Width = 2 },
                     new ColumnDefinition(),
                     new ColumnDefinition(),
+                    new ColumnDefinition(){Width = 2 },
                     new ColumnDefinition()
                 }
             };
@@ -684,31 +703,39 @@ namespace ZestyKitchenHelper
             var dividerImage = new Image() { BackgroundColor = Color.Gray };
             var subdivideButton = new ImageButton() { Source = subdivideIcon, BackgroundColor = Color.Transparent, };
             subdivideButton.Clicked += (object obj, EventArgs args) => { if (CanTransform()) { SubdivideCellHorizontal(); } };
-            var subdivideLabel = new Label() { Text = "Subdivide Column", HorizontalOptions = LayoutOptions.CenterAndExpand, FontSize = 15 };
+            var subdivideLabel = new Label() { Text = "Subdivide", HorizontalTextAlignment = TextAlignment.Center, FontSize = 15 };
             var subdivideVerticalButton = new ImageButton() { Source = subdivideIcon, Rotation = 90, BackgroundColor = Color.Transparent, };
             subdivideVerticalButton.Clicked += (object obj, EventArgs args) => { if (CanTransform()) { SubdivideCellVertical(); } };
-            var subdivideVerticalLabel = new Label() { Text = "Subdivide Row", HorizontalOptions = LayoutOptions.CenterAndExpand, FontSize = 15 };
+            var subdivideDivider = new BoxView() { BackgroundColor = Color.Gray };
+
             var mergeColumnButton = new ImageButton() { Source = mergeIcon, Rotation = 90, BackgroundColor = Color.Transparent, };
             mergeColumnButton.Clicked += (obk, args) => { if (CanTransform()) { MergeCellVertical(); } };
-            var mergeColumnLabel = new Label() { Text = "Merge Column", HorizontalOptions = LayoutOptions.CenterAndExpand, FontSize = 15 };
+            var mergeLabel = new Label() { Text = "Merge", HorizontalTextAlignment = TextAlignment.Center, FontSize = 15 };
             var mergeRowButton = new ImageButton() { Source = mergeIcon, BackgroundColor = Color.Transparent, };
             mergeRowButton.Clicked += (obj, args) => { if (CanTransform()) MergeCellHorizontal(); };
-            var mergeRowLabel = new Label() { Text = "Merge Row", HorizontalOptions = LayoutOptions.CenterAndExpand, FontSize = 15 };
+            var mergeDivider = new BoxView() { BackgroundColor = Color.Gray };
+
             var deleteButton = new ImageButton() { Source = ContentManager.deleteCellIcon, BackgroundColor = Color.Transparent, };
-            deleteButton.Clicked += (obj, args) => { if (CanTransform()) DeleteCell(); };
-            var deleteLabel = new Label() { Text = "Delete", HorizontalOptions = LayoutOptions.CenterAndExpand, FontSize = 15 };
+            deleteButton.Clicked += (obj, args) => { if (CanTransform()) ResetCell(); };
+            var deleteLabel = new Label() { Text = "Reset", HorizontalOptions = LayoutOptions.CenterAndExpand, FontSize = 15 };
 
 
             assetGrid.Children.Add(subdivideButton, 0, 0);
             assetGrid.Children.Add(subdivideLabel, 0, 1);
+            Grid.SetColumnSpan(subdivideLabel, 2);
             assetGrid.Children.Add(subdivideVerticalButton, 1, 0);
-            assetGrid.Children.Add(subdivideVerticalLabel, 1, 1);
-            assetGrid.Children.Add(mergeColumnButton, 2, 0);
-            assetGrid.Children.Add(mergeColumnLabel, 2, 1);
-            assetGrid.Children.Add(mergeRowButton, 3, 0);
-            assetGrid.Children.Add(mergeRowLabel, 3, 1);
-            assetGrid.Children.Add(deleteButton, 4, 0);
-            assetGrid.Children.Add(deleteLabel, 4, 1);
+            assetGrid.Children.Add(subdivideDivider, 2, 0);
+            Grid.SetRowSpan(subdivideDivider, 2);
+
+            assetGrid.Children.Add(mergeColumnButton, 3, 0);
+            assetGrid.Children.Add(mergeLabel, 3, 1);
+            Grid.SetColumnSpan(mergeLabel, 2);
+            assetGrid.Children.Add(mergeRowButton, 4, 0);
+            assetGrid.Children.Add(mergeDivider, 5, 0);
+            Grid.SetRowSpan(mergeDivider, 2);
+
+            assetGrid.Children.Add(deleteButton, 6, 0);
+            assetGrid.Children.Add(deleteLabel, 6, 1);
             return assetGrid;
         }
         protected void AddCell(Vector2D<int> position, Grid grid, int columnSpan = 1, int rowSpan = 1)
@@ -732,9 +759,9 @@ namespace ZestyKitchenHelper
             {
                 if(selectedStorageCell != null)
                     selectedStorageCell.GetButton().RemoveEffect(typeof(ImageTint));
-                selectedStorageCell.GetButton().ToggleEffects(new ImageTint() { tint = Color.FromHsla(1, .1, .5, .5), ImagePath = ContentManager.buttonTintImage }, null);
                 selectedStorageCell = cell;
                 selectedCellIndex = cellIndex;
+                selectedStorageCell.GetButton().ToggleEffects(new ImageTint() { tint = Color.FromHsla(1, .1, .5, .5), ImagePath = ContentManager.buttonTintImage }, null);
             };
 
             // register children of new cell
@@ -940,25 +967,29 @@ namespace ZestyKitchenHelper
                 (c, i) => c.SetRowSpan(i), c => c.SetColumnSpan(c.ColumnSpan));
         }
 
-        protected override void DeleteCell()
+        protected override void ResetCell()
         {
             foreach (int index in fridge.GetGridIDs())
             {
                 var cell = fridge.GetGridCell(index);
                 Grid grid = cell.ParentGrid;
-                foreach (View child in cell.GetChildren())
-                {
-                    grid.Children.Remove(child);
-                }
+
                 grid.Children.Remove(cell.GetButton());
                 grid.Children.Remove(cell.GetBackground());
                 fridge.RemoveGridCell(index);
             }
 
-            // TODO: Maybe add delete cell for each grid?
+
             storageGrid.RowDefinitions.Clear();
             storageGrid.ColumnDefinitions.Clear();
-            //AddCellRow();
+            leftSideStorageGrid.RowDefinitions.Clear();
+            leftSideStorageGrid.ColumnDefinitions.Clear();
+            rightSideStorageGrid.RowDefinitions.Clear();
+            rightSideStorageGrid.ColumnDefinitions.Clear();
+
+            AddCell(new Vector2D<int>(0, 0), storageGrid);
+            AddCell(new Vector2D<int>(0, 0), leftSideStorageGrid);
+            AddCell(new Vector2D<int>(0, 0), rightSideStorageGrid);
         }
 
         public override void DeleteStorage()
@@ -996,12 +1027,12 @@ namespace ZestyKitchenHelper
                 leftSideStorageGrid.Children.RemoveEffects(typeof(ImageTint));
                 rightSideStorageGrid.Children.RemoveEffects(typeof(ImageTint));
 
-                StoreCabinetInfo();
+                SaveStorageInfo();
                 finishEvent.Invoke();
             }
         }
 
-        protected override void StoreCabinetInfo()
+        protected override void SaveStorageInfo()
         {
             if (nameLegacy != name)
             {
@@ -1010,8 +1041,10 @@ namespace ZestyKitchenHelper
             }
             nameLegacy = name;
 
-            storageSaveLocalEvent(name);
-            storageSaveBaseEvent(name);
+            if (ContentManager.isLocal)
+                storageSaveLocalEvent(name);
+            else
+                storageSaveBaseEvent(name);
         }
     }
 }

@@ -37,16 +37,15 @@ namespace ZestyKitchenHelper
 
         static async Task InitializeAsync()
         {
-            bool hasMappings = SQLDatabase.TableMappings.Any(m => m.MappedType == typeof(Item) || m.MappedType == typeof(Cabinet)
-                                || m.MappedType == typeof(StorageCell) || m.MappedType == typeof(Fridge));
+            bool hasMappings = SQLDatabase.TableMappings.Any();
             if (!isInitialized && !hasMappings)
             {
-                Console.WriteLine("LocalStorage 44 : new table created !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                 ContentManager.isUserNew = true;
                 await SQLDatabase.CreateTableAsync(typeof(Item), CreateFlags.None).ConfigureAwait(false);
                 await SQLDatabase.CreateTableAsync(typeof(StorageCell), CreateFlags.None).ConfigureAwait(false);
                 await SQLDatabase.CreateTableAsync(typeof(Cabinet), CreateFlags.None).ConfigureAwait(false);
                 await SQLDatabase.CreateTableAsync(typeof(Fridge), CreateFlags.None).ConfigureAwait(false);
+                await SQLDatabase.CreateTableAsync(typeof(UserProfile), CreateFlags.None).ConfigureAwait(false);
 
                 isInitialized = true;
             }
@@ -57,12 +56,19 @@ namespace ZestyKitchenHelper
             await task.ConfigureAwait(returnToContext);
         }
 
-        public static void ResetDatabase()
+        public static async void ResetDatabase()
         {
-            DeleteTable<Fridge>();
-            DeleteTable<StorageCell>();
-            DeleteTable<Cabinet>();
-            DeleteTable<Item>();
+            if (!ContentManager.isUserNew)
+            {
+                Console.WriteLine("LocalStorage 63 database reset started +====================+");
+                await Task.WhenAll(
+                SQLDatabase.DeleteAllAsync<Item>(),
+                SQLDatabase.DeleteAllAsync<StorageCell>(),
+                SQLDatabase.DeleteAllAsync<Cabinet>(),
+                SQLDatabase.DeleteAllAsync<Fridge>(),
+                SQLDatabase.DeleteAllAsync<UserProfile>()
+                );
+            }
         }
         //Retrieval Methods
         public static Task<List<T>> GetTableListAsync<T>() where T : new()
@@ -83,6 +89,25 @@ namespace ZestyKitchenHelper
         }
 
         // Insertion/Update Methods
+        public static async void AddUser(UserProfile user)
+        {
+            await SQLDatabase.InsertAsync(user);
+        }
+        public static async void UpdateUser(UserProfile user)
+        {
+            var currentUser = await GetUserAsync();
+            if (currentUser == null)
+                return;
+            await SQLDatabase.DeleteAllAsync(SQLDatabase.TableMappings.First(m => m.MappedType == typeof(UserProfile)));
+            await SQLDatabase.InsertAsync(user);
+        }
+        public static async Task<UserProfile> GetUserAsync()
+        {
+            bool hasUser = await SQLDatabase.Table<UserProfile>().CountAsync() > 1;
+            if (!hasUser)
+                return null;
+            return await SQLDatabase.Table<UserProfile>().FirstAsync();
+        }
         public static async void AddItem(Item item)
         {
             await SQLDatabase.InsertAsync(item);
@@ -120,19 +145,17 @@ namespace ZestyKitchenHelper
         }
 
         //Deletion Methods
-        public static void DeleteTable<T>() where T : new()
+        public static Task DeleteTable<T>() where T : new()
         {
-            SQLDatabase.DeleteAllAsync<T>();
+             return SQLDatabase.DeleteAllAsync<T>();
         }
-        public static async void DeleteCabinet(string name)
+        public static async void DeleteCabinetSynchronous(string name)
         {
-            if (await GetCabinetAsync(name) != null)
-                await SQLDatabase.DeleteAsync(ContentManager.CabinetMetaBase[name]);
+            SQLDatabase.DeleteAsync(ContentManager.CabinetMetaBase[name]);
         }
-        public static async void DeleteFridge(string name)
+        public static async void DeleteFridgeSynchronous(string name)
         {
-            if (await GetFridgeAsync(name) != null)
-                await SQLDatabase.DeleteAsync(ContentManager.FridgeMetaBase[name]);
+            SQLDatabase.DeleteAsync(ContentManager.FridgeMetaBase[name]);
         }
         public static async void DeleteItem(Item item)
         {

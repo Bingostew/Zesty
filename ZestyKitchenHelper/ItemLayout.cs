@@ -12,9 +12,8 @@ namespace ZestyKitchenHelper
         public ImageButton iconImage;
         public ImageButton infoIcon;
         public Button deleteButton;
-        public Label itemTitle;
+        public Button itemTitle;
         public Button expirationMark;
-        public Label amountLabel;
         private Func<string, Layout<View>> storageEvent;
         private double width, height;
 
@@ -121,14 +120,6 @@ namespace ZestyKitchenHelper
             }
 
         }
-        public ItemLayout AddAmountMark()
-        {
-            amountLabel = new Label() { Text = ItemData.Amount.ToString(), HorizontalTextAlignment = TextAlignment.Center,
-                BackgroundColor = Color.White, TextColor = Color.Black, FontAttributes = FontAttributes.Bold };
-
-            GetAbsoluteLayout.Children.Add(amountLabel, new Rectangle(1, 1, .15, .15), AbsoluteLayoutFlags.All);
-            return this;
-        }
         public ItemLayout AddMainImage()
         {
             ImageSource source = ItemData.Icon.Substring(6);
@@ -144,9 +135,9 @@ namespace ZestyKitchenHelper
 
         public ItemLayout AddTitle()
         {
-            itemTitle = new Label() 
-            { Text = ItemData.Name, HorizontalTextAlignment = TextAlignment.Center, BackgroundColor = Color.White, TextColor = Color.Black, FontSize = 12, LineBreakMode = LineBreakMode.HeadTruncation };
-            GetAbsoluteLayout.Children.Add(itemTitle, new Rectangle(0, 1, .75, .3), AbsoluteLayoutFlags.All);
+            itemTitle = new Button() 
+            { Text = ItemData.Name, BackgroundColor = Color.White, TextColor = Color.Black, FontSize = 12, BorderColor = Color.Black, BorderWidth = 2 };
+            GetAbsoluteLayout.Children.Add(itemTitle, new Rectangle(0, 1, 1, .2), AbsoluteLayoutFlags.All);
 
             return this;
         }
@@ -173,18 +164,10 @@ namespace ZestyKitchenHelper
                 Console.WriteLine("ItemLayout 173 Direct Select Index: " + ItemData.StorageCellIndex);
                 InfoView infoPage = new InfoView(ItemData);
                 ContentManager.pageController.ShowInfoView(infoPage);
-                if(ItemData.StorageName != null) { infoPage.BindCabinetInfo(storageEvent, ItemData.StorageName); }
                // infoPage.SetCabinetView(); 
             };
             return this;
         }
-
-        public void SubtractAmount()
-        {
-            ItemData.Amount--;
-            amountLabel.Text = ItemData.Amount.ToString();
-        }
-
         public void RecalculateDate()
         {
             ItemData.daysUntilExp = DateCalculator.SubtractDate(ItemData.expYear, ItemData.expMonth, ItemData.expDay);
@@ -258,7 +241,7 @@ namespace ZestyKitchenHelper
         public IconLayout(ImageSource source, string iconName)
         {
             imageSource = source;
-            imageButton = new ImageButton() { Source = source, BackgroundColor = Color.Transparent };
+            imageButton = new ImageButton() { Source = source, BackgroundColor = Color.Transparent, CornerRadius = 2 };
 
             this.iconName = iconName;
             imageButton.Clicked += (obj, args) =>
