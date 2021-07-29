@@ -144,6 +144,7 @@ namespace ZestyKitchenHelper
                 cabinet = new Cabinet().SetCabinet(name, storageGrid, id);
                 nameLegacy = name;
                 IDGenerator.InitializeIDGroup(name);
+                Console.WriteLine("CabinetEdit 147 ID set " + name);
 
                 AddCell(new Vector2D<int>(0, 0));
 
@@ -165,7 +166,7 @@ namespace ZestyKitchenHelper
             foreach(var cell in cabinet.GetGridCells())
             {
                 // create copies of cells and childlist.
-                StorageCell cellCopy = new StorageCell().SetStorageCell(cell.GetPosition(), cell.Index, cabinetName, storageGrid, "", cell.ColumnSpan, cell.RowSpan);
+                StorageCell cellCopy = new StorageCell().SetStorageCell(cell.GetPosition(), cell.Index, cabinetName, storageGrid, "none", cell.ColumnSpan, cell.RowSpan);
                 List<View> childrenCopy = new List<View>();
 
                 // cycle through each child to copy.
@@ -270,7 +271,7 @@ namespace ZestyKitchenHelper
             };
 
             // register cipher of new cell
-            StorageCell cell = new StorageCell().SetStorageCell(position, cellIndex, name, storageGrid, "", columnSpan, rowSpan);
+            StorageCell cell = new StorageCell().SetStorageCell(position, cellIndex, name, storageGrid, "none", columnSpan, rowSpan);
             cabinet.AddGridCell(cellIndex, cell);
             // register children of new cell
             cabinet.AddGridCellUI(cellIndex, cabinetCellBackground, transparentButton);
@@ -424,7 +425,7 @@ namespace ZestyKitchenHelper
                 // column index must be smaller than previous candidate's column index.
                 // (Same logic for vertical)
                 if (sameLayerPositionGetter(pos) == sameLayerPositionGetter(selectedCell.GetPosition()) && sameLayerSpanGetter(cell) == sameLayerSpanGetter(selectedCell) 
-                    && compareLayerPositionGetter(pos) > compareLayerPositionGetter(selectedCell.GetPosition()) && compareLayerPositionGetter(pos) < closestLayer)
+                    && compareLayerPositionGetter(pos) + 1 == compareLayerPositionGetter(selectedCell.GetPosition()) && compareLayerPositionGetter(pos) < closestLayer)
                 {
                     closestLayer = compareLayerPositionGetter(pos);
                     nextCell = cell;
@@ -488,9 +489,7 @@ namespace ZestyKitchenHelper
 
         protected override async void ConfirmationCancelEvent(Action finishEvent)
         {
-            base.ConfirmationCancelEvent(finishEvent);
-            bool cancelConfirmed = await ContentManager.pageController.DisplayAlert("Confirmation", "Do you want to discard all current changes?", "Discard", "Cancel");
-            if (cancelConfirmed) 
+            ContentManager.pageController.ShowAlert("Confirmation", "Do you want to discard all changes?", "Discard", "Cancel", () =>
             {
                 if (initialCabinetState != null)
                     ContentManager.CabinetMetaBase[nameLegacy].MainGrid = initialCabinetState;
@@ -498,22 +497,20 @@ namespace ZestyKitchenHelper
                 {
                     ContentManager.CabinetMetaBase.Remove(nameLegacy);
                 }
-                    
-                finishEvent.Invoke(); 
-            }
+
+                finishEvent.Invoke();
+            }, null);
         }
 
         protected async override void ConfirmationSaveEvent(Action finishEvent)
         {
-            bool saveConfirmed = await ContentManager.pageController.DisplayAlert("Confirmation", "Do you want to save all changes?", "Save", "Cancel");
-            if (saveConfirmed)
+            ContentManager.pageController.ShowAlert("Confirmation", "Do you want to save all changes?", "Save", "Cancel", () =>
             {
                 storageGrid.Children.RemoveEffects(typeof(ImageTint));
 
                 SaveStorageInfo();
                 finishEvent.Invoke();
-            }
-
+            }, null);
         }
 
         protected override void SaveStorageInfo()
@@ -645,8 +642,8 @@ namespace ZestyKitchenHelper
             foreach (var cell in fridge.GetGridCells())
             {
                 // create copies of cells and childlist.
-                StorageCell cellCopy = new StorageCell().SetStorageCell(cell.GetPosition(), cell.Index, fridgeName, cell.ParentGrid, 
-                    GetGridTypeName(cell.ParentGrid),  cell.ColumnSpan, cell.RowSpan);
+                StorageCell cellCopy = new StorageCell().SetStorageCell(cell.GetPosition(), cell.Index, fridgeName, cell.GetParentGrid(), 
+                    GetGridTypeName(cell.GetParentGrid()),  cell.ColumnSpan, cell.RowSpan);
                 List<View> childrenCopy = new List<View>();
 
                 // cycle through each child to copy.
@@ -657,11 +654,11 @@ namespace ZestyKitchenHelper
 
                 // put copied children into copied grid
                 cellCopy.AddItem(childrenCopy);
-                if (cell.ParentGrid == storageGrid)
+                if (cell.GetParentGrid() == storageGrid)
                 {
                     GridManager.AddGridItemAtPosition(mainGridCopy, cellCopy.GetChildren(), cellCopy.GetPosition());
                 }
-                else if(cell.ParentGrid == leftSideStorageGrid)
+                else if(cell.GetParentGrid() == leftSideStorageGrid)
                 {
                     GridManager.AddGridItemAtPosition(leftGridCopy, cellCopy.GetChildren(), cellCopy.GetPosition());
                 }
@@ -827,7 +824,7 @@ namespace ZestyKitchenHelper
             {
                 StorageCell cell = fridge.GetGridCell(id);
                 //Check to see if the cell's parent corresponds with the selected cell's parent
-                if (cell.ParentGrid == selectedCell.ParentGrid)
+                if (cell.GetParentGrid() == selectedCell.GetParentGrid())
                 {
                     Vector2D<int> pos = cell.GetPosition();
                     bool isSelectedCell = pos.X == position.X && pos.Y == position.Y;
@@ -848,7 +845,7 @@ namespace ZestyKitchenHelper
                     if (newLayerCount != oldLayerCount)
                     {
                         // scaling position accordingly
-                        GridManager.AddGridItemAtPosition(selectedStorageCell.ParentGrid, children, newPosition);
+                        GridManager.AddGridItemAtPosition(selectedStorageCell.GetParentGrid(), children, newPosition);
                         cell.SetPosition(newPosition);
                         // If unaffected by subdivision, then double row/column span. Else, maintain row/column span.
                         if (!isSelectedCell)
@@ -880,16 +877,16 @@ namespace ZestyKitchenHelper
 
         protected void SubdivideCellHorizontal()
         {
-            SubdivideCell(() => selectedStorageCell.ParentGrid.ColumnDefinitions.Count, v => v.Y, v => v.X, c => c.ColumnSpan,
-                () => selectedStorageCell.ParentGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star }), (c, i) => c.SetColumnSpan(i), c => c.SetRowSpan(c.RowSpan),
-                (x, y, p) => new Vector2D<int>(p, y), (v, s, c) => AddCell(v, selectedStorageCell.ParentGrid, s, c.RowSpan));
+            SubdivideCell(() => selectedStorageCell.GetParentGrid().ColumnDefinitions.Count, v => v.Y, v => v.X, c => c.ColumnSpan,
+                () => selectedStorageCell.GetParentGrid().ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star }), (c, i) => c.SetColumnSpan(i), c => c.SetRowSpan(c.RowSpan),
+                (x, y, p) => new Vector2D<int>(p, y), (v, s, c) => AddCell(v, selectedStorageCell.GetParentGrid(), s, c.RowSpan));
         }
 
         protected void SubdivideCellVertical()
         {
-            SubdivideCell(() => selectedStorageCell.ParentGrid.RowDefinitions.Count, v => v.X, v => v.Y, c => c.RowSpan,
-                () => selectedStorageCell.ParentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star }), (c, i) => c.SetRowSpan(i), c => c.SetColumnSpan(c.ColumnSpan),
-                 (x, y, p) => new Vector2D<int>(x, p), (v, s, c) => AddCell(v, selectedStorageCell.ParentGrid, c.ColumnSpan, s));
+            SubdivideCell(() => selectedStorageCell.GetParentGrid().RowDefinitions.Count, v => v.X, v => v.Y, c => c.RowSpan,
+                () => selectedStorageCell.GetParentGrid().RowDefinitions.Add(new RowDefinition { Height = GridLength.Star }), (c, i) => c.SetRowSpan(i), c => c.SetColumnSpan(c.ColumnSpan),
+                 (x, y, p) => new Vector2D<int>(x, p), (v, s, c) => AddCell(v, selectedStorageCell.GetParentGrid(), c.ColumnSpan, s));
         }
 
 
@@ -916,7 +913,7 @@ namespace ZestyKitchenHelper
             {
                 StorageCell cell = fridge.GetGridCell(id);
                 // Check to see if the cell's parent grid corresponds with the selected parent grid
-                if (cell.ParentGrid == selectedStorageCell.ParentGrid)
+                if (cell.GetParentGrid() == selectedStorageCell.GetParentGrid())
                 {
                     Vector2D<int> pos = cell.GetPosition();
 
@@ -939,10 +936,10 @@ namespace ZestyKitchenHelper
             // Remove children from cell, then remove cell from grid
             foreach (View child in nextCell.GetChildren())
             {
-                selectedStorageCell.ParentGrid.Children.Remove(child);
+                selectedStorageCell.GetParentGrid().Children.Remove(child);
             }
-            selectedStorageCell.ParentGrid.Children.Remove(nextCell.GetButton());
-            selectedStorageCell.ParentGrid.Children.Remove(nextCell.GetBackground());
+            selectedStorageCell.GetParentGrid().Children.Remove(nextCell.GetButton());
+            selectedStorageCell.GetParentGrid().Children.Remove(nextCell.GetBackground());
             fridge.RemoveGridCell(nextCell.Index);
 
 
@@ -956,14 +953,14 @@ namespace ZestyKitchenHelper
 
         protected void MergeCellHorizontal()
         {
-            MergeCell(selectedStorageCell.ParentGrid.ColumnDefinitions.Count, v => v.Y, v => v.X, c => c.RowSpan, c => c.ColumnSpan, 
+            MergeCell(selectedStorageCell.GetParentGrid().ColumnDefinitions.Count, v => v.Y, v => v.X, c => c.RowSpan, c => c.ColumnSpan, 
                 (c, i) => c.SetColumnSpan(i), c => c.SetRowSpan(c.RowSpan));
 
         }
 
         protected void MergeCellVertical()
         {
-            MergeCell(selectedStorageCell.ParentGrid.RowDefinitions.Count, v => v.X, v => v.Y, c => c.ColumnSpan, c => c.RowSpan, 
+            MergeCell(selectedStorageCell.GetParentGrid().RowDefinitions.Count, v => v.X, v => v.Y, c => c.ColumnSpan, c => c.RowSpan, 
                 (c, i) => c.SetRowSpan(i), c => c.SetColumnSpan(c.ColumnSpan));
         }
 
@@ -972,7 +969,7 @@ namespace ZestyKitchenHelper
             foreach (int index in fridge.GetGridIDs())
             {
                 var cell = fridge.GetGridCell(index);
-                Grid grid = cell.ParentGrid;
+                Grid grid = cell.GetParentGrid();
 
                 grid.Children.Remove(cell.GetButton());
                 grid.Children.Remove(cell.GetBackground());
@@ -999,9 +996,7 @@ namespace ZestyKitchenHelper
 
         protected override async void ConfirmationCancelEvent(Action finishEvent)
         {
-            base.ConfirmationCancelEvent(finishEvent);
-            bool cancelConfirmed = await ContentManager.pageController.DisplayAlert("Confirmation", "Do you want to discard all current changes?", "Discard", "Cancel");
-            if (cancelConfirmed)
+            ContentManager.pageController.ShowAlert("Confirmation", "Do you want to discard all changes?", "Discard", "Cancel", () =>
             {
                 if (initialFridgeState != null)
                 {
@@ -1015,13 +1010,12 @@ namespace ZestyKitchenHelper
                 }
 
                 finishEvent.Invoke();
-            }
+            }, null);
         }
 
         protected async override void ConfirmationSaveEvent(Action finishEvent)
         {
-            bool saveConfirmed = await ContentManager.pageController.DisplayAlert("Confirmation", "Do you want to save all changes?", "Save", "Cancel");
-            if (saveConfirmed)
+            ContentManager.pageController.ShowAlert("Confirmation", "Do you want to save all changes?", "Save", "Cancel", () =>
             {
                 storageGrid.Children.RemoveEffects(typeof(ImageTint));
                 leftSideStorageGrid.Children.RemoveEffects(typeof(ImageTint));
@@ -1029,7 +1023,7 @@ namespace ZestyKitchenHelper
 
                 SaveStorageInfo();
                 finishEvent.Invoke();
-            }
+            }, null);
         }
 
         protected override void SaveStorageInfo()

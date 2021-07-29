@@ -67,11 +67,7 @@ namespace ZestyKitchenHelper
         }
         public static async Task<UserProfile> GetUser(string email)
         {
-            var userList = await GetAllUsers();
-            await client.Child(base_child).OnceAsync<UserProfile>();
-            var user = userList.Where(a => a.Email == email);
-            if (user.Any()) { return user.FirstOrDefault(); }
-            else { return null; }
+            return await client.Child(base_child).Child(EmailToPath(email)).OnceSingleAsync<UserProfile>();
         }
         public static async Task<FirebaseObject<UserProfile>> GetUserObject(string email)
         {  
@@ -174,11 +170,14 @@ namespace ZestyKitchenHelper
                 return query.OnceAsync<Item>();
             return null;
         }
-        public static Task<IReadOnlyCollection<FirebaseObject<StorageCell>>> GetStorageCells()
+
+        public static Task<List<StorageCell>> GetStorageCells()
         {
+            // Since storage cell use int64 as keys, OnceAsync<T> returns an array of StorageCells instead of a Dictionary<key, StorageCell>.
+            // The former is not compatible with Json deserialization, therefore, OnceSingleAsync must be used 
             var query = client.Child(base_child).Child(EmailToPath(ContentManager.sessionUserProfile.Email)).Child(storage_cell_list_key);
             if (query != null)
-                return query.OnceAsync<StorageCell>();
+                return query.OnceSingleAsync<List<StorageCell>>();
             return null;
         }
     }

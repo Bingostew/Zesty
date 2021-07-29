@@ -68,6 +68,7 @@ namespace ZestyKitchenHelper
             };
         }
 
+
        Dictionary<string,List<View>> mainGridChildren = new Dictionary<string, List<View>>();
         public void SetView()
         {

@@ -77,10 +77,15 @@ namespace ZestyKitchenHelper.iOS
                 if (!await FireBaseController.HasUser(email))
                 {
                     ContentManager.isUserNew = true;
+                    ContentManager.sessionUserProfile = userProfile;
+                }
+                else
+                {
+                    ContentManager.sessionUserProfile = await FireBaseController.GetUser(email);
+                    Console.WriteLine("Local Storage 85 user icon " + ContentManager.sessionUserProfile.IconImage + " user name " + ContentManager.sessionUserProfile.Name);
                 }
 
                 //  var serializedLoginResponse = JsonConvert.SerializeObject(userProfile);
-                ContentManager.sessionUserProfile = userProfile;
                 AppDelegate.ToPageControllerAction.Invoke();
 
             }

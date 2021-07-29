@@ -89,6 +89,14 @@
     <InterfaceDefinition Include="LoginStoryboard.storyboard" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="System.Memory" Version="4.5.4">
+      <IncludeAssets>none</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="System.Buffers" Version="4.5.1">
+      <IncludeAssets>none</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
     <ImageAsset Include="TouchEffect.xcassets\AppIcons.appiconset\Contents.json">
       <Visible>false</Visible>
     </ImageAsset>

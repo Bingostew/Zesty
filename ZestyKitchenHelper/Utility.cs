@@ -37,8 +37,11 @@ namespace Utility
 
     public class IDGenerator
     {
-        private static Dictionary<string, List<int>> idBase = new Dictionary<string, List<int>>();
-
+        public static Dictionary<string, List<int>> idBase = new Dictionary<string, List<int>>();
+        public static bool HasIDGroup(string name)
+        {
+            return idBase.ContainsKey(name);
+        }
         public static void InitializeIDGroup(string groupName)
         {
             idBase.Add(groupName, new List<int>());
@@ -46,7 +49,7 @@ namespace Utility
 
         public static void DeleteIDGroup(string groupName)
         {
-            idBase.Remove(groupName);
+            idBase.Remove(groupName); 
         }
         public static int GetID(string groupName)
         {
@@ -165,12 +168,12 @@ namespace Utility
         /// <summary>
         /// For fridges: Either left, center, or right grid on the fridge
         /// </summary>
-        [Ignore]
-        public Grid ParentGrid { get; set; } // Only applies to fridge
+        /*
+        private Grid ParentGrid; // Only applies to fridge
         private Vector2D<int> Position;
         private Grid Grid = new Grid();
         private Image background;
-        private ImageButton button;
+        private ImageButton button;*/
 
         /// <summary>
         /// 
@@ -183,16 +186,16 @@ namespace Utility
         /// <param name="columnSpan">Column span of cell in the parent grid.</param>
         /// <param name="rowSpan">Row span of cell in the parent grid.</param>
         /// <returns></returns>
-        public StorageCell SetStorageCell(Vector2D<int> position, int index, string storageName, Grid parentGrid, string gridType = "", int columnSpan = 1, int rowSpan = 1)
+        public StorageCell SetStorageCell(Vector2D<int> position, int index, string storageName, Grid parentGrid, string gridType = "none", int columnSpan = 1, int rowSpan = 1)
         {
-            Position = position;
+        //    Position = position;
             ColumnSpan = columnSpan;
             StorageName = storageName;
             RowSpan = rowSpan;
             Index = index;
-            ParentGrid = parentGrid;
+         //   ParentGrid = parentGrid;
             GridType = gridType;
-            Grid = GridManager.InitializeGrid(6, 4, GridLength.Star, GridLength.Star);
+         //   Grid = GridManager.InitializeGrid(6, 4, GridLength.Star, GridLength.Star);
 
             MetaID = IDGenerator.GetID(ContentManager.storageCellIdGenerator);
             X = position.X; Y = position.Y;
@@ -202,37 +205,38 @@ namespace Utility
 
         public void SetPosition(Vector2D<int> position)
         {
-            Position = position;
+           // Position = position;
             X = position.X; Y = position.Y;
         }
 
         public Vector2D<int> GetPosition()
         {
-            return Position;
+            return new Vector2D<int>();// Position;
         }
 
         public void SetColumnSpan(int columnSpan)
         {
             ColumnSpan = columnSpan;
 
-            Grid.SetColumnSpan(Grid, columnSpan);
-            Grid.SetColumnSpan(background, columnSpan);
-            Grid.SetColumnSpan(button, columnSpan);
+           // Grid.SetColumnSpan(Grid, columnSpan);
+           // Grid.SetColumnSpan(background, columnSpan);
+           // Grid.SetColumnSpan(button, columnSpan);
         }
 
         public void SetRowSpan(int rowSpan)
         {
             RowSpan = rowSpan;
 
+            /*
             Grid.SetRowSpan(Grid, rowSpan);
             Grid.SetRowSpan(background, rowSpan);
-            Grid.SetRowSpan(button, rowSpan);
+            Grid.SetRowSpan(button, rowSpan);*/
         }
 
 
         public List<View> GetChildren()
         {
-            return Grid.Children.ToList();
+            return null;// Grid.Children.ToList();
         }
 
         public int GetChildrenCount()
@@ -241,28 +245,32 @@ namespace Utility
         }
         public void AddItem(List<View> items)
         {
-            GridManager.AddGridItem(Grid, items, false);
+         //   GridManager.AddGridItem(Grid, items, false);
         }
         public void RemoveItem(ItemLayout item)
         {
-            GridManager.RemoveGridItem(Grid, item);
+           // GridManager.RemoveGridItem(Grid, item);
         }
         public void AddUI(Image background, ImageButton button)
         {
-            this.background = background;
-            this.button = button;
+           // this.background = background;
+           // this.button = button;
         }
         public Image GetBackground()
         {
-            return background;
+            return null;//  return background;
         }
         public ImageButton GetButton()
         {
-            return button;
+            return null; // return button;
         }
         public Grid GetItemGrid()
         {
-            return Grid;
+            return null; // return Grid;
+        }
+        public Grid GetParentGrid()
+        {
+            return null; // return ParentGrid;
         }
     }
 
@@ -399,7 +407,7 @@ namespace Utility
             {
                 var cell = gridCells[ID];
                 cell.AddUI(background, button);
-                GridManager.AddGridItemAtPosition(cell.ParentGrid, new List<View>() { background, button }, cell.GetPosition());
+                GridManager.AddGridItemAtPosition(cell.GetParentGrid(), new List<View>() { background, button }, cell.GetPosition());
             }
         }
 
@@ -410,7 +418,7 @@ namespace Utility
                 var cell = gridCells[ID];
                 cell.AddItem(items);
 
-                GridManager.AddGridItemAtPosition(cell.ParentGrid, items, cell.GetPosition());
+                GridManager.AddGridItemAtPosition(cell.GetParentGrid(), items, cell.GetPosition());
             }
         }
 

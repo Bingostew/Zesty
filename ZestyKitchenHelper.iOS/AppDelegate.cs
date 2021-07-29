@@ -76,10 +76,9 @@ namespace ZestyKitchenHelper.iOS
             }
             
             Window = new UIWindow(UIScreen.MainScreen.Bounds);
-            NSTimer.CreateRepeatingScheduledTimer(10, t => Console.WriteLine($"AppDelegate 78 ping {t}"));
+            NSTimer.CreateRepeatingScheduledTimer(10, t => InvokeOnMainThread(() => Console.WriteLine("AppDelegate 78 ping has ID Group " + IDGenerator.HasIDGroup("untitled shelf 0"))));
             LoadApplication(new App());
-            ContentManager.InitializeApp();
-
+            
             initialViewController = storyBoard.InstantiateViewController("LoginViewController");
             Window.RootViewController = initialViewController;
             Window.AddSubview(initialViewController.View);
@@ -90,8 +89,7 @@ namespace ZestyKitchenHelper.iOS
 
         private void ToPageController()
         {
-            ContentManager.pageController.InitializePageSequence();
-            (Xamarin.Forms.Application.Current as App).SetMainPage();
+            ContentManager.InitializeApp();
             var renderer = Platform.CreateRenderer(ContentManager.pageController);
 
             renderer.NativeView.Frame = UIScreen.MainScreen.Bounds;

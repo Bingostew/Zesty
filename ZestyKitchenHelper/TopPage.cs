@@ -23,11 +23,11 @@ namespace ZestyKitchenHelper
             preferencePage = new PreferencePage();
             var border = new Button() { IsEnabled = false, BackgroundColor = Color.Black, HeightRequest = border_width, WidthRequest = ContentManager.screenWidth };
             var backButton = new ImageButton() { Source = ContentManager.backButton, BackgroundColor = Color.Transparent };
-            pageTitle = new Label() { Text = title, FontSize = title_font_size, FontFamily = "Oswald-Medium", TextColor = Color.Black, HorizontalTextAlignment = TextAlignment.Center };
+            pageTitle = new Label() { Text = title, FontSize = title_font_size, FontFamily = "Oswald-Medium", TextColor = Color.Black, HorizontalTextAlignment = TextAlignment.Center, VerticalTextAlignment = TextAlignment.Center };
             var logo = new Image() { Source = ContentManager.addIcon};
-            usernameLabel = new Label(){ FontSize = title_font_size, FontFamily = "Raleway-Regular", TextColor = Color.Gray, HorizontalTextAlignment = TextAlignment.End};
-            usernameLabel.Text = ContentManager.sessionUserProfile != null ? ContentManager.sessionUserProfile.Name : "";
-            ContentManager.sessionUserProfile.AddOnProfileChangedListener(u => usernameLabel.Text = u.Name);
+            //usernameLabel = new Label(){ FontSize = title_font_size, FontFamily = "Raleway-Regular", TextColor = Color.Gray, HorizontalTextAlignment = TextAlignment.End};
+            //usernameLabel.Text = ContentManager.sessionUserProfile != null ? ContentManager.sessionUserProfile.Name : "";
+            //ContentManager.sessionUserProfile.AddOnProfileChangedListener(u => usernameLabel.Text = u.Name);
             profileIcon = new ImageButton() { Source = ContentManager.sessionUserProfile.IconImage, WidthRequest = 50, HeightRequest = 50, CornerRadius = 25 };
             ContentManager.sessionUserProfile.AddOnProfileChangedListener(u => profileIcon.Source = u.IconImage);
             grid = new Grid()
@@ -41,7 +41,7 @@ namespace ZestyKitchenHelper
                 {
                     new ColumnDefinition(){Width = GridLength.Star}, 
                     new ColumnDefinition(){Width = GridLength.Star},
-                    new ColumnDefinition(){Width = GridLength.Star},
+                    new ColumnDefinition(){Width = new GridLength(2, GridUnitType.Star)},
                     new ColumnDefinition(){Width = GridLength.Star},
                     new ColumnDefinition(){Width = GridLength.Star}
                 }
@@ -60,7 +60,6 @@ namespace ZestyKitchenHelper
             {
                 grid.Children.Add(logo, 2, 0);
             }
-            grid.Children.Add(usernameLabel, 3, 0);
             grid.Children.Add(profileIcon, 4, 0);
             grid.Children.Add(border, 0, 1);
             Grid.SetColumnSpan(border, 5);

@@ -72,12 +72,13 @@ namespace ZestyKitchenHelper
 
         public SelectionPage()
         {
-            var titleGrid = new TopPage("Main Page").GetGrid();
+            var titleGrid = new TopPage("Main Page", null, true, false).GetGrid();
             titleGrid.HeightRequest = ContentManager.screenHeight * TopPage.top_bar_height_proportional;
 
             Grid grid = new Grid()
             {
                 BackgroundColor = ContentManager.ThemeColor,
+                Margin = new Thickness(grid_margin),
                 RowDefinitions =
                 {
                     new RowDefinition(){Height = GridLength.Auto },

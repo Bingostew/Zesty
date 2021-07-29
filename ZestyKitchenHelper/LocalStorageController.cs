@@ -37,6 +37,7 @@ namespace ZestyKitchenHelper
 
         static async Task InitializeAsync()
         {
+            Console.WriteLine("Local 40 init storage " + await SQLDatabase.Table<UserProfile>().CountAsync());
             bool hasMappings = SQLDatabase.TableMappings.Any();
             if (!isInitialized && !hasMappings)
             {
@@ -49,6 +50,7 @@ namespace ZestyKitchenHelper
 
                 isInitialized = true;
             }
+          
         }
 
         private static async void SafeFireAndForget(Task task, bool returnToContext, Action<Exception> onException = null)
@@ -58,19 +60,20 @@ namespace ZestyKitchenHelper
 
         public static async void ResetDatabase()
         {
-            if (!ContentManager.isUserNew)
-            {
-                Console.WriteLine("LocalStorage 63 database reset started +====================+");
-                await Task.WhenAll(
-                SQLDatabase.DeleteAllAsync<Item>(),
-                SQLDatabase.DeleteAllAsync<StorageCell>(),
-                SQLDatabase.DeleteAllAsync<Cabinet>(),
-                SQLDatabase.DeleteAllAsync<Fridge>(),
-                SQLDatabase.DeleteAllAsync<UserProfile>()
-                );
-            }
+
+            Console.WriteLine("LocalStorage 63 database reset started +====================+");
+            await Task.WhenAll(
+            SQLDatabase.DeleteAllAsync<Item>(),
+            SQLDatabase.DeleteAllAsync<StorageCell>(),
+            SQLDatabase.DeleteAllAsync<Cabinet>(),
+            SQLDatabase.DeleteAllAsync<Fridge>(),
+            SQLDatabase.DeleteAllAsync<UserProfile>());
         }
         //Retrieval Methods
+        public static async Task<UserProfile> GetUserAsync()
+        {
+            return await SQLDatabase.Table<UserProfile>().FirstAsync();
+        }
         public static Task<List<T>> GetTableListAsync<T>() where T : new()
         {
             return SQLDatabase.Table<T>().ToListAsync();
@@ -100,13 +103,6 @@ namespace ZestyKitchenHelper
                 return;
             await SQLDatabase.DeleteAllAsync(SQLDatabase.TableMappings.First(m => m.MappedType == typeof(UserProfile)));
             await SQLDatabase.InsertAsync(user);
-        }
-        public static async Task<UserProfile> GetUserAsync()
-        {
-            bool hasUser = await SQLDatabase.Table<UserProfile>().CountAsync() > 1;
-            if (!hasUser)
-                return null;
-            return await SQLDatabase.Table<UserProfile>().FirstAsync();
         }
         public static async void AddItem(Item item)
         {

@@ -10,9 +10,11 @@ namespace ZestyKitchenHelper
     {
         public const double info_view_height_proportional = 0.75;
         public const double info_view_width_proportional = 0.75;
-        private const int grid_font_size = 15;
+        private const int grid_font_size = 12;
         private const int side_margin = 10;
+        private const int vertical_margin = 10;
         private const int close_button_size = 30;
+
 
         StackLayout pageContainer;
 
@@ -20,6 +22,7 @@ namespace ZestyKitchenHelper
         {
             Grid mainGrid = new Grid()
             {
+                HeightRequest = ContentManager.screenHeight * info_view_height_proportional * 0.75,
                 Margin = new Thickness(side_margin, 0),
                 RowDefinitions =
                 {
@@ -75,8 +78,10 @@ namespace ZestyKitchenHelper
             mainGrid.Children.Add(locationTitle, 0, 6);
             mainGrid.Children.Add(locationLabel, 1, 6);
 
-            var toStorageViewButton = new Button() { BackgroundColor = Color.FromRgba(0, 100, 20, 80), Text = "View In Storage", TextColor = Color.Black, HorizontalOptions = LayoutOptions.CenterAndExpand };
-            var consumeButton = new Button() { BackgroundColor = Color.FromRgba(100, 20, 0, 80), Text = "Consume", TextColor = Color.Black, HorizontalOptions = LayoutOptions.CenterAndExpand };
+            var toStorageViewButton = new Button() { BackgroundColor = Color.FromRgba(0, 100, 20, 80), Text = "View In Storage", TextColor = Color.Black, 
+                HorizontalOptions = LayoutOptions.CenterAndExpand, VerticalOptions = LayoutOptions.EndAndExpand, Margin = new Thickness(0, vertical_margin) };
+            var consumeButton = new Button() { BackgroundColor = Color.FromRgba(100, 20, 0, 80), Text = "Consume", TextColor = Color.Black,
+                HorizontalOptions = LayoutOptions.CenterAndExpand, VerticalOptions = LayoutOptions.EndAndExpand, Margin = new Thickness(0, vertical_margin)  };
             toStorageViewButton.BackgroundColor = item.Stored ? Color.FromRgba(0, 100, 20, 80) : Color.Gray;
             toStorageViewButton.Clicked += (obj, args) =>
             {

@@ -79,7 +79,7 @@ namespace ZestyKitchenHelper
             IDGenerator.InitializeIDGroup(cabinetEditIdGenerator);
             IDGenerator.InitializeIDGroup(fridgeEditIdGenerator);
             IDGenerator.InitializeIDGroup(storageCellIdGenerator);
-            LocalStorageController.ResetDatabase(); // WARNING: FOR TESTING PURPOSES ONLY
+           // LocalStorageController.ResetDatabase(); // WARNING: FOR TESTING PURPOSES ONLY
             LocalStorageController.InitializeLocalDataBase();
 
             // Initialize Important Grids
@@ -101,11 +101,12 @@ namespace ZestyKitchenHelper
 
                 if (!isLocal)
                 {
-                    // Populating list with firebase data 
+                    // Populating list with firebase 
                     baseCabinets = (await FireBaseController.GetCabinets()).ToList().ConvertAll(o => o.Object);
                     baseFridges = (await FireBaseController.GetFridges()).ToList().ConvertAll(o => o.Object);
                     baseItems = (await FireBaseController.GetItems()).ToList().ConvertAll(o => o.Object);
-                    baseStorageCells = (await FireBaseController.GetStorageCells()).ToList().ConvertAll(o => o.Object);
+                    baseStorageCells = (await FireBaseController.GetStorageCells());
+
 
                     // Load with cloud data
                     ContentLoader.LoadItems(baseItems);
@@ -119,24 +120,6 @@ namespace ZestyKitchenHelper
                     ContentLoader.LoadCabinets(localCabinets, localStorageCells, localItems);
                     ContentLoader.LoadFridges(localFridges, localStorageCells, localItems);
                 }
-
-                if (sessionUserProfile != null)
-                {
-                    // Updating local data with firebase data
-                    // -----Logic: In a firebase list, select all item that does not exist in the local list. 
-                    // -----Hence check for ID similarities in both list, if the given item ID in firebase does not match any item ID in local list, add to listDiff
-                    List<Item> itemListDiff = baseItems.Where(i => !localItems.Any(j => i.ID == j.ID)).ToList();
-                    List<Cabinet> cabinetListDiff = baseCabinets.Where(i => !localCabinets.Any(j => i.ID == j.ID)).ToList();
-                    List<Fridge> fridgeListDiff = baseFridges.Where(i => !localFridges.Any(j => i.ID == j.ID)).ToList();
-                    // List<StorageCell> storageCellListDiff = baseStorageCells.Where(i => !localStorageCells.Any(j => i.MetaID == j.MetaID)).ToList();
-
-                    //actually updating local list.
-                    cabinetListDiff.ForEach(c => LocalStorageController.AddCabinet(c.Name));
-                    fridgeListDiff.ForEach(f => LocalStorageController.AddFridge(f.Name));
-                    itemListDiff.ForEach(i => LocalStorageController.AddItem(i));
-
-                    baseItems.ForEach(i => LocalStorageController.UpdateItem(i));
-                }
             }
 
             // Initialize screen width and height
@@ -144,6 +127,9 @@ namespace ZestyKitchenHelper
             // screenWidth = _screenWidth;
             screenHeight = DeviceDisplay.MainDisplayInfo.Height / DeviceDisplay.MainDisplayInfo.Density;
             screenWidth = DeviceDisplay.MainDisplayInfo.Width / DeviceDisplay.MainDisplayInfo.Density;
+
+            // start UI sequence
+            pageController.InitializePageSequence();
         }
         /// <summary>
         /// Returns the string that represents the storage the current user is in.

@@ -294,9 +294,14 @@ namespace ZestyKitchenHelper
                 itemInstance.SetDaysUntilExpiration();
                 newItem.Add(itemInstance);
                 if (ContentManager.isLocal)
+                {
                     localUnplacedEvent?.Invoke(itemInstance);
+                }
                 else
+                {
+                    Console.WriteLine("Addview 302 base unplace storage");
                     baseUnplacedEvent?.Invoke(itemInstance);
+                }
                 ResetForm();
             };
 

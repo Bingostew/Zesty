@@ -25,7 +25,7 @@ namespace ZestyKitchenHelper
         private List<List<object>> navigationParams = new List<List<object>>();
 
         AbsoluteLayout pageContainer;
-        public void InitializePageSequence()
+        public async void InitializePageSequence()
         {
             Console.WriteLine("PageController 32 []]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]] " + ContentManager.isUserNew + ContentManager.isLocal);
             pageContainer = new AbsoluteLayout() { WidthRequest = ContentManager.screenWidth, HeightRequest = ContentManager.screenHeight, BackgroundColor = Color.Wheat };
@@ -41,6 +41,10 @@ namespace ZestyKitchenHelper
             }
             else
             {
+                if (ContentManager.isLocal)
+                {
+                    ContentManager.sessionUserProfile = await LocalStorageController.GetUserAsync();
+                }
                 ToMainSelectionPage();
             }
             Content = pageContainer;
@@ -52,15 +56,47 @@ namespace ZestyKitchenHelper
             pageContainer.Children.Add(view, new Rectangle(0, 0, 1, 1), AbsoluteLayoutFlags.All);
         }
 
-        public void SetViewOverlay(View viewOverlay, double widthProportional, double heightProportional, double xProportional = 0.5, double yProportional = 0.5)
+        Image viewOverlaybackgroundTint = new Image() { BackgroundColor = Color.FromRgba(255, 255, 255, 80) };
+        public void SetViewOverlay(View viewOverlay, double width, double height, double xProportional, double yProportional, AbsoluteLayoutFlags layoutFlags = AbsoluteLayoutFlags.All)
         {
             Console.WriteLine("PageController 60 View Overlay Set");
-            pageContainer.Children.Add(viewOverlay, new Rectangle(xProportional, yProportional, widthProportional, heightProportional), AbsoluteLayoutFlags.All);
+
+            pageContainer.Children.Add(viewOverlaybackgroundTint, new Rectangle(0, 0, 1, 1), layoutFlags);
+            pageContainer.Children.Add(viewOverlay, new Rectangle(xProportional, yProportional, width, height), layoutFlags);
         }
         public void RemoveViewOverlay(View viewOverlay)
         {
+            pageContainer.Children.Remove(viewOverlaybackgroundTint);
             pageContainer.Children.Remove(viewOverlay);
         }
+        public void ShowAlert(string title, string body, string confirmString, string cancelString, Action onConfirmAction, Action onCancelAction)
+        {
+            Button confirmButton = new Button() { Text = confirmString, TextColor = Color.Black };
+            Button cancelButton = new Button() { Text = cancelString, TextColor = Color.Black };
+            Grid buttonGrid = GridManager.InitializeGrid(1, 2, GridLength.Star, GridLength.Star);
+            buttonGrid.VerticalOptions = LayoutOptions.EndAndExpand;
+            GridManager.AddGridItem(buttonGrid, new List<View>() { confirmButton, cancelButton }, false);
+
+            StackLayout view = new StackLayout()
+            {
+                BackgroundColor = Color.WhiteSmoke,
+                Children =
+                {
+                    new Label(){Text = title, TextColor = Color.Black, FontFamily = "Oswald-Medium", FontSize = 25, HorizontalOptions = LayoutOptions.Center},
+                    new Label(){Text = body, TextColor = Color.Black, FontFamily = "Raleway-Regular", FontSize = 15},
+                   buttonGrid
+                }
+            };
+
+            confirmButton.Clicked += (o, a) => onConfirmAction?.Invoke();
+            cancelButton.Clicked += (o, a) => { onCancelAction?.Invoke(); RemoveViewOverlay(view); };
+
+            view.AnchorX = 0.5;
+            view.AnchorY = 0.5;
+
+            SetViewOverlay(view, 300, 300, 0.5, 0.5, AbsoluteLayoutFlags.PositionProportional);
+        }
+
         public void ToMainSelectionPage()
         {
             SetView(new SelectionPage().Content);
@@ -85,7 +121,7 @@ namespace ZestyKitchenHelper
         }
         public void ToUnplacedPage()
         {
-            SetView(new UnplacedPage(FireBaseController.SaveItem, LocalStorageController.AddItem,
+            SetView(new UnplacedPage(LocalStorageController.AddItem, FireBaseController.SaveItem,
                LocalStorageController.DeleteItem, FireBaseController.DeleteItem).Content);
 
             navigationStack.Add(unplaced_page_name);
@@ -158,7 +194,7 @@ namespace ZestyKitchenHelper
             if (hasShownInfoView)
                 return;
             hasShownInfoView = true;
-            SetViewOverlay(infoView.GetView(), InfoView.info_view_width_proportional, InfoView.info_view_height_proportional);
+            SetViewOverlay(infoView.GetView(), InfoView.info_view_width_proportional, InfoView.info_view_height_proportional, 0.5, 0.5);
             await infoView.GetView().LinearInterpolator(1, 150, (d) => infoView.GetView().Scale = d);
 
         }

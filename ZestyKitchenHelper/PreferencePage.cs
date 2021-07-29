@@ -56,16 +56,16 @@ namespace ZestyKitchenHelper
             userEmailLabel = new Label() { FontFamily = main_font, FontSize = small_font_size, TextColor = Color.Black };
             ContentManager.sessionUserProfile.AddOnProfileChangedListener(u => userEmailLabel.Text = u.Email == null || u.Email.Equals("") ? "Local Account" : u.Email);
             userEmailLabel.Text = user.Email == null || user.Email.Equals("") ? "Local Account" : user.Email;
-            var changeUsernameButton = new Button() { Text = "Edit Profile", FontFamily = main_font, FontSize = 15, CornerRadius = 2, Margin = new Thickness(0, 0, 0, 30) };
+            var editProfileButton = new Button() { Text = "Edit Profile", FontFamily = main_font, FontSize = 15, CornerRadius = 2, Margin = new Thickness(0, 0, 0, 30) };
             var profileDivider = new Button() { BackgroundColor = Color.Gray, HeightRequest = divider_height, Margin = new Thickness(side_margin, 0) };
-            changeUsernameButton.Clicked += (o, a) => ContentManager.pageController.SetViewOverlay(GetEditUserView(), .75, .75);
+            editProfileButton.Clicked += (o, a) => { ContentManager.pageController.SetViewOverlay(GetEditUserView(), .75, .75, 0.5, 0.5); ScrollToImageIcon(); };
 
             userProfileSection.Children.Add(userIcon, 0, 0);
             userProfileSection.Children.Add(new StackLayout()
             {
                 Spacing = 0,
                 HeightRequest = icon_size,
-                Children = { usernameLabel, userEmailLabel, changeUsernameButton }
+                Children = { usernameLabel, userEmailLabel, editProfileButton }
             }, 1, 0);
 
             // Preference section
@@ -138,6 +138,8 @@ namespace ZestyKitchenHelper
             Content = content;
         }
 
+        CarouselView userIconCarousel;
+        int currentIconIndex;
         class ThemeIcon
         {
             public string Source { get; set; }
@@ -156,13 +158,14 @@ namespace ZestyKitchenHelper
             var stackLayout = new StackLayout();
             var grid = new Grid()
             {
+                Margin = new Thickness(20),
                 BackgroundColor = Color.Lavender,
                 VerticalOptions = LayoutOptions.EndAndExpand,
                 RowDefinitions =
                 {
-                    new RowDefinition() {Height = 100},
-                    new RowDefinition() {Height = 100},
-                    new RowDefinition() {Height = 100}
+                    new RowDefinition(),
+                    new RowDefinition(),
+                    new RowDefinition() 
                 },
                 ColumnDefinitions =
                 {
@@ -170,10 +173,10 @@ namespace ZestyKitchenHelper
                     new ColumnDefinition()
                 }
             };
-            var userIconCarousel = new CarouselView() { HeightRequest = icon_size, HorizontalOptions = LayoutOptions.Center, PeekAreaInsets = new Thickness(icon_size / 4, 0), Loop = false};
+            userIconCarousel = new CarouselView() { HeightRequest = icon_size, HorizontalOptions = LayoutOptions.Center, PeekAreaInsets = new Thickness(icon_size / 4, 0), Loop = false, IsScrollAnimated = true};
             userIconCarousel.ItemTemplate = new DataTemplate(() =>
             {
-                ImageButton icon = new ImageButton() { WidthRequest = icon_size, HeightRequest = icon_size, CornerRadius = icon_size / 2 };
+                ImageButton icon = new ImageButton() { IsEnabled = false, WidthRequest = icon_size, HeightRequest = icon_size, CornerRadius = icon_size / 2 };
                 icon.SetBinding(ImageButton.SourceProperty, "Source");
 
                 return icon;
@@ -184,15 +187,14 @@ namespace ZestyKitchenHelper
                 iconList.Add(new ProfileIcon() { Source = icon });
             }
             userIconCarousel.ItemsSource = iconList;
-            var currentIconIndex = ContentManager.ProfileIcons.IndexOf(ContentManager.ProfileIcons.Find(s => s.Equals(ContentManager.sessionUserProfile.IconImage)));
-           
+            currentIconIndex = ContentManager.ProfileIcons.IndexOf(ContentManager.ProfileIcons.Find(s => s.Equals(ContentManager.sessionUserProfile.IconImage)));
+            Console.WriteLine("Preference 189 current icon index " + currentIconIndex);
             var nameLabel = new Label() { Text = "Name", FontFamily = main_font, FontSize = small_font_size, TextColor = Color.Black };
             var usernameEntry = new Entry() { Text = ContentManager.sessionUserProfile.Name };
             var emailLabel =  new Label() { Text = "Email", FontFamily = main_font, FontSize = small_font_size, TextColor = Color.Black };
             emailLabel.Text = ContentManager.sessionUserProfile.Email == null || ContentManager.sessionUserProfile.Email.Equals("") ? "" : ContentManager.sessionUserProfile.Email;
             var emailEntry = new Entry() { Text = emailLabel.Text };
             var saveButton = new Button() { Text = "Confirm", FontFamily = main_font, TextColor = Color.Black, CornerRadius = 3 };
-            
 
             grid.Children.Add(nameLabel, 0, 0);
             grid.Children.Add(usernameEntry, 1, 0);
@@ -223,9 +225,14 @@ namespace ZestyKitchenHelper
             stackLayout.Children.Add(userIconCarousel);
             stackLayout.Children.Add(grid);
             stackLayout.BackgroundColor = Color.Beige;
-            userIconCarousel.ScrollTo(currentIconIndex);
 
             return stackLayout;
+        }
+
+        private void ScrollToImageIcon()
+        {
+            userIconCarousel.Scrolled += (o, a) => Console.WriteLine("Preference 233 item scrolled " + a.CenterItemIndex);
+            userIconCarousel.ScrollTo(currentIconIndex, -1, ScrollToPosition.Start);
         }
     }
 }

@@ -110,10 +110,14 @@ namespace ZestyKitchenHelper.Droid
                 if (!await FireBaseController.HasUser(email))
                 {
                     ContentManager.isUserNew = true;
+                    ContentManager.sessionUserProfile = userProfile;
+                }
+                else
+                {
+                    ContentManager.sessionUserProfile = await FireBaseController.GetUser(email);
                 }
 
-              //  var serializedLoginResponse = JsonConvert.SerializeObject(userProfile);
-                ContentManager.sessionUserProfile = userProfile;
+                //  var serializedLoginResponse = JsonConvert.SerializeObject(userProfile);
                 Console.WriteLine("REEEEE");
             }
             else
@@ -157,7 +161,6 @@ namespace ZestyKitchenHelper.Droid
         private void ToSelectionActivity()
         {
             ContentManager.InitializeApp();
-            ContentManager.pageController.InitializePageSequence();
             LoadingPage();
             StartBackgroundCheck();
             StartActivity(new Intent(this, typeof(SelectionActivity)));
