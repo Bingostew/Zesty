@@ -13,21 +13,29 @@ namespace ZestyKitchenHelper.iOS
 	partial class LoginViewController
 	{
 		[Outlet]
-		UIKit.UIButton LoginButton { get; set; }
+		UIKit.UIButton CloudAccountButton { get; set; }
 
 		[Outlet]
-		UIKit.UIButton SkipLoginButton { get; set; }
+		UIKit.UIButton HelpButton { get; set; }
+
+		[Outlet]
+		UIKit.UIButton LocalAcountButton { get; set; }
 		
 		void ReleaseDesignerOutlets ()
 		{
-			if (LoginButton != null) {
-				LoginButton.Dispose ();
-				LoginButton = null;
+			if (CloudAccountButton != null) {
+				CloudAccountButton.Dispose ();
+				CloudAccountButton = null;
 			}
 
-			if (SkipLoginButton != null) {
-				SkipLoginButton.Dispose ();
-				SkipLoginButton = null;
+			if (LocalAcountButton != null) {
+				LocalAcountButton.Dispose ();
+				LocalAcountButton = null;
+			}
+
+			if (HelpButton != null) {
+				HelpButton.Dispose ();
+				HelpButton = null;
 			}
 		}
 	}
