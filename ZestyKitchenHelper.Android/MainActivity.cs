@@ -56,6 +56,13 @@ namespace ZestyKitchenHelper.Droid
 
             ZXing.Net.Mobile.Forms.Android.Platform.Init();
 
+            int uiOptions = (int)Window.DecorView.SystemUiVisibility;
+            uiOptions |= (int)SystemUiFlags.LowProfile;
+            uiOptions |= (int)SystemUiFlags.HideNavigation;
+            uiOptions |= (int)SystemUiFlags.Fullscreen;
+            uiOptions |= (int)SystemUiFlags.ImmersiveSticky;
+            Window.DecorView.SystemUiVisibility = (StatusBarVisibility)uiOptions;
+
             SetContentView(Resource.Layout.LoginPage);
             loadingOverlay = FindViewById<TextView>(Resource.Id.loadingOverlay);
             skipLoginField = FindViewById<Android.Widget.Button>(Resource.Id.skipLoginButton);
@@ -75,7 +82,7 @@ namespace ZestyKitchenHelper.Droid
                 alert.Show();
             };
 
-            loginButton.Click += (obj, args) => { ContentManager.isLocal = false; Login(); loginButton.Enabled = false; };
+            loginButton.Click += (obj, args) => { ContentManager.isLocal = false; Login(); };
             skipLoginField.Click += (obj, args) => { ContentManager.isLocal = true; ToSelectionActivity(); };
             
         }

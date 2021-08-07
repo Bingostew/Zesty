@@ -12,7 +12,6 @@ namespace ZestyKitchenHelper
 {
     public class CabinetAddPage : ContentPage
     {
-        private const int storage_margin = 10;
         private const int grid_margin = 5;
         private const double animation_offestX = 1000;
 
@@ -35,12 +34,11 @@ namespace ZestyKitchenHelper
             storageView.WidthRequest = ContentManager.screenWidth;
             storageView.HeightRequest = ContentManager.screenHeight * .75;
             storageView.VerticalOptions = LayoutOptions.EndAndExpand;
-            storageView.Margin = new Thickness(storage_margin);
             animateStorage();
 
             async void animateStorage()
             {
-                await storageView.LinearInterpolator(animation_offestX, 500, (d) => { storageView.TranslationY = animation_offestX - d; });
+                await storageView.LinearInterpolator(animation_offestX, 200, (d) => { storageView.TranslationY = animation_offestX - d; });
             }
 
             //-- set up unplaced grid
@@ -162,7 +160,7 @@ namespace ZestyKitchenHelper
             itemLayout.iconImage.RemoveEffect(typeof(ScreenTouch));
             itemLayout.IsVisible = false;
 
-            Console.WriteLine("Cabinet Add 165 cell index " + cellIndex);
+           
             metaItemLayout.ItemData.SetStorage(name, cellIndex, ContentManager.GetStorageType());
             itemLayout.ItemData.SetStorage(name, cellIndex, ContentManager.GetStorageType());
 
@@ -172,7 +170,7 @@ namespace ZestyKitchenHelper
             // Weird fact: the animation actually allows the touchEffect cycle to complete without complaining that the item is disposed.
             var storage = ContentManager.GetSelectedStorage(name);
             var cellBackground = storage.GetGridCell(cellIndex).GetBackground();
-            await ViewExtensions.QuadraticInterpolator(cellBackground, .5, 250, d => cellBackground.Scale = d, null);
+            await ViewExtensions.QuadraticInterpolator(cellBackground, 0.2, 250, d => cellBackground.Scale = d + 1 , null);
 
             GridManager.RemoveGridItem(partialUnplacedGrid, itemLayout);
 

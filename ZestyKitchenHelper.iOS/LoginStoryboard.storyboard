@@ -77,8 +77,6 @@
                         <outlet property="CloudAccountButton" destination="paY-P2-3UL" id="X6b-rL-SbG"/>
                         <outlet property="HelpButton" destination="JIg-DB-mQC" id="Q1y-Y7-xeq"/>
                         <outlet property="LocalAcountButton" destination="AyZ-cH-E6i" id="zfa-ND-1lo"/>
-                        <outlet property="LoginButton" destination="paY-P2-3UL" id="2bW-a1-P8e"/>
-                        <outlet property="SkipLoginButton" destination="JIg-DB-mQC" id="yxf-FJ-aBT"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="q8q-p6-ip2" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>

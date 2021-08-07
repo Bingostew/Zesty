@@ -216,7 +216,13 @@ namespace ZestyKitchenHelper
                 }
                 else
                 {
-                    await FireBaseController.UpdateUser(new UserProfile() { Name = usernameEntry.Text, Email = emailEntry.Text, IconImage = (userIconCarousel.CurrentItem as ProfileIcon).Source }) ;
+                    await FireBaseController.UpdateUser(new UserProfile()
+                    {
+                        Name = usernameEntry.Text,
+                        Email = emailEntry.Text,
+                        IconImage = (userIconCarousel.CurrentItem as ProfileIcon).Source,
+                        IsLocal = ContentManager.sessionUserProfile.IsLocal
+                    }) ;
                 }
 
                 ContentManager.pageController.RemoveViewOverlay(stackLayout);

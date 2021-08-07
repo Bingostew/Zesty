@@ -12,10 +12,15 @@ namespace ZestyKitchenHelper
     public class SingleSelectionPage : ContentPage
     {
         private const int spacing = 5;
+        private const int storage_name_margin = 5;
+        private double grid_cell_width;
+        private double add_view_button_width;
+        private double change_name_field_height;
 
         private List<View> newSelectionButton = new List<View>();
         private ScrollView scrollView;
         private Grid mainGrid;
+        private ImageButton newButton;
 
         private List<List<View>> gridList = new List<List<View>>();
 
@@ -25,6 +30,11 @@ namespace ZestyKitchenHelper
         {
             deleteStorageLocal = _deleteStorageLocal;
             deleteStorageBase = _deleteStorageBase;
+
+            // Calculate sizes
+            grid_cell_width = (ContentManager.screenWidth / 2) - (spacing / 3);
+            add_view_button_width = grid_cell_width / 3;
+            change_name_field_height = grid_cell_width / 8;
 
             string title = ContentManager.GetStorageType() == ContentManager.cabinetStorageType ? "My Pantry" : "My Fridge";
             var titleGrid = new TopPage(title).GetGrid();
@@ -37,7 +47,7 @@ namespace ZestyKitchenHelper
                 Margin = new Thickness(spacing),
                 RowDefinitions =
                 {
-                    new RowDefinition(){Height = ContentManager.screenWidth / 2 - spacing * 3 },
+                    new RowDefinition(){Height = grid_cell_width },
                 },
                 ColumnDefinitions =
                 {
@@ -46,7 +56,7 @@ namespace ZestyKitchenHelper
                 }
             };
 
-            var newButton = new ImageButton() { Source = ContentManager.addIcon, Aspect = Aspect.Fill, BackgroundColor = Color.Transparent };
+            newButton = new ImageButton() { Source = ContentManager.addIcon, Aspect = Aspect.Fill, BackgroundColor = Color.Transparent };
             newButton.Clicked += (obj, args) => ContentManager.pageController.ToStorageCreationPage(true);
             newSelectionButton.Add(newButton);
 
@@ -75,12 +85,25 @@ namespace ZestyKitchenHelper
             mainGrid.Children.Clear();
             gridList.Clear();
             gridList.Add(newSelectionButton);
-            var itemBase = ContentManager.storageSelection == ContentManager.StorageSelection.cabinet ? ContentManager.CabinetMetaBase.Keys.ToList() : ContentManager.FridgeMetaBase.Keys.ToList();
+            var itemBase = new List<string>(); 
+            var expiredStorages = new List<string>();
+            var expiredItems = new List<int>();
+            if (ContentManager.storageSelection == ContentManager.StorageSelection.cabinet) {
+                itemBase = ContentManager.CabinetMetaBase.Keys.ToList();
+                ContentManager.GetItemExpirationInfo(expiredStorages, null, expiredItems);
 
+            }
+            else
+            {
+                itemBase = ContentManager.FridgeMetaBase.Keys.ToList();
+                ContentManager.GetItemExpirationInfo(null, expiredStorages, expiredItems);
+            }
+       
             foreach (var key in itemBase)
             {
                 var metaName = key;
-                var name = new Label() { Text = key.ToString(), TextColor = Color.Black, FontSize = 25, HorizontalTextAlignment = TextAlignment.Center };
+                var name = new Label() { Text = key.ToString(), TextColor = Color.Black, FontSize = 25, Margin = new Thickness(0, storage_name_margin),
+                    HorizontalTextAlignment = TextAlignment.Center };
                 var model = ContentManager.GetStorageView(key);
                 var button = new ImageButton() { Source = ContentManager.transIcon, Aspect = Aspect.Fill, BorderColor = Color.Black, 
                     BorderWidth = 1, BackgroundColor = Color.Transparent };
@@ -96,9 +119,9 @@ namespace ZestyKitchenHelper
                     BackgroundColor = Color.Red,
                     Text = "Add",
                     TextColor = Color.Black,
-                    WidthRequest = 60,
+                    WidthRequest = add_view_button_width,
                     HeightRequest = 40,
-                    TranslationX = -40,
+                    TranslationX = -add_view_button_width / 3 * 2,
                     HorizontalOptions = LayoutOptions.CenterAndExpand,
                     VerticalOptions = LayoutOptions.CenterAndExpand,
                     IsVisible = false
@@ -109,9 +132,9 @@ namespace ZestyKitchenHelper
                     BackgroundColor = Color.Red,
                     Text = "View",
                     TextColor = Color.Black,
-                    WidthRequest = 60,
+                    WidthRequest = add_view_button_width,
                     HeightRequest = 40,
-                    TranslationX = 40,
+                    TranslationX = add_view_button_width / 3 * 2,
                     HorizontalOptions = LayoutOptions.CenterAndExpand,
                     VerticalOptions = LayoutOptions.CenterAndExpand,
                     IsVisible = false
@@ -133,7 +156,7 @@ namespace ZestyKitchenHelper
                     BackgroundColor = Color.DeepSkyBlue,
                     Text = "Rename",
                     TextColor = Color.Black,
-                    HeightRequest = 30,
+                    HeightRequest = change_name_field_height,
                     WidthRequest = 60,
                     HorizontalOptions = LayoutOptions.EndAndExpand,
                     VerticalOptions = LayoutOptions.StartAndExpand,
@@ -144,38 +167,44 @@ namespace ZestyKitchenHelper
                 {
                     VerticalOptions = LayoutOptions.StartAndExpand,
                     BackgroundColor =Color.White,
-                    HeightRequest = 50,
+                    HeightRequest = change_name_field_height,
                     ScaleX = 0,
                     IsEnabled = false
                 };
-                deleteButton.Clicked += async (obj, args) =>
-                {
-                    var confirm = await ContentManager.pageController.DisplayAlert("Caution", "Are you sure you want to delete this layout?", "Delete", "Cancel");
-                    if (confirm)
-                    {
-                        if (ContentManager.isLocal)
-                            deleteStorageLocal?.Invoke(key);
-                        else
-                            deleteStorageBase?.Invoke(key);
-                        
 
-                        foreach (var cell in ContentManager.GetSelectedStorage(key).GetGridCells())
+                deleteButton.Clicked += (obj, args) =>
+                {
+                    ContentManager.pageController.ShowAlert("Caution", "Are you sure you want to delete this layout? All of its items will be unplaced.", "Delete", "Cancel",
+                        () =>
                         {
-                            foreach (var child in cell.GetChildren())
+                            if (ContentManager.isLocal)
+                                deleteStorageLocal?.Invoke(key);
+                            else
+                                deleteStorageBase?.Invoke(key);
+
+
+                            foreach (var cell in ContentManager.GetSelectedStorage(key).GetGridCells())
                             {
-                                if (child.GetType() == typeof(ItemLayout)) {
-                                    Item item = (child as ItemLayout).ItemData;
-                                    ContentManager.UnplacedItemBase.Add(item.ID, (ItemLayout)child);
+                                foreach (var child in cell.GetChildren())
+                                {
+                                    if (child.GetType() == typeof(ItemLayout))
+                                    {
+                                        Item item = (child as ItemLayout).ItemData;
+                                        item.RemoveFromStorage();
+                                        ContentManager.UnplacedItemBase.Add(item.ID, (ItemLayout)child);
+                                    }
                                 }
                             }
-                        }
 
-                        ContentManager.RemoveSelectedStorage(key);
-                        foreach (var child in mainGridChildren[key])
-                        {
-                            mainGrid.Children.Remove(child);
-                        }
-                    }
+                            ContentManager.RemoveSelectedStorage(key);
+                            mainGrid.Children.Clear();
+                            mainGridChildren.Remove(key);
+                            // Re-layout grid after deletion
+                            var mainGridChildrenList = mainGridChildren.Values.ToList();
+                            mainGridChildrenList.Insert(0, new List<View>() { newButton });
+                            GridOrganizer.OrganizeGrid(mainGrid, mainGridChildrenList, GridOrganizer.OrganizeMode.HorizontalLeft);  
+                        },
+                        () => { });
                 };
                 changeNameButton.Clicked += async (obj, args) =>
                 {
@@ -202,8 +231,24 @@ namespace ZestyKitchenHelper
                 viewButton.Clicked += (obj, args) => ContentManager.pageController.ToViewItemPage(metaName);
                 button.Clicked += (object obj, EventArgs args) =>
                     button.ToggleEffects(new ImageTint() { tint = Color.FromHsla(1, .1, .5, .5), ImagePath = ContentManager.buttonTintImage  }, new List<VisualElement>() { addButton, viewButton, deleteButton, changeNameButton});
+
+               
                 List<View> views = new List<View>() { preview, button, addButton, viewButton, deleteButton, changeNameButton, changeNameField };
-                if(!mainGridChildren.ContainsKey(metaName)) mainGridChildren.Add(metaName, views);
+                //expiration warning and animation
+                if (expiredStorages.Contains(key))
+                {
+                    var expWarningImage = new Image()
+                    {
+                        Source = ContentManager.expWarningIcon,
+                        WidthRequest = ContentManager.exp_warning_size,
+                        HeightRequest = ContentManager.exp_warning_size,
+                        HorizontalOptions = LayoutOptions.Start,
+                        VerticalOptions = LayoutOptions.End,
+                    };
+                    views.Add(expWarningImage);
+                    expWarningImage.QuadraticInterpolator(1.3, 2000, (t) => { if (t >= 1) { expWarningImage.Scale = t; } }, null, true);
+                }
+                if (!mainGridChildren.ContainsKey(metaName)) mainGridChildren.Add(metaName, views);
                 gridList.Insert(1, views);
             }
             mainGrid.OrganizeGrid(gridList, GridOrganizer.OrganizeMode.HorizontalLeft);

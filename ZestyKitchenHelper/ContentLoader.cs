@@ -15,11 +15,18 @@ namespace ZestyKitchenHelper
             foreach (Item item in items)
             {
                 // Create Itemlayout from item
-                ItemLayout itemLayout = new ItemLayout(100, 100, item).AddMainImage()
+                ItemLayout itemLayout = new ItemLayout(ContentManager.item_layout_size, ContentManager.item_layout_size, item).AddMainImage()
                                         .AddExpirationMark()
-                                        .AddTitle();
+                                        .AddTitle()
+                                        .AddInfoIcon();
+                ItemLayout itemLayoutCopy = new ItemLayout(ContentManager.item_layout_size, ContentManager.item_layout_size, item).AddMainImage()
+                                        .AddExpirationMark()
+                                        .AddTitle()
+                                        .AddInfoIcon();
+
                 itemLayout.RecalculateDate();
-                itemLayout.AddInfoIcon();
+                itemLayoutCopy.RecalculateDate();
+
                 ContentManager.MetaItemBase.Add(item.ID, itemLayout);
 
                 metaGridChildren.Add(itemLayout);
@@ -29,8 +36,8 @@ namespace ZestyKitchenHelper
 
                 // Add to unplaced dictionary if item is not stored
                 if (!item.Stored) {
-                    unplacedGridChildren.Add(itemLayout);
-                    ContentManager.UnplacedItemBase.Add(item.ID, itemLayout);
+                    unplacedGridChildren.Add(itemLayoutCopy);
+                    ContentManager.UnplacedItemBase.Add(item.ID, itemLayoutCopy);
                 }
             }
 
@@ -81,7 +88,10 @@ namespace ZestyKitchenHelper
                             if(item.StorageName == cabinet.Name && item.StorageCellIndex == cell.Index)
                             {
                                 // Adds to the list of children, will be used to populate grid later.
-                                ItemLayout itemLayout = ContentManager.MetaItemBase[item.ID];
+                                ItemLayout itemLayout = new ItemLayout(ContentManager.item_layout_size, ContentManager.item_layout_size, item).AddMainImage()
+                                        .AddExpirationMark()
+                                        .AddTitle()
+                                        .AddInfoIcon();
                                 cellChildren.Add(itemLayout);
                             }
                         }
@@ -144,7 +154,10 @@ namespace ZestyKitchenHelper
                             if (item.StorageName == fridge.Name && item.StorageCellIndex == cell.Index)
                             {
                                 // Adds to the list of children, will be used to populate grid later.
-                                ItemLayout itemLayout = ContentManager.MetaItemBase[item.ID];
+                                ItemLayout itemLayout = new ItemLayout(100, ContentManager.item_layout_size, item).AddMainImage()
+                                        .AddExpirationMark()
+                                        .AddTitle()
+                                        .AddInfoIcon();
                                 cellChildren.Add(itemLayout);
                             }
                         }

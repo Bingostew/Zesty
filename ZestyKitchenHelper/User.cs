@@ -12,6 +12,7 @@ namespace ZestyKitchenHelper
 
         [PrimaryKey, Column("Name")]
         public string Name { get; set; }
+        public bool IsLocal { get; set; }
         public string Email { get; set; }
         public string IconImage { get; set; }
         public void AddOnProfileChangedListener(Action<UserProfile> action)

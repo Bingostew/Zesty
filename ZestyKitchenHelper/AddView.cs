@@ -55,7 +55,7 @@ namespace ZestyKitchenHelper
         public AddView(Action<Item> localUnplacedEvent, Action<Item> baseUnplacedEvent,
             string storageName = "", bool limited = true, Grid partialUnplacedGrid = null)
         {
-            item = new Item().SetItem(DateTime.Today.Year + 1, 1, 1, 1, "product", ContentManager.addIcon);
+            item = new Item().SetItem(-1, -1, -1, 1, "product", ContentManager.addIcon);
             Grid currentGrid = new Grid();
 
             Vector2D<int> selectGridIndex = new Vector2D<int>(0, 5);
@@ -368,19 +368,17 @@ namespace ZestyKitchenHelper
                         }
                     }
                 }
-                if (match != 0 || item.Name.Equals("") || item.Name.Equals("product"))
+                presetResultSorter.Add(match);
+                IconLayout iconLayout = ContentManager.PresetIcons[name];
+                presetResult.Add(iconLayout);
+                ContentManager.PresetIcons[name].OnClickIconAction += (button) =>
                 {
-                    presetResultSorter.Add(match);
-                    IconLayout iconLayout = ContentManager.PresetIcons[name];
-                    presetResult.Add(iconLayout);
-                    ContentManager.PresetIcons[name].OnClickIconAction += (button) =>
-                    {
-                        toggleIconSelect(button, presetSelectGrid); var _name = name;
-                        item.Icon = ContentManager.PresetIcons[_name].GetImageSource();
-                    };
-                    match = 0;
-                }
-            }
+                    toggleIconSelect(button, presetSelectGrid); var _name = name;
+                    item.Icon = ContentManager.PresetIcons[_name].GetImageSource();
+                };
+                match = 0;
+
+            } 
             toggleIconSelect(null, presetSelectGrid);
             ListSorter.SortToListAscending(presetResultSorter, presetResult);
             GridManager.AddGridItem(presetSelectGrid, presetResult, true, GridOrganizer.OrganizeMode.VerticalLeft);
@@ -431,20 +429,19 @@ namespace ZestyKitchenHelper
         {
             foreach (Item _item in newItem)
             {
-                var itemSize = ContentManager.screenWidth / 4;
-                ItemLayout itemLayout = new ItemLayout(itemSize, itemSize, _item)
+                ItemLayout itemLayout = new ItemLayout(ContentManager.item_layout_size, ContentManager.item_layout_size, _item)
                     .AddMainImage()
                     .AddExpirationMark()
                     .AddTitle()
                     .AddInfoIcon();
                 Console.WriteLine("AddView 443 item name " + _item.Name);
-                ItemLayout itemLayoutCopy = new ItemLayout(itemSize, itemSize, _item)
+                ItemLayout itemLayoutCopy = new ItemLayout(ContentManager.item_layout_size, ContentManager.item_layout_size, _item)
                     .AddMainImage()
                     .AddExpirationMark()
                     .AddTitle()
                     .AddInfoIcon();
 
-                ItemLayout itemLayoutCopy2 = new ItemLayout(itemSize, itemSize, _item)
+                ItemLayout itemLayoutCopy2 = new ItemLayout(ContentManager.item_layout_size, ContentManager.item_layout_size, _item)
                     .AddMainImage()
                     .AddExpirationMark()
                     .AddTitle()
@@ -460,7 +457,7 @@ namespace ZestyKitchenHelper
 
             GridManager.AddGridItem(GridManager.GetGrid(ContentManager.metaGridName), newItemLayouts, false);
             GridManager.AddGridItem(GridManager.GetGrid(ContentManager.unplacedGridName), newItemLayoutsCopy, false);
-            Console.WriteLine("AddView 471 unplaced grid children count " + GridManager.GetGrid(ContentManager.unplacedGridName).Children.Count);
+            Console.WriteLine("AddView 471 partial unplaced grid children count " + newItemLayoutsCopy2.Count);
         }
 
         public void ResetForm()
@@ -478,7 +475,7 @@ namespace ZestyKitchenHelper
                 button.BackgroundColor = Color.BurlyWood;
                 button.Text = "";
             }
-            item = new Item().SetItem(2021, 1, 1, 1, "product", ContentManager.addIcon);
+            item = new Item().SetItem(-1, -1, -1, 1, "product", ContentManager.addIcon);
         }
      
     }

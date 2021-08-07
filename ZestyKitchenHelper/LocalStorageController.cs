@@ -37,16 +37,21 @@ namespace ZestyKitchenHelper
 
         static async Task InitializeAsync()
         {
-            Console.WriteLine("Local 40 init storage " + await SQLDatabase.Table<UserProfile>().CountAsync());
-            bool hasMappings = SQLDatabase.TableMappings.Any();
+            bool hasMappings;
+            Task<int> getHasMappingTask = SQLDatabase.Table<UserProfile>().CountAsync();
+            getHasMappingTask.Wait();
+            hasMappings = getHasMappingTask.Result > 0;
+
             if (!isInitialized && !hasMappings)
             {
+                Console.WriteLine("Local 40 init storage " + SQLDatabase.TableMappings.Count());
                 ContentManager.isUserNew = true;
                 await SQLDatabase.CreateTableAsync(typeof(Item), CreateFlags.None).ConfigureAwait(false);
                 await SQLDatabase.CreateTableAsync(typeof(StorageCell), CreateFlags.None).ConfigureAwait(false);
                 await SQLDatabase.CreateTableAsync(typeof(Cabinet), CreateFlags.None).ConfigureAwait(false);
                 await SQLDatabase.CreateTableAsync(typeof(Fridge), CreateFlags.None).ConfigureAwait(false);
                 await SQLDatabase.CreateTableAsync(typeof(UserProfile), CreateFlags.None).ConfigureAwait(false);
+                await SQLDatabase.CreateTableAsync(typeof(MetaUserInfo), CreateFlags.None).ConfigureAwait(false);
 
                 isInitialized = true;
             }
@@ -58,18 +63,25 @@ namespace ZestyKitchenHelper
             await task.ConfigureAwait(returnToContext);
         }
 
-        public static async void ResetDatabase()
+        public static void ResetDatabase()
         {
 
             Console.WriteLine("LocalStorage 63 database reset started +====================+");
-            await Task.WhenAll(
-            SQLDatabase.DeleteAllAsync<Item>(),
-            SQLDatabase.DeleteAllAsync<StorageCell>(),
-            SQLDatabase.DeleteAllAsync<Cabinet>(),
-            SQLDatabase.DeleteAllAsync<Fridge>(),
-            SQLDatabase.DeleteAllAsync<UserProfile>());
+            SQLDatabase.DeleteAllAsync<Item>();
+            SQLDatabase.DeleteAllAsync<StorageCell>();
+            SQLDatabase.DeleteAllAsync<Cabinet>();
+            SQLDatabase.DeleteAllAsync<Fridge>();
+            SQLDatabase.DeleteAllAsync<UserProfile>();
+            SQLDatabase.DeleteAllAsync<MetaUserInfo>();
+            Console.WriteLine("LocalStorage 63 database reset end +====================+");
         }
         //Retrieval Methods
+        public static async Task<MetaUserInfo> GetMetaUserInfo()
+        {
+            if(!ContentManager.isUserNew)
+                return await SQLDatabase.Table<MetaUserInfo>().FirstAsync();
+            return null;
+        }
         public static async Task<UserProfile> GetUserAsync()
         {
             return await SQLDatabase.Table<UserProfile>().FirstAsync();
@@ -92,6 +104,13 @@ namespace ZestyKitchenHelper
         }
 
         // Insertion/Update Methods
+        public static async void SetMetaUserInfo(MetaUserInfo metaUserInfo)
+        {
+            var currentInfo = await GetMetaUserInfo();
+            if (currentInfo != null)
+                await SQLDatabase.DeleteAsync(currentInfo);
+            await SQLDatabase.InsertAsync(metaUserInfo);
+        }
         public static async void AddUser(UserProfile user)
         {
             await SQLDatabase.InsertAsync(user);

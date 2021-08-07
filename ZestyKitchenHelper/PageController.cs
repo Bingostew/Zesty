@@ -82,13 +82,13 @@ namespace ZestyKitchenHelper
                 BackgroundColor = Color.WhiteSmoke,
                 Children =
                 {
-                    new Label(){Text = title, TextColor = Color.Black, FontFamily = "Oswald-Medium", FontSize = 25, HorizontalOptions = LayoutOptions.Center},
-                    new Label(){Text = body, TextColor = Color.Black, FontFamily = "Raleway-Regular", FontSize = 15},
+                    new Label(){Text = title, TextColor = Color.Black, FontFamily = "Oswald-Medium", FontSize = 25, HorizontalTextAlignment = TextAlignment.Center},
+                    new Label(){Text = body, TextColor = Color.Black, Margin = new Thickness(10) , FontFamily = "Raleway-Regular", FontSize = 15},
                    buttonGrid
                 }
             };
 
-            confirmButton.Clicked += (o, a) => onConfirmAction?.Invoke();
+            confirmButton.Clicked += (o, a) => { onConfirmAction?.Invoke(); RemoveViewOverlay(view); };
             cancelButton.Clicked += (o, a) => { onCancelAction?.Invoke(); RemoveViewOverlay(view); };
 
             view.AnchorX = 0.5;
@@ -143,10 +143,12 @@ namespace ZestyKitchenHelper
         }
 
 
-        public void ToViewItemPage(string name, int directSelectIndex = -1, string directSelectStorageType = "")
+        public void ToViewItemPage(string name, int directSelectIndex = -1, string directSelectStorageType = null)
         {
             SetView(new CabinetViewPage(name, LocalStorageController.DeleteItem, FireBaseController.DeleteItem,
-                LocalStorageController.UpdateItem, FireBaseController.SaveItem, directSelectIndex, directSelectStorageType).Content);
+                LocalStorageController.UpdateItem, FireBaseController.SaveItem, 
+                directSelectStorageType != null ? ContentManager.FromStorageType(directSelectStorageType) : ContentManager.storageSelection, 
+                directSelectIndex).Content);
 
             navigationStack.Add(view_page_name);
             navigationParams.Add(new List<object>() { name, directSelectIndex, directSelectStorageType });
@@ -211,6 +213,22 @@ namespace ZestyKitchenHelper
             await animateAction;
             RemoveViewOverlay(animatedView);
             onFinishAction?.Invoke();
+        }
+
+        public bool IsOnPage<T>()
+        {
+            var type = typeof(T);
+            var currentPageString = navigationStack.Last();
+            if ((type == typeof(CabinetViewPage) && currentPageString == view_page_name) ||
+                (type == typeof(CabinetEditPage) && currentPageString == edit_page_name) ||
+                (type == typeof(CabinetAddPage) && currentPageString == add_page_name) ||
+                (type == typeof(UnplacedPage) && currentPageString == unplaced_page_name)||
+                (type == typeof(SingleSelectionPage) && currentPageString == single_selection_name) ||
+                (type == typeof(AddView) && currentPageString == add_view_name) ||
+                (type == typeof(PreferencePage) && currentPageString == preference_page_name))
+                return true;
+            
+            return false;
         }
 
         public void ReturnToPrevious()

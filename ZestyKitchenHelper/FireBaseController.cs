@@ -25,11 +25,7 @@ namespace ZestyKitchenHelper
         {
             return email.Replace('.', ':');
         }
-        public static async Task<List<UserProfile>> GetAllUsers()
-        {
-            return (await client.Child(base_child).OnceAsync<UserProfile>()).
-                Select(user => new UserProfile { Name = user.Object.Name, Email = user.Object.Email}).ToList();
-        }
+       
         public static async Task AddUser(UserProfile userProfile)
         {
             string emailPath = EmailToPath(userProfile.Email);

@@ -33,6 +33,9 @@ namespace ZestyKitchenHelper
 
         public static double screenWidth;
         public static double screenHeight;
+        public static double item_layout_size;
+        private const int storage_margin = 10;
+        public const int exp_warning_size = 50;
 
         public const string buttonTintImage = "button_tint.png";
         public const string cabinetCellIcon = "cabinet_cell.png";
@@ -52,6 +55,7 @@ namespace ZestyKitchenHelper
         public const string pantryIcon = "pantry.png";
         public const string refridgeIcon = "fridge.png";
         public const string countIcon = "small_arrow.png";
+        public const string expWarningIcon = "apple.png";
 
         public const string defaultSearchAllBarText = "Search item...";
         public const string exp_notification_title = "Zesty's Expiration Warning";
@@ -66,6 +70,7 @@ namespace ZestyKitchenHelper
         public const string storageCellIdGenerator = "StorageCell";
         public const string cabinetEditIdGenerator = "Cabinet";
         public const string fridgeEditIdGenerator = "Fridge";
+        public const string IOSNotificationIdGenerator = "IOSNotification";
 
         public static PageController pageController = new PageController();
 
@@ -74,12 +79,18 @@ namespace ZestyKitchenHelper
         private static List<Action<Color>> OnColorChangeEvents = new List<Action<Color>>();
         public static async void InitializeApp()
         {
+            // Initialize screen width and height
+            screenHeight = DeviceDisplay.MainDisplayInfo.Height / DeviceDisplay.MainDisplayInfo.Density;
+            screenWidth = DeviceDisplay.MainDisplayInfo.Width / DeviceDisplay.MainDisplayInfo.Density; 
+            item_layout_size = screenWidth / 4;
+
             // Initialize ID Groups
             IDGenerator.InitializeIDGroup(itemStorageIdGenerator);
             IDGenerator.InitializeIDGroup(cabinetEditIdGenerator);
             IDGenerator.InitializeIDGroup(fridgeEditIdGenerator);
             IDGenerator.InitializeIDGroup(storageCellIdGenerator);
-           // LocalStorageController.ResetDatabase(); // WARNING: FOR TESTING PURPOSES ONLY
+            IDGenerator.InitializeIDGroup(IOSNotificationIdGenerator);
+            //LocalStorageController.ResetDatabase(); // WARNING: FOR TESTING PURPOSES ONLY
             LocalStorageController.InitializeLocalDataBase();
 
             // Initialize Important Grids
@@ -122,14 +133,15 @@ namespace ZestyKitchenHelper
                 }
             }
 
-            // Initialize screen width and height
-            // screenHeight = _screenHeight;
-            // screenWidth = _screenWidth;
-            screenHeight = DeviceDisplay.MainDisplayInfo.Height / DeviceDisplay.MainDisplayInfo.Density;
-            screenWidth = DeviceDisplay.MainDisplayInfo.Width / DeviceDisplay.MainDisplayInfo.Density;
+            if (Xamarin.Essentials.Connectivity.NetworkAccess == Xamarin.Essentials.NetworkAccess.Internet)
+                Console.WriteLine("Contentmanager 135 User Has Internet :)");
+            else
+            {
+                Console.WriteLine("Contentmanager 138 User Has No Internet :<(");
+            }
 
-            // start UI sequence
-            pageController.InitializePageSequence();
+                // start UI sequence
+                pageController.InitializePageSequence();
         }
         /// <summary>
         /// Returns the string that represents the storage the current user is in.
@@ -138,6 +150,15 @@ namespace ZestyKitchenHelper
         public static string GetStorageType()
         {
             return storageSelection == StorageSelection.cabinet ? cabinetStorageType : fridgeStorageType;
+        }
+        /// <summary>
+        /// Returns the StorageType enum associated with the given storageType string constant.
+        /// </summary>
+        /// <param name="storageType"></param>
+        /// <returns></returns>
+        public static StorageSelection FromStorageType(string storageType)
+        {
+            return storageType == cabinetStorageType ? StorageSelection.cabinet : StorageSelection.fridge;
         }
         /// <summary>
         /// Calls GetFridgeView or GetCabinetView depending on whether the user entered the cabinet or fridge selection page.
@@ -152,6 +173,18 @@ namespace ZestyKitchenHelper
                 return GetFridgeView(name);
         }
         /// <summary>
+        /// Calls GetFridgeView or GetCabinetView depending on the given type.
+        /// </summary>
+        /// <param name="storageType">Type of storage represented by constants in ContentManager.</param>
+        /// <returns></returns>
+        public static Layout<View> GetStorageView(StorageSelection storageType, string name)
+        {
+            if (storageType == StorageSelection.cabinet)
+                return GetCabinetView(name);
+            else
+                return GetFridgeView(name);
+        }
+        /// <summary>
         /// Retrieves the grids that make up the fridge's layout
         /// </summary>
         /// <param name="name">name of fridge.</param>
@@ -160,6 +193,7 @@ namespace ZestyKitchenHelper
         {
             Grid gridContainer = new Grid()
             {
+                Margin = new Thickness(storage_margin),
                 ColumnDefinitions =
                 {
                     new ColumnDefinition(){Width = GridLength.Star },
@@ -182,7 +216,9 @@ namespace ZestyKitchenHelper
         /// <returns></returns>
         public static Layout<View> GetCabinetView(string name)
         {
-            return CabinetMetaBase[name].MainGrid;
+            var mainGrid = CabinetMetaBase[name].MainGrid;
+            mainGrid.Margin = new Thickness(storage_margin);
+            return mainGrid;
         }
         /// <summary>
         /// Retreives the IStorage storage by name, depending on whether user selected to enter the cabinet or fridge selection pages.
@@ -196,6 +232,24 @@ namespace ZestyKitchenHelper
                 return CabinetMetaBase[name];
             }
             else if (storageSelection == StorageSelection.fridge && FridgeMetaBase.ContainsKey(name))
+            {
+                return FridgeMetaBase[name];
+            }
+
+            return null;
+        }
+        /// <summary>
+        /// Retreives the IStorage storage by name and type string.
+        /// </summary>
+        /// <param name="storageType">Type of storage represented by constants in ContentManager</param>
+        /// <returns></returns>
+        public static IStorage GetSelectedStorage(StorageSelection storageType, string name)
+        {
+            if (storageType == StorageSelection.cabinet && CabinetMetaBase.ContainsKey(name))
+            {
+                return CabinetMetaBase[name];
+            }
+            else if (storageType == StorageSelection.fridge && FridgeMetaBase.ContainsKey(name))
             {
                 return FridgeMetaBase[name];
             }
@@ -229,6 +283,30 @@ namespace ZestyKitchenHelper
         public static void AddOnBackgroundChangeListener(Action<Color> listener)
         {
             OnColorChangeEvents.Add(listener);
+        }
+
+        /// <summary>
+        /// Retrieves information of expired items.
+        /// </summary>
+        /// <param name="expiredCabinetsName">Will be populated with a list of cabinet names with expired items.</param>
+        /// <param name="expiredFridgesName">Will be populated with a list of fridge names with expired items.</param>
+        /// <param name="expiredItemsId">Will be populated with a list of all expired item's id.</param>
+        public static void GetItemExpirationInfo(List<string> expiredCabinetsName = null, List<string> expiredFridgesName = null, List<int> expiredItemsId = null)
+        {
+            foreach(var itemLayout in MetaItemBase.Values)
+            {
+                var item = itemLayout.ItemData;
+                if (item.daysUntilExp == 0)
+                {
+                    expiredItemsId?.Add(item.ID);
+                    if (item.StorageType == cabinetStorageType)
+                        expiredCabinetsName?.Add(item.StorageName);
+                    else if (item.StorageType == fridgeStorageType)
+                    {
+                        expiredFridgesName?.Add(item.StorageName);
+                    }
+                }
+            }
         }
 
         public static readonly Dictionary<string, IconLayout> PresetIcons = new Dictionary<string, IconLayout>()

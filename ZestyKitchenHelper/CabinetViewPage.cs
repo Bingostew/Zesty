@@ -10,19 +10,22 @@ namespace ZestyKitchenHelper
 {
     public class CabinetViewPage : ContentPage
     {
-        const int max_grid_count = 20;
-        private const int tool_grid_margin = 10;
+        const int item_grid_margin = 10;
+        const int layout_margin = 5;
+        private const double storage_width_proportional_cabinet = 0.5;
+        private const double storage_width_proportional_fridge = 0.5;
+        const string expIndicatorString = "Expiration Date";
+        const string alphaIndicatorString = "Alphabetical";
 
-        private Grid currentGrid;
         private AbsoluteLayout viewOverlay;
         private string storageName;
         private Dictionary<int, Grid> expandedViews = new Dictionary<int, Grid>();
+        private Grid currentGrid;
         Action<Item> deleteItemLocalEvent, deleteItemBaseEvent, updateItemLocalEvent, updateItemBaseEvent;
         
         // If directSelectIndex is > -1, then the cell with this index will be displayed immediately after user enters the view.
-        // DirectSelectStorageType is either "Cabinet" or "Fridge".
-        public CabinetViewPage(string name, Action<Item> deleteItemLocal, Action<Item> deleteItemBase, Action<Item> updateItemLocal, Action<Item> updateItemBase, 
-            int directSelectIndex = -1, string directSelectStorageType = "")
+        public CabinetViewPage(string name, Action<Item> deleteItemLocal, Action<Item> deleteItemBase, Action<Item> updateItemLocal, Action<Item> updateItemBase,
+            ContentManager.StorageSelection storageSelection, int directSelectIndex = -1)
         {
             updateItemLocalEvent = updateItemLocal;
             updateItemBaseEvent = updateItemBase;
@@ -32,72 +35,99 @@ namespace ZestyKitchenHelper
             var titleGrid = new TopPage(name).GetGrid();
             titleGrid.HeightRequest = ContentManager.screenHeight * TopPage.top_bar_height_proportional;
 
-            var backgroundImage = ContentManager.storageSelection == ContentManager.StorageSelection.fridge ? ContentManager.fridgeIcon : ContentManager.cabinetCellIcon;
+            var backgroundImage = storageSelection == ContentManager.StorageSelection.fridge ? ContentManager.fridgeIcon : ContentManager.cabinetCellIcon;
             storageName = name;
             Image backgroundCell = new Image()
             { Source = backgroundImage, Aspect = Aspect.Fill };
             ImageButton backButton = new ImageButton() { Source = ContentManager.backButton, BackgroundColor = Color.Transparent, WidthRequest = 100, HeightRequest = 100 };
             backButton.Clicked += (obj, args) =>
             {
-                if (currentGrid != null) { currentGrid.IsVisible = false; }
                 viewOverlay.IsVisible = false;
             };
-            const string expIndicatorString = "Expiration Date";
-            const string alphaIndicatorString = "Alphabetical";
+
             var sortSelector = new Picker()
             {
+                Margin = new Thickness(layout_margin),
                 ItemsSource = new List<string>() { expIndicatorString, alphaIndicatorString },
                 Title = "Sort Order",
             };
-            sortSelector.SelectedIndexChanged += (obj, args) =>
+            var searchBar = new SearchBar()
             {
-                switch (sortSelector.SelectedItem)
-                {
-                    case expIndicatorString: GridOrganizer.SortItemGrid(currentGrid, GridOrganizer.ItemSortingMode.Expiration_Close); break;
-                    case alphaIndicatorString: GridOrganizer.SortItemGrid(currentGrid, GridOrganizer.ItemSortingMode.A_Z); break;
-                }
-
+                Margin = new Thickness(layout_margin),
+                Placeholder = "Search"
             };
 
-            AbsoluteLayout.SetLayoutBounds(sortSelector, new Rectangle(1, 0, 0.75, 0.1));
+            AbsoluteLayout.SetLayoutBounds(sortSelector, new Rectangle(1, 0, 0.5, 0.1));
             AbsoluteLayout.SetLayoutFlags(sortSelector, AbsoluteLayoutFlags.All);
+            AbsoluteLayout.SetLayoutBounds(searchBar, new Rectangle(1, 0.15, 0.5, 0.1));
+            AbsoluteLayout.SetLayoutFlags(searchBar, AbsoluteLayoutFlags.All);
             AbsoluteLayout.SetLayoutBounds(backgroundCell, new Rectangle(0, 1, 1, .9));
             AbsoluteLayout.SetLayoutFlags(backgroundCell, AbsoluteLayoutFlags.All);
             viewOverlay = new AbsoluteLayout()
             {
                 IsVisible = false,
+                Margin = new Thickness(item_grid_margin),
                 BackgroundColor = ContentManager.ThemeColor,
                 WidthRequest = ContentManager.screenWidth,
                 HeightRequest = ContentManager.screenHeight,
                 Children =
                 {
-                    backgroundCell,
-                    backButton
+                    backgroundCell
                 }
             };
+            AbsoluteLayout.SetLayoutBounds(backgroundCell, new Rectangle(0, 0, 1, 1));
+            AbsoluteLayout.SetLayoutFlags(backgroundCell, AbsoluteLayoutFlags.All);
+            AbsoluteLayout.SetLayoutBounds(viewOverlay, new Rectangle(1, 1, ContentManager.screenWidth, ContentManager.screenHeight * 0.6));
+            AbsoluteLayout.SetLayoutFlags(viewOverlay, AbsoluteLayoutFlags.PositionProportional);
             ContentManager.AddOnBackgroundChangeListener(c => viewOverlay.BackgroundColor = c);
 
-            var storageLabel = new Label() { Text = name, FontSize = 40, TextColor = Color.Black, HorizontalTextAlignment = TextAlignment.Center };
-            var storageView = ContentManager.GetStorageView(name);
+            ScrollView gridContainer = new ScrollView();
+            gridContainer.Scrolled += (o, a) => Console.WriteLine("CabinetView 74 gridcontainer scrolled");
+            viewOverlay.Children.Add(gridContainer, AbsoluteLayout.GetLayoutBounds(backgroundCell), AbsoluteLayout.GetLayoutFlags(backgroundCell));
 
-            storageView.HorizontalOptions = LayoutOptions.CenterAndExpand;
-            storageView.WidthRequest = Application.Current.MainPage.Width * .8;
-            storageView.HeightRequest = 7 * Application.Current.MainPage.Height / 8;
-            var storageViewFrame = new Frame() { BorderColor = Color.Black, Content = storageView };
-            foreach (var cell in ContentManager.GetSelectedStorage(name).GetGridCells())
+            sortSelector.SelectedIndexChanged += (obj, args) =>
+            {
+                if (currentGrid != null)
+                {
+                    switch (sortSelector.SelectedItem)
+                    {
+                        case expIndicatorString: GridOrganizer.SortItemGrid(currentGrid, GridOrganizer.ItemSortingMode.Expiration_Close); break;
+                        case alphaIndicatorString: GridOrganizer.SortItemGrid(currentGrid, GridOrganizer.ItemSortingMode.A_Z); break;
+                    }
+                }
+            };
+
+            searchBar.Unfocused += (o, a) =>
+            {
+                var currentGridChildren = currentGrid.Children.Cast<ItemLayout>();
+                Grid filteredGrid = GridManager.InitializeGrid(1, 4, new GridLength(ContentManager.item_layout_size, GridUnitType.Absolute), GridLength.Star);
+                GridManager.FilterItemGrid(currentGridChildren, filteredGrid, searchBar.Text);
+                gridContainer.Content = filteredGrid;
+            };
+
+            var storageView = ContentManager.GetStorageView(storageSelection, name);
+            var storage = ContentManager.GetSelectedStorage(storageSelection, name);
+            var storageViewWidth = storageSelection == ContentManager.StorageSelection.cabinet ? storage_width_proportional_cabinet : storage_width_proportional_fridge;
+
+            AbsoluteLayout.SetLayoutBounds(storageView, new Rectangle(0, 0, storageViewWidth, 0.3));
+            AbsoluteLayout.SetLayoutFlags(storageView, AbsoluteLayoutFlags.All);
+
+            foreach (var cell in storage.GetGridCells())
             {
                 // Set up listener to show overlay
                 ImageButton button = cell.GetButton();
                 var grid = cell.GetItemGrid();
-                ScrollView gridContainer = new ScrollView() { Content = grid };
-                viewOverlay.Children.Add(gridContainer, AbsoluteLayout.GetLayoutBounds(backgroundCell), AbsoluteLayout.GetLayoutFlags(backgroundCell));
-                
-                button.Clicked += (obj, args) =>
-                    {
-                        viewOverlay.IsVisible = true;
-                        currentGrid = grid;
-                        grid.IsVisible = true;
-                    };
+                currentGrid = grid;
+                Console.WriteLine("CabinetView 92 item grid length " + grid.Children.Count);
+
+                button.Clicked += async (obj, args) =>
+                {
+                    viewOverlay.IsVisible = true;
+                    gridContainer.Content = grid;
+                    var viewOverlayXOffset = ContentManager.screenWidth * 0.75;
+                    await viewOverlay.LinearInterpolator(viewOverlayXOffset, 200, t => viewOverlay.TranslationX = viewOverlayXOffset - t);
+                    grid.IsVisible = true;
+                };
   
                 foreach(var child in grid.Children)
                 {
@@ -110,9 +140,9 @@ namespace ZestyKitchenHelper
             {
                Console.WriteLine("CabinetView 140 View item grid children: overlayed");
                 viewOverlay.IsVisible = true;
-                IStorage storage = directSelectStorageType == ContentManager.cabinetStorageType ? ContentManager.CabinetMetaBase[name] : (IStorage)ContentManager.FridgeMetaBase[name];
-                currentGrid = storage.GetGridCell(directSelectIndex).GetItemGrid();
-                storage.GetGridCell(directSelectIndex).GetItemGrid().IsVisible = true;
+                var grid = storage.GetGridCell(directSelectIndex).GetItemGrid();
+                gridContainer.Content = grid;
+                grid.IsVisible = true;
 
             }
 
@@ -122,17 +152,21 @@ namespace ZestyKitchenHelper
                 {
                     new StackLayout()
                     {
-                        WidthRequest = Application.Current.MainPage.Width,
+                        HeightRequest = ContentManager.screenHeight,
+                        WidthRequest = ContentManager.screenWidth,
                         Children =
                         {
                             titleGrid,
-                            storageLabel,
-                            storageViewFrame
+                            new AbsoluteLayout()
+                            {
+                                WidthRequest = ContentManager.screenWidth,
+                                HeightRequest = ContentManager.screenHeight * 0.9,
+                                Children = {storageView, viewOverlay, sortSelector, searchBar}
+                            }
                         }
                     },
-                    viewOverlay
                 }
             };
         }
-   }
+    }
 }

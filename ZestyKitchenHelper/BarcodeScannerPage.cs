@@ -28,6 +28,7 @@ namespace ZestyKitchenHelper
                 HttpClient httpClient = new HttpClient();
                 Uri uri = new Uri(string.Format("https://api.upcitemdb.com/prod/trial/lookup?upc={0}", r.Text));
                 HttpResponseMessage response = await httpClient.GetAsync(uri);
+                Console.WriteLine("BarcodeScannerPage 31 got http response");
 
                 if (response.IsSuccessStatusCode)
                 {

@@ -67,7 +67,33 @@ namespace ZestyKitchenHelper
             Text = "All Items",
             FontFamily = main_label_font
         };
-
+        private Image expWarningImage1 = new Image()
+        {
+            IsVisible = false,
+            Source = ContentManager.expWarningIcon,
+            WidthRequest =  ContentManager.exp_warning_size,
+            HeightRequest =  ContentManager.exp_warning_size,
+            HorizontalOptions = LayoutOptions.End,
+            VerticalOptions = LayoutOptions.Start,
+        };
+        private Image expWarningImage2 = new Image()
+        {
+            IsVisible = false,
+            Source = ContentManager.expWarningIcon,
+            WidthRequest =  ContentManager.exp_warning_size,
+            HeightRequest =  ContentManager.exp_warning_size,
+            HorizontalOptions = LayoutOptions.End,
+            VerticalOptions = LayoutOptions.Start
+        };
+        private Image expWarningImage3 = new Image()
+        {
+            IsVisible = false,
+            Source =ContentManager.expWarningIcon,
+            WidthRequest =  ContentManager.exp_warning_size,
+            HeightRequest =  ContentManager.exp_warning_size,
+            HorizontalOptions = LayoutOptions.End,
+            VerticalOptions = LayoutOptions.Start
+        };
 
 
         public SelectionPage()
@@ -97,6 +123,32 @@ namespace ZestyKitchenHelper
                 new Label() { Text = "Testing Page" }};
             grid.OrganizeGrid(gridChildren, GridOrganizer.OrganizeMode.TwoRowSpanLeft);
 
+            // Check if any items in the given categories are expired. If so, show expiration warning.
+            grid.Children.Add(expWarningImage1, 0, 1);
+            grid.Children.Add(expWarningImage2, 1, 1);
+            grid.Children.Add(expWarningImage3, 0, 3);
+            var expiredCabinets = new List<string>();
+            var expiredFridges = new List<string>();
+            var expiredItems = new List<int>();
+            ContentManager.GetItemExpirationInfo(expiredCabinets, expiredFridges, expiredItems);
+
+            if (expiredCabinets.Count > 0)
+            {
+                expWarningImage1.IsVisible = true;
+                AnimateExpirationWarning(expWarningImage1);
+            }
+            if (expiredFridges.Count > 0)
+            {
+                expWarningImage2.IsVisible = true;
+                AnimateExpirationWarning(expWarningImage2);
+            }
+            if (expiredItems.Count > 0)
+            {
+                expWarningImage3.IsVisible = true;
+                AnimateExpirationWarning(expWarningImage3);
+            }
+
+            
             void SetSelection(ContentManager.StorageSelection selection)
             {
                 ContentManager.storageSelection = selection;
@@ -118,6 +170,11 @@ namespace ZestyKitchenHelper
                 }
             };
             Content = content;
+        }
+
+        private void AnimateExpirationWarning(View view)
+        {
+            view.QuadraticInterpolator(1.3, 2000, (t) => { if (t >= 1) { view.Scale = t; } }, null, true);
         }
     }
 }

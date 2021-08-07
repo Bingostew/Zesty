@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Utility;
 using Xamarin.Forms;
+using System.Linq;
 
 namespace ZestyKitchenHelper
 {
@@ -10,16 +11,19 @@ namespace ZestyKitchenHelper
     {
         public const double info_view_height_proportional = 0.75;
         public const double info_view_width_proportional = 0.75;
-        private const int grid_font_size = 12;
+        private const int grid_font_size = 14;
         private const int side_margin = 10;
-        private const int vertical_margin = 10;
+        private const int vertical_margin = 5;
         private const int close_button_size = 30;
+        private double button_width;
 
 
         StackLayout pageContainer;
 
         public InfoView(Item item)
         {
+            // Calculating sizes
+            button_width = ContentManager.screenWidth * info_view_width_proportional / 3;
             Grid mainGrid = new Grid()
             {
                 HeightRequest = ContentManager.screenHeight * info_view_height_proportional * 0.75,
@@ -42,17 +46,19 @@ namespace ZestyKitchenHelper
             };
 
             var closeButton = new Button() { BackgroundColor = Color.Gray, Text = "X", TextColor = Color.Black, HorizontalOptions = LayoutOptions.End, WidthRequest = close_button_size, HeightRequest = close_button_size };
-            closeButton.Clicked += (o,a) => ContentManager.pageController.RemoveInfoView(this);
+            closeButton.Clicked += (o, a) => ContentManager.pageController.RemoveInfoView(this);
             var itemName = new Label() { Text = item.Name, TextColor = Color.Black, FontSize = 25, HorizontalTextAlignment = TextAlignment.Center };
             var itemNameDivider = new BoxView() { HeightRequest = 1, WidthRequest = ContentManager.screenWidth * 0.5, Color = Color.Gray };
-            var itemImage = new Image() { Source = item.Icon.Substring(6), Aspect = Aspect.Fill, WidthRequest = 150, HeightRequest = 150, HorizontalOptions = LayoutOptions.Center };
+            var itemImage = new Image() { Source = item.Icon.Substring(6), Aspect = Aspect.Fill, HorizontalOptions = LayoutOptions.Center };
 
             var expirationDateTitle = new Label() { Text = "Expiration Date:", TextColor = Color.Black, FontSize = grid_font_size };
-            var expirationDateLabel = new Label() { Text =  item.expMonth + "/" + item.expDay + "/" + item.expYear, TextColor = Color.Black, FontSize = grid_font_size, HorizontalTextAlignment = TextAlignment.End };
+            var expDateText = item.daysUntilExp < 0 ? "?" : item.expMonth + "/" + item.expDay + "/" + item.expYear;
+            var expirationDateLabel = new Label() { Text = expDateText, TextColor = Color.Black, FontSize = grid_font_size, HorizontalTextAlignment = TextAlignment.End };
             var expirationDateDivider = new BoxView() { HeightRequest = 1, WidthRequest = ContentManager.screenWidth * 0.5, Color = Color.Gray };
 
+            var daysToExpString = item.daysUntilExp < 0 ? "?" : item.daysUntilExp.ToString();
             var daysToExpirationTitle = new Label() { Text = "Days Until Expiration:", TextColor = Color.Black, FontSize = grid_font_size };
-            var daysToExpirationLabel = new Label() { Text = item.daysUntilExp.ToString(), TextColor = Color.Black, FontSize = grid_font_size, HorizontalTextAlignment = TextAlignment.End };
+            var daysToExpirationLabel = new Label() { Text = daysToExpString, TextColor = Color.Black, FontSize = grid_font_size, HorizontalTextAlignment = TextAlignment.End };
             var expirationDayDivider = new BoxView() { HeightRequest = 1, WidthRequest = ContentManager.screenWidth * 0.5, Color = Color.Gray };
 
             var amountTitle = new Label() { Text = "Amount: ", TextColor = Color.Black, FontSize = grid_font_size };
@@ -73,22 +79,41 @@ namespace ZestyKitchenHelper
             Grid.SetColumnSpan(expirationDayDivider, 2);
             mainGrid.Children.Add(amountTitle, 0, 4);
             mainGrid.Children.Add(amountLabel, 1, 4);
-            mainGrid.Children.Add(amountDivider, 0,5);
+            mainGrid.Children.Add(amountDivider, 0, 5);
             Grid.SetColumnSpan(amountDivider, 2);
             mainGrid.Children.Add(locationTitle, 0, 6);
             mainGrid.Children.Add(locationLabel, 1, 6);
 
-            var toStorageViewButton = new Button() { BackgroundColor = Color.FromRgba(0, 100, 20, 80), Text = "View In Storage", TextColor = Color.Black, 
+            var toStorageViewButton = new Button() { BackgroundColor = Color.FromRgba(0, 100, 20, 80), Text = "View In Storage", TextColor = Color.Black,
                 HorizontalOptions = LayoutOptions.CenterAndExpand, VerticalOptions = LayoutOptions.EndAndExpand, Margin = new Thickness(0, vertical_margin) };
-            var consumeButton = new Button() { BackgroundColor = Color.FromRgba(100, 20, 0, 80), Text = "Consume", TextColor = Color.Black,
-                HorizontalOptions = LayoutOptions.CenterAndExpand, VerticalOptions = LayoutOptions.EndAndExpand, Margin = new Thickness(0, vertical_margin)  };
+            var addButton = new Button()
+            {
+                BackgroundColor = Color.FromRgba(0, 100, 0, 80),
+                Text = "Add",
+                WidthRequest = button_width,
+                TextColor = Color.Black,
+                HorizontalOptions = LayoutOptions.CenterAndExpand,
+                VerticalOptions = LayoutOptions.EndAndExpand,
+                Margin = new Thickness(0, 0, 0, vertical_margin)
+            };
+            var consumeButton = new Button()
+            {
+                BackgroundColor = Color.FromRgba(100, 20, 0, 80),
+                Text = "Consume",
+                WidthRequest = button_width,
+                TextColor = Color.Black,
+                HorizontalOptions = LayoutOptions.CenterAndExpand,
+                VerticalOptions = LayoutOptions.EndAndExpand,
+                Margin = new Thickness(0, 0, 0, vertical_margin)
+            };
             toStorageViewButton.BackgroundColor = item.Stored ? Color.FromRgba(0, 100, 20, 80) : Color.Gray;
             toStorageViewButton.Clicked += (obj, args) =>
             {
                 if (item.Stored)
                 {
                     ContentManager.pageController.RemoveInfoView(this);
-                    ContentManager.pageController.ToViewItemPage(item.StorageName, item.StorageCellIndex, item.StorageType);
+                    if(!ContentManager.pageController.IsOnPage<CabinetViewPage>())
+                        ContentManager.pageController.ToViewItemPage(item.StorageName, item.StorageCellIndex, item.StorageType);
                 }
             };
 
@@ -102,29 +127,45 @@ namespace ZestyKitchenHelper
                 Background = gradientLineBrush,
                 HeightRequest = 200,
             };
-            var subtractionSymbol = new Label() { Text = "-1", TextColor = Color.Gray, FontSize = 40, FontAttributes = FontAttributes.Bold, WidthRequest = 50, HeightRequest = 50, HorizontalTextAlignment = TextAlignment.End};
 
 
-            void animateConsumption()
+
+            void animateAmountChange(bool add)
             {
                 // Get x, y, w, h in proprotional terms.
-                consumeButton.IsEnabled = false;
                 var dhGradientLine = ContentManager.screenHeight - gradientLine.HeightRequest;
                 var y = ContentManager.screenHeight * info_view_height_proportional / 2 + ContentManager.screenHeight / 2 - gradientLine.HeightRequest;
                 y /= dhGradientLine;
                 var h = gradientLine.HeightRequest / ContentManager.screenHeight;
-                ContentManager.pageController.OverlayAnimation(gradientLine, new Rect(0.5, y, info_view_width_proportional, h),
-                            ViewExtensions.LinearInterpolator(gradientLine, ContentManager.screenHeight * info_view_height_proportional - gradientLine.HeightRequest, 500, t => gradientLine.TranslationY = -t, Easing.CubicInOut));
+                var gradientLineY = add ? y : 0;
+                ContentManager.pageController.OverlayAnimation(gradientLine, new Rect(0.5, gradientLineY, info_view_width_proportional, h),
+                            ViewExtensions.LinearInterpolator(gradientLine, ContentManager.screenHeight * info_view_height_proportional - gradientLine.HeightRequest, 500, t => gradientLine.TranslationY = add ? -t : t, Easing.CubicInOut));
 
                 var amountLabelBounds = amountLabel.Bounds;
-                Console.WriteLine("InfoView 115 amt bounds " + amountLabelBounds.X + " " + amountLabelBounds.Y);
-                var dwAmount = ContentManager.screenWidth - subtractionSymbol.WidthRequest;
-                var dhAmount = ContentManager.screenHeight - subtractionSymbol.HeightRequest;
-                ContentManager.pageController.OverlayAnimation(subtractionSymbol,
-                    new Rect(amountLabelBounds.X / dwAmount, amountLabelBounds.Y / dhAmount, subtractionSymbol.WidthRequest / ContentManager.screenWidth, subtractionSymbol.HeightRequest / ContentManager.screenHeight),
-                    subtractionSymbol.LinearInterpolator(100, 500, t => { subtractionSymbol.TranslationY = -t; subtractionSymbol.Opacity = 1 - t / 100; }, Easing.CubicOut), 
-                    () => { subtractionSymbol.TranslationY = 0; consumeButton.IsEnabled = true; });
+                var amountChangeLabel = new Label()
+                { TextColor = Color.Gray, FontSize = 40, FontAttributes = FontAttributes.Bold, WidthRequest = 50, HeightRequest = 50, HorizontalTextAlignment = TextAlignment.End };
+                amountChangeLabel.Text = add ? "+1" : "-1";
+                var dwAmount = ContentManager.screenWidth - amountChangeLabel.WidthRequest;
+                var dhAmount = ContentManager.screenHeight - amountChangeLabel.HeightRequest;
+                ContentManager.pageController.OverlayAnimation(amountChangeLabel,
+                    new Rect(amountLabel.GetAbsolutePosition().X / dwAmount, amountLabel.GetAbsolutePosition().Y / dhAmount, amountChangeLabel.WidthRequest / ContentManager.screenWidth, amountChangeLabel.HeightRequest / ContentManager.screenHeight),
+                    amountChangeLabel.LinearInterpolator(80, 2000, t => { amountChangeLabel.TranslationY = -t; amountChangeLabel.Opacity = 1 - t / 100; }, Easing.CubicOut),
+                    () => { amountChangeLabel.TranslationY = 0;});
             }
+            addButton.Clicked += (obj, args) =>
+            {
+                // add amount
+                item.Amount++;
+                // animate 
+                animateAmountChange(true);
+                amountLabel.Text = item.Amount.ToString();
+
+                // Save data locally or to cloud
+                if (ContentManager.isLocal)
+                    LocalStorageController.UpdateItem(item);
+                else
+                    FireBaseController.SaveItem(item);
+            };
             consumeButton.Clicked += (obj, args) =>
             {
                 // Subtract amount
@@ -132,8 +173,13 @@ namespace ZestyKitchenHelper
                 // If not fully consumed, keep track of it
                 if (item.Amount > 0)
                 {
-                    animateConsumption();
+                    animateAmountChange(false);
                     amountLabel.Text = item.Amount.ToString();
+                    // Save data locally or to cloud
+                    if (ContentManager.isLocal)
+                        LocalStorageController.UpdateItem(item);
+                    else
+                        FireBaseController.SaveItem(item);
                 }
                 // If fully consumed, remove it.
                 else
@@ -158,7 +204,7 @@ namespace ZestyKitchenHelper
                     ContentManager.pageController.RemoveInfoView(this);
 
                     // Save data locally and to cloud
-                    if(ContentManager.isLocal)
+                    if (ContentManager.isLocal)
                         LocalStorageController.DeleteItem(item);
                     else
                         FireBaseController.DeleteItem(item);
@@ -170,17 +216,17 @@ namespace ZestyKitchenHelper
                         var gridCell = item.StorageType == ContentManager.fridgeStorageType ? ContentManager.FridgeMetaBase[item.StorageName].GetGridCell(item.StorageCellIndex) :
                             ContentManager.CabinetMetaBase[item.StorageName].GetGridCell(item.StorageCellIndex);
                         var cellGrid = gridCell.GetItemGrid();
-                        var childList = cellGrid.Children;
+                        List<View> childList = cellGrid.Children.ToList();
                         foreach (ItemLayout child in cellGrid.Children)
                         {
                             if (item.ID == child.ItemData.ID)
                             {
-                                childList.Remove(child);
+                                gridCell.RemoveItem(child);
                                 break;
                             }
                         }
                         //Update storage cell children
-                        GridManager.AddGridItem(cellGrid, childList, true);
+                        //gridCell.AddItem(childList);
                     }
                 }
             };
@@ -188,7 +234,13 @@ namespace ZestyKitchenHelper
             pageContainer = new StackLayout()
             {
                 BackgroundColor = Color.Beige,
-                Children = { closeButton, itemName, itemNameDivider, itemImage, mainGrid, toStorageViewButton, consumeButton }
+                Children = { closeButton, itemName, itemNameDivider, itemImage, mainGrid, toStorageViewButton, addButton,
+                    new StackLayout()
+                    {
+                        Orientation = StackOrientation.Horizontal,
+                        Children = {addButton, consumeButton}
+                    }
+                }
             };
         }
 
@@ -196,18 +248,5 @@ namespace ZestyKitchenHelper
         {
             return pageContainer;
         }
-        /*
-        public void SetCabinetView()
-        {
-            if (storageAction != null)
-            {
-                locationLabel.Text = "Location: " + storageName;
-                var storageView = storageAction(storageName);
-                // ImageTint tintEffect = new ImageTint() { tint = Color.FromRgba(100, 20, 20, 90) };
-                // parentButton.ToggleEffects(tintEffect, null);
-                pageContainer.Children.Insert(pageContainer.Children.Count - 1, storageView);
-            }
-
-        }*/
     }
 }

@@ -28,14 +28,27 @@ namespace ZestyKitchenHelper
                     ContentManager.sessionUserProfile = new UserProfile()
                     {
                         Name = accountInput.Text,
-                        IconImage = ContentManager.addIcon
+                        IconImage = ContentManager.addIcon,
+                        IsLocal = true
                     };
                     LocalStorageController.AddUser(ContentManager.sessionUserProfile);
+                    LocalStorageController.SetMetaUserInfo(new MetaUserInfo(true));
                 }
                 else
                 {
                     ContentManager.sessionUserProfile.Name = accountInput.Text;
-                    await FireBaseController.AddUser(new UserProfile() { Name = accountInput.Text, Email = ContentManager.sessionUserProfile.Email, IconImage = ContentManager.addIcon });
+                    var remoteUser = new UserProfile()
+                    {
+                        Name = accountInput.Text,
+                        Email = ContentManager.sessionUserProfile.Email,
+                        IconImage = ContentManager.addIcon,
+                        IsLocal = false
+                    };
+                    await FireBaseController.AddUser(remoteUser);
+
+                    // Need to add remote user to local file to ensure notification sends warning w/ correct user info
+                    LocalStorageController.AddUser(remoteUser);
+                    LocalStorageController.SetMetaUserInfo(new MetaUserInfo(false));
                 }
                 await content.QuadraticFlight(10, 90, -80, 100, t => content.TranslationY = t.Y, 1500);
                 ContentManager.pageController.ToMainSelectionPage();

@@ -112,21 +112,51 @@ namespace ZestyKitchenHelper.iOS
         {
             base.PerformFetch(application, completionHandler);
             Console.WriteLine("APP DELEGATE 114 Perfor Fetch Called  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-            var itemList = await LocalStorageController.GetTableListAsync<Item>();
-           
+            var metaItemInfo = (await LocalStorageController.GetMetaUserInfo());
+            var itemList = new List<Item>();
+            var isUserLocal = metaItemInfo == null ? ContentManager.isLocal : metaItemInfo.IsLocal;
+            if (isUserLocal)
+            {
+                itemList = await LocalStorageController.GetTableListAsync<Item>();
+            }
+            // Check if user is connected before retrieving data from online
+            else if (Xamarin.Essentials.Connectivity.NetworkAccess == Xamarin.Essentials.NetworkAccess.Internet)
+            {
+                itemList = (await FireBaseController.GetItems()).ToList().ConvertAll(o => o.Object);
+            }
+
+            int expItemCount1 = 0;
+            int expItemCount3 = 0;
+            int expItemCount7 = 0;
             if (UIDevice.CurrentDevice.CheckSystemVersion(10, 0))
             {
                 foreach (var item in itemList)
                 {
                     item.SetDaysUntilExpiration();
                     if (item.daysUntilExp < 1 && !item.oneDayWarning)
-                    { NotifyUser(item, "Your " + item.Name + " expires in 1 day!"); item.oneDayWarning = true; }
+                    {
+                        expItemCount1++;
+                        item.oneDayWarning = true;
+                    }
                     else if (item.daysUntilExp < 3 && !item.threeDaysWarning)
-                    { NotifyUser(item, "Your " + item.Name + " expires in 3 days!"); item.threeDaysWarning = true; }
+                    {
+                        expItemCount3++;
+                        item.threeDaysWarning = true;
+                    }
                     else if (item.daysUntilExp < 7 && !item.weekWarning)
-                    { NotifyUser(item, "Your " + item.Name + " expires in one week!"); item.weekWarning = true; }
-                    LocalStorageController.UpdateItem(item);
+                    {
+                        expItemCount7++;
+                        item.weekWarning = true;
+                    }
+
+                    if (isUserLocal)
+                        LocalStorageController.UpdateItem(item);
+                    else if (Xamarin.Essentials.Connectivity.NetworkAccess == Xamarin.Essentials.NetworkAccess.Internet)
+                        FireBaseController.SaveItem(item);
                 }
+                NotifyUser(expItemCount1 + " of your items expire in one day!");
+                NotifyUser(expItemCount3 + " of your items expire in three days!");
+                NotifyUser(expItemCount7 + " of your items expire in one week!");
             }
             else
             {
@@ -134,18 +164,34 @@ namespace ZestyKitchenHelper.iOS
                 {
                     item.SetDaysUntilExpiration();
                     if (item.daysUntilExp < 1 && !item.oneDayWarning)
-                    { NotifyUserOld(item, "Your " + item.Name + " expires in 1 day!"); item.oneDayWarning = true; }
+                    {
+                        expItemCount1++;
+                        item.oneDayWarning = true;
+                    }
                     else if (item.daysUntilExp < 3 && !item.threeDaysWarning)
-                    { NotifyUserOld(item, "Your " + item.Name + " expires in 3 days!"); item.threeDaysWarning = true; }
+                    {
+                        expItemCount3++;
+                        item.threeDaysWarning = true;
+                    }
                     else if (item.daysUntilExp < 7 && !item.weekWarning)
-                    { NotifyUserOld(item, "Your " + item.Name + " expires in one week!"); item.weekWarning = true; }
-                    LocalStorageController.UpdateItem(item);
+                    {
+                        expItemCount7++;
+                        item.weekWarning = true;
+                    }
+
+                    if (isUserLocal)
+                        LocalStorageController.UpdateItem(item);
+                    else if (Xamarin.Essentials.Connectivity.NetworkAccess == Xamarin.Essentials.NetworkAccess.Internet)
+                        FireBaseController.SaveItem(item);
                 }
+                NotifyUserOld(expItemCount1 + " of your items expire in one day!");
+                NotifyUserOld(expItemCount3 + " of your items expire in three days!");
+                NotifyUserOld(expItemCount7 + " of your items expire in one week!");
             }
             completionHandler(UIBackgroundFetchResult.NewData);
         }
 
-        private void NotifyUserOld(Utility.Item item, string alertString)
+        private void NotifyUserOld(string alertString)
         {
             Console.WriteLine("APP DELEGATE 126: NOTIFICATION GOT IOS  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
             UILocalNotification notification = new UILocalNotification();
@@ -155,7 +201,7 @@ namespace ZestyKitchenHelper.iOS
             UIApplication.SharedApplication.ScheduleLocalNotification(notification);
         }
 
-        private async void NotifyUser(Utility.Item item, string alertString)
+        private void NotifyUser(string alertString)
         {
             Console.WriteLine("APP DELEGATE 135: NOTIFICATION GOT IOS  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
             var content = new UNMutableNotificationContent();
@@ -164,7 +210,7 @@ namespace ZestyKitchenHelper.iOS
             content.Badge = 1;
 
             var trigger = UNTimeIntervalNotificationTrigger.CreateTrigger(1, false);
-            var requestID = item.ID.ToString();
+            var requestID = IDGenerator.GetID(ContentManager.IOSNotificationIdGenerator).ToString();
             var request = UNNotificationRequest.FromIdentifier(requestID, content, trigger);
             UNUserNotificationCenter.Current.AddNotificationRequest(request, (e) => { Console.WriteLine("NOTIFICATION COMPLETE: &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& FAILURE?" + (e != null)); });
         }

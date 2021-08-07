@@ -37,24 +37,17 @@ namespace ZestyKitchenHelper.iOS
         {
             base.ViewDidLoad();
 
-            LoginButton.TouchUpInside += async (o, a) =>
+            CloudAccountButton.TouchUpInside += async (obj, args) => { ContentManager.isLocal = false;  await LoginAsync(); };
+            LocalAcountButton.TouchUpInside += (obj, args) => { ContentManager.isLocal = true; AppDelegate.ToPageControllerAction.Invoke();
+                CloudAccountButton.Enabled = false; LocalAcountButton.Enabled = false; };
+            HelpButton.TouchUpInside += (o, a) =>
             {
-                ContentManager.isLocal = false;
-                await LoginAsync();
-            };
-
-            SkipLoginButton.TouchUpInside += (o, a) =>
-            {
-                ContentManager.isLocal = true;
-                UIAlertController loginAlert = UIAlertController.Create("Skip Log In", "Logging in allows the same information to be edited on multiple devices.", UIAlertControllerStyle.Alert);
-                loginAlert.AddAction(UIAlertAction.Create("Skip", UIAlertActionStyle.Default, (action) => AppDelegate.ToPageControllerAction.Invoke()));
-                loginAlert.AddAction(UIAlertAction.Create("Cancel", UIAlertActionStyle.Cancel, null));
+                UIAlertController loginAlert = UIAlertController.Create("Account Information", 
+                    "Local Account can only be used on this device. Cloud Account allows information to be edited on multiple devices.", UIAlertControllerStyle.Alert);
+                loginAlert.AddAction(UIAlertAction.Create("OK", UIAlertActionStyle.Cancel, null));
                 PresentViewController(loginAlert, true, null);
             };
         }
-
-
-
 
         private async Task LoginAsync()
         {

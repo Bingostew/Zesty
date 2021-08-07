@@ -425,7 +425,7 @@ namespace ZestyKitchenHelper
                 // column index must be smaller than previous candidate's column index.
                 // (Same logic for vertical)
                 if (sameLayerPositionGetter(pos) == sameLayerPositionGetter(selectedCell.GetPosition()) && sameLayerSpanGetter(cell) == sameLayerSpanGetter(selectedCell) 
-                    && compareLayerPositionGetter(pos) + 1 == compareLayerPositionGetter(selectedCell.GetPosition()) && compareLayerPositionGetter(pos) < closestLayer)
+                    && compareLayerPositionGetter(pos) - 1 == compareLayerPositionGetter(selectedCell.GetPosition()) && compareLayerPositionGetter(pos) < closestLayer)
                 {
                     closestLayer = compareLayerPositionGetter(pos);
                     nextCell = cell;

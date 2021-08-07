@@ -144,6 +144,13 @@ namespace Utility
             StorageType = storageType;
             Stored = true;
         }
+        public void RemoveFromStorage()
+        {
+            StorageName = null;
+            StorageCellIndex = default(int);
+            StorageType = null;
+            Stored = false;
+        }
     }
 
     [Table("Storage Cell")]
@@ -168,12 +175,12 @@ namespace Utility
         /// <summary>
         /// For fridges: Either left, center, or right grid on the fridge
         /// </summary>
-        /*
+        
         private Grid ParentGrid; // Only applies to fridge
         private Vector2D<int> Position;
         private Grid Grid = new Grid();
         private Image background;
-        private ImageButton button;*/
+        private ImageButton button;
 
         /// <summary>
         /// 
@@ -188,14 +195,14 @@ namespace Utility
         /// <returns></returns>
         public StorageCell SetStorageCell(Vector2D<int> position, int index, string storageName, Grid parentGrid, string gridType = "none", int columnSpan = 1, int rowSpan = 1)
         {
-        //    Position = position;
+            Position = position;
             ColumnSpan = columnSpan;
             StorageName = storageName;
             RowSpan = rowSpan;
             Index = index;
-         //   ParentGrid = parentGrid;
+            ParentGrid = parentGrid;
             GridType = gridType;
-         //   Grid = GridManager.InitializeGrid(6, 4, GridLength.Star, GridLength.Star);
+            Grid = GridManager.InitializeGrid(1, 4, new GridLength(ContentManager.item_layout_size, GridUnitType.Absolute), GridLength.Star);
 
             MetaID = IDGenerator.GetID(ContentManager.storageCellIdGenerator);
             X = position.X; Y = position.Y;
@@ -205,38 +212,37 @@ namespace Utility
 
         public void SetPosition(Vector2D<int> position)
         {
-           // Position = position;
+            Position = position;
             X = position.X; Y = position.Y;
         }
 
         public Vector2D<int> GetPosition()
         {
-            return new Vector2D<int>();// Position;
+            return Position;
         }
 
         public void SetColumnSpan(int columnSpan)
         {
             ColumnSpan = columnSpan;
 
-           // Grid.SetColumnSpan(Grid, columnSpan);
-           // Grid.SetColumnSpan(background, columnSpan);
-           // Grid.SetColumnSpan(button, columnSpan);
+            Grid.SetColumnSpan(Grid, columnSpan);
+            Grid.SetColumnSpan(background, columnSpan);
+            Grid.SetColumnSpan(button, columnSpan);
         }
 
         public void SetRowSpan(int rowSpan)
         {
             RowSpan = rowSpan;
-
-            /*
+  
             Grid.SetRowSpan(Grid, rowSpan);
             Grid.SetRowSpan(background, rowSpan);
-            Grid.SetRowSpan(button, rowSpan);*/
+            Grid.SetRowSpan(button, rowSpan);
         }
 
 
         public List<View> GetChildren()
         {
-            return null;// Grid.Children.ToList();
+            return Grid.Children.ToList();
         }
 
         public int GetChildrenCount()
@@ -245,32 +251,32 @@ namespace Utility
         }
         public void AddItem(List<View> items)
         {
-         //   GridManager.AddGridItem(Grid, items, false);
+           GridManager.AddGridItem(Grid, items, false);
         }
         public void RemoveItem(ItemLayout item)
         {
-           // GridManager.RemoveGridItem(Grid, item);
+            GridManager.RemoveGridItem(Grid, item);
         }
         public void AddUI(Image background, ImageButton button)
         {
-           // this.background = background;
-           // this.button = button;
+            this.background = background;
+            this.button = button;
         }
         public Image GetBackground()
         {
-            return null;//  return background;
+            return background;
         }
         public ImageButton GetButton()
         {
-            return null; // return button;
+            return button;
         }
         public Grid GetItemGrid()
         {
-            return null; // return Grid;
+            return Grid;
         }
         public Grid GetParentGrid()
         {
-            return null; // return ParentGrid;
+            return ParentGrid;
         }
     }
 
@@ -413,13 +419,8 @@ namespace Utility
 
         public void AddGridItems(int ID, List<View> items)
         {
-            if (gridCells.ContainsKey(ID))
-            {
-                var cell = gridCells[ID];
-                cell.AddItem(items);
-
-                GridManager.AddGridItemAtPosition(cell.GetParentGrid(), items, cell.GetPosition());
-            }
+            var cell = gridCells[ID];
+            cell.AddItem(items);
         }
 
         public StorageCell GetGridCell(int ID)
@@ -490,17 +491,26 @@ namespace Utility
         }
         public static int SubtractDate(int yr, int m, int d)
         {
+            if(yr < 0 || m < 0 || d < 0)
+            {
+                return -1;
+            }
+
             SetMonthList();
             if (DateTime.Compare(DateTime.Today, new DateTime(yr, m, d)) <= 0)
             {
                 var date = DateTime.Today.Subtract(new DateTime(yr, m, d));
                 var days = Math.Abs(date.Days);
-                return days;
+                return days < 0 ? 0 : days;
             }
             else { return 0; }
         }
         public static string SubtractDateStringed(int yr, int m, int d)
         {
+            if (yr < 0 || m < 0 || d < 0)
+            {
+                return "?";
+            }
             SetMonthList();
 
             if (DateTime.Compare(DateTime.Today, new DateTime(yr, m, d)) <= 0)
@@ -682,7 +692,7 @@ namespace Utility
                     grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = grid.ColumnDefinitions.First().Width });
                     columnCount++;
                 }
-
+                Console.WriteLine("Utility 679 grid pair x " + gridPair.X + " grid pair y " + gridPair.Y);
                 grid.Children.Add(items.ElementAt(i) as View, gridPair.X, gridPair.Y);
             }
         }

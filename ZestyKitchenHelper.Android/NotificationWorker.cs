@@ -71,27 +71,58 @@ namespace ZestyKitchenHelper.Droid
     {
         NotificationSender sender = new NotificationSender();
         private static List<Item> itemList = new List<Item>();
+        bool isUserLocal;
+
         public NotificationWorker(Context context, WorkerParameters workParams) : base(context, workParams)
         {
         }
         private async void SetItemList()
         {
-            itemList = await LocalStorageController.GetTableListAsync<Item>();
+            var metaItemInfo = (await LocalStorageController.GetMetaUserInfo());
+            isUserLocal = metaItemInfo == null ? ContentManager.isLocal : metaItemInfo.IsLocal;
+            if (isUserLocal)
+            {
+                itemList = await LocalStorageController.GetTableListAsync<Item>();
+            }
+            // Check if user is connected before retrieving data from online
+            else if(Xamarin.Essentials.Connectivity.NetworkAccess == Xamarin.Essentials.NetworkAccess.Internet)
+            {
+                itemList = (await FireBaseController.GetItems()).ToList().ConvertAll(o => o.Object);
+            }
         }
         public override Result DoWork()
         {
             SetItemList();
+            int expItemCount1 = 0;
+            int expItemCount3 = 0;
+            int expItemCount7 = 0;
             foreach (var item in itemList)
             {
                 item.SetDaysUntilExpiration();
                 if (item.daysUntilExp < 1 && !item.oneDayWarning)
-                { sender.ScheduleNotification(ContentManager.exp_notification_title, "Your " + item.Name + " expires in 1 day!"); item.oneDayWarning = true; }
+                {
+                    expItemCount1++;
+                    item.oneDayWarning = true;
+                }
                 else if (item.daysUntilExp < 3 && !item.threeDaysWarning)
-                { sender.ScheduleNotification(ContentManager.exp_notification_title, "Your " + item.Name + " expires in 3 days!"); item.threeDaysWarning = true; }
+                {
+                    expItemCount3++;
+                    item.threeDaysWarning = true;
+                }
                 else if (item.daysUntilExp < 7 && !item.weekWarning)
-                { sender.ScheduleNotification(ContentManager.exp_notification_title, "Your " + item.Name + " expires in one week!"); item.weekWarning = true; }
-                LocalStorageController.UpdateItem(item);
+                {
+                    expItemCount7++;
+                    item.weekWarning = true;
+                }
+
+                if (isUserLocal)
+                    LocalStorageController.UpdateItem(item);
+                else if (Xamarin.Essentials.Connectivity.NetworkAccess == Xamarin.Essentials.NetworkAccess.Internet)
+                    FireBaseController.SaveItem(item);
             }
+            sender.ScheduleNotification(ContentManager.exp_notification_title, expItemCount1 + " of your items expire in one day!");
+            sender.ScheduleNotification(ContentManager.exp_notification_title, expItemCount3 + " of your items expire in three days!");
+            sender.ScheduleNotification(ContentManager.exp_notification_title, expItemCount7 + " of your items expire in one week!");
             Console.WriteLine("item item weeeee " + itemList.Count);
             return Result.InvokeSuccess();
         }

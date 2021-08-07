@@ -9,10 +9,14 @@ namespace ZestyKitchenHelper
 {
     public class ItemLayout : Layout<View>
     {
+        private const double default_name_height = 0.2;
+        private const double long_name_height = 0.4;
+        private const double corner_icon_size = 0.35;
+
         public ImageButton iconImage;
         public ImageButton infoIcon;
         public Button deleteButton;
-        public Button itemTitle;
+        public Label itemTitle;
         public Button expirationMark;
         private Func<string, Layout<View>> storageEvent;
         private double width, height;
@@ -93,26 +97,31 @@ namespace ZestyKitchenHelper
                 CornerRadius = 10,
                 Text = DateCalculator.SubtractDateStringed(ItemData.expYear, ItemData.expMonth, ItemData.expDay),
                 HorizontalOptions = LayoutOptions.End,
+                TextColor = Color.Black
             };
             ChangeExpirationMarkColor();
-            GetAbsoluteLayout.Children.Add(expirationMark, new Rectangle(0, 0, 40, 40), AbsoluteLayoutFlags.PositionProportional);
+            GetAbsoluteLayout.Children.Add(expirationMark, new Rectangle(0, 0, corner_icon_size, corner_icon_size), AbsoluteLayoutFlags.All);
             return this;
         }
 
         public void ChangeExpirationMarkColor()
         {
             var expDay = ItemData.daysUntilExp;
-            if(expDay <= 0)
+            if(expDay == 0)
             {
                 expirationMark.BackgroundColor = Color.Red;
             }
-            if (expDay < 7)
+            else if (expDay < 7 && expDay > 0)
             {
                 expirationMark.BackgroundColor = Color.Orange;
             }
-            else if (expDay < 30)
+            else if (expDay < 30 && expDay > 0)
             {
                 expirationMark.BackgroundColor = Color.Yellow;
+            }
+            else if (expDay >= 30)
+            {
+                expirationMark.BackgroundColor = Color.Green;
             }
             else
             {
@@ -123,10 +132,10 @@ namespace ZestyKitchenHelper
         public ItemLayout AddMainImage()
         {
             ImageSource source = ItemData.Icon.Substring(6);
-            iconImage = new ImageButton { Source = source, Aspect = Aspect.Fill };
+            iconImage = new ImageButton { Source = source, Aspect = Aspect.AspectFit, BackgroundColor = Color.WhiteSmoke };
             iconImage.BorderColor = Color.Black;
-            iconImage.BorderWidth = 2;
-            AbsoluteLayout.SetLayoutBounds(iconImage, new Rectangle(0, 0, 1, 1));
+            iconImage.BorderWidth = 1;
+            AbsoluteLayout.SetLayoutBounds(iconImage, new Rectangle(0, 0, 1, 1 - default_name_height));
             AbsoluteLayout.SetLayoutFlags(iconImage, AbsoluteLayoutFlags.All);
 
             GetAbsoluteLayout.Children.Add(iconImage);
@@ -135,30 +144,27 @@ namespace ZestyKitchenHelper
 
         public ItemLayout AddTitle()
         {
-            itemTitle = new Button() 
-            { Text = ItemData.Name, BackgroundColor = Color.White, TextColor = Color.Black, FontSize = 12, BorderColor = Color.Black, BorderWidth = 2 };
-            GetAbsoluteLayout.Children.Add(itemTitle, new Rectangle(0, 1, 1, .2), AbsoluteLayoutFlags.All);
-
-            return this;
-        }
-
-        public ItemLayout AddDeleteButton()
-        {
-            deleteButton = new Button() { BackgroundColor = Color.Red, CornerRadius = 2, Text = "X", FontSize = 20 };
-            GetAbsoluteLayout.Children.Add(deleteButton);
-            
-            AbsoluteLayout.SetLayoutBounds(deleteButton, new Rectangle(1, 0, 35, 35));
-            AbsoluteLayout.SetLayoutFlags(deleteButton, AbsoluteLayoutFlags.PositionProportional);
+            var height = ItemData.Name.Length > 10 ? long_name_height : default_name_height;
+            var itemTitleBackground = new Button()
+            {
+                BorderColor = Color.Black,
+                BorderWidth = 1,
+            };
+            itemTitle = new Label()
+            { Text = ItemData.Name, BackgroundColor = Color.White, TextColor = Color.Black, FontSize = 12, FontAttributes = FontAttributes.Bold, LineBreakMode = LineBreakMode.WordWrap };
+            GetAbsoluteLayout.Children.Add(itemTitleBackground, new Rectangle(0, 1, 1, height), AbsoluteLayoutFlags.All);
+            GetAbsoluteLayout.Children.Add(itemTitle, new Rectangle(0, 1, 1, height), AbsoluteLayoutFlags.All);
+            AbsoluteLayout.SetLayoutBounds(iconImage, new Rectangle(0, 0, 1, 1 - height));
 
             return this;
         }
 
         public ItemLayout AddInfoIcon()
         {
-            infoIcon = new ImageButton() { Source = ContentManager.addIcon };
+            infoIcon = new ImageButton() { Source = ContentManager.addIcon, Aspect = Aspect.Fill };
             GetAbsoluteLayout.Children.Add(infoIcon);
-            AbsoluteLayout.SetLayoutBounds(infoIcon, new Rectangle(1, 0, 30, 30));
-            AbsoluteLayout.SetLayoutFlags(infoIcon, AbsoluteLayoutFlags.PositionProportional);
+            AbsoluteLayout.SetLayoutBounds(infoIcon, new Rectangle(1, 0, corner_icon_size, corner_icon_size));
+            AbsoluteLayout.SetLayoutFlags(infoIcon, AbsoluteLayoutFlags.All);
             infoIcon.Clicked += (obj, args) =>
             {
                 Console.WriteLine("ItemLayout 173 Direct Select Index: " + ItemData.StorageCellIndex);
@@ -172,7 +178,7 @@ namespace ZestyKitchenHelper
         {
             ItemData.daysUntilExp = DateCalculator.SubtractDate(ItemData.expYear, ItemData.expMonth, ItemData.expDay);
             expirationMark.Text = DateCalculator.SubtractDateStringed(ItemData.expYear, ItemData.expMonth, ItemData.expDay);
-            if(ItemData.daysUntilExp <= 0) { expirationMark.Text = "Exp"; }
+            if(ItemData.daysUntilExp == 0) { expirationMark.Text = "Exp"; }
         }
 
         public void SetMarkingVisibility(bool visible)
