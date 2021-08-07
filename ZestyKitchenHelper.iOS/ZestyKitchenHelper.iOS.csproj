@@ -86,7 +86,10 @@
       <DependentUpon>MainNavigationController.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <InterfaceDefinition Include="LoginStoryboard.storyboard" />
+    <Compile Include="MainPageController.cs" />
+    <Compile Include="MainPageController.designer.cs">
+      <DependentUpon>MainPageController.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Memory" Version="4.5.4">
@@ -143,6 +146,7 @@
     <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon20.png">
       <Visible>false</Visible>
     </ImageAsset>
+    <InterfaceDefinition Include="MainPageStoryboard.storyboard" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
