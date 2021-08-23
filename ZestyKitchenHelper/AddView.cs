@@ -141,7 +141,7 @@ namespace ZestyKitchenHelper
                 defaultScrollView.IsVisible = true;
                 presetScrollView.IsVisible = false;
             };
-            
+
             Grid iconLabelGrid = GridManager.InitializeGrid(3, 1, GridLength.Star, GridLength.Star);
             GridManager.AddGridItem(iconLabelGrid, new List<View>() { iconLabel, iconSelect1, iconSelect2 }, false);
             iconLabelGrid.Margin = new Thickness(form_label_horizontal_margin, form_grid_spacing);
@@ -255,8 +255,8 @@ namespace ZestyKitchenHelper
             numPadGrid.OrganizeGrid(numPadList, GridOrganizer.OrganizeMode.HorizontalLeft);
 
             var scanButton = new Button() { Text = "Scan", TextColor = Color.Black, FontAttributes = FontAttributes.Bold, BackgroundColor = numpadBackground };
-            var exitButton = new Button() { Text = "Exit", BackgroundColor = Color.Blue, TextColor = Color.Black };
-            var newFormButton = new Button() { BackgroundColor = Color.ForestGreen, Text = "Add", TextColor = Color.Black };
+            var exitButton = new Button() { Text = "Exit", BackgroundColor = Color.WhiteSmoke, TextColor = Color.Black, Margin = new Thickness(5), BorderColor = Color.Black, BorderWidth = 1 };
+            var newFormButton = new Button() { BackgroundColor = Color.WhiteSmoke, Text = "Add", TextColor = Color.Black, Margin = new Thickness(5), BorderColor = Color.Black, BorderWidth = 1 };
 
             AbsoluteLayout manualEditLayout = new AbsoluteLayout()
             {
@@ -315,9 +315,9 @@ namespace ZestyKitchenHelper
             AbsoluteLayout.SetLayoutFlags(numPadGrid, AbsoluteLayoutFlags.All);
             AbsoluteLayout.SetLayoutBounds(scanButton, new Rectangle(.5, .88, .5, .08));
             AbsoluteLayout.SetLayoutFlags(scanButton, AbsoluteLayoutFlags.All);
-            AbsoluteLayout.SetLayoutBounds(newFormButton, new Rectangle(.25, .95, .25, .06));
+            AbsoluteLayout.SetLayoutBounds(newFormButton, new Rectangle(0, 1, 0.5, .1));
             AbsoluteLayout.SetLayoutFlags(newFormButton, AbsoluteLayoutFlags.All);
-            AbsoluteLayout.SetLayoutBounds(exitButton, new Rectangle(.75, .95, .25, .06));
+            AbsoluteLayout.SetLayoutBounds(exitButton, new Rectangle(1, 1, 0.5, .1));
             AbsoluteLayout.SetLayoutFlags(exitButton, AbsoluteLayoutFlags.All);
 
             exitButton.Clicked += (obj, args) =>
@@ -354,31 +354,34 @@ namespace ZestyKitchenHelper
         private void changeSelectedIcon()
         {
             presetResult.Clear(); presetResultSorter.Clear();
-            foreach (string name in ContentManager.PresetIcons.Keys)
+            foreach (IconLayout icon in ContentManager.PresetIcons)
             {
+                var nameList = icon.iconNames;
                 int match = 0;
 
-                foreach (char n in name.ToCharArray())
+                foreach (var name in nameList)
                 {
-                    foreach (char i in item.Name.ToCharArray())
+                    var itemName = item.Name == null ? new string[0] : item.Name.Split(' ');
+                    foreach (string n in itemName)
                     {
-                        if (n == i || char.ToLower(n) == i || char.ToLower(i) == n)
+                        // check if name is same or contains name with all lower case, all uper case, and first letter uppercase
+                        if (name.Contains(n) || name.Contains(n.ToLower()) || name.Contains(n.ToUpper()) || name.Contains(char.ToUpper(n[0]) + n.Substring(1)))
                         {
                             match--;
                         }
                     }
                 }
-                presetResultSorter.Add(match);
-                IconLayout iconLayout = ContentManager.PresetIcons[name];
-                presetResult.Add(iconLayout);
-                ContentManager.PresetIcons[name].OnClickIconAction += (button) =>
-                {
-                    toggleIconSelect(button, presetSelectGrid); var _name = name;
-                    item.Icon = ContentManager.PresetIcons[_name].GetImageSource();
-                };
-                match = 0;
 
-            } 
+                icon.OnClickIconAction += (button) =>
+                {
+                    toggleIconSelect(button, presetSelectGrid); 
+                    item.Icon = icon.GetImageSource();
+                };
+                presetResultSorter.Add(match);
+                presetResult.Add(icon);
+                match = 0;
+            }
+    
             toggleIconSelect(null, presetSelectGrid);
             ListSorter.SortToListAscending(presetResultSorter, presetResult);
             GridManager.AddGridItem(presetSelectGrid, presetResult, true, GridOrganizer.OrganizeMode.VerticalLeft);
@@ -387,6 +390,8 @@ namespace ZestyKitchenHelper
 
         private async void autoDetectExpiration(string name)
         {
+            if (name == null)
+                return;
             string[] names = name.Split(' ');
             bool detected = false;
             string key = "";

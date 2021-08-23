@@ -20,7 +20,7 @@ namespace ZestyKitchenHelper
             var accountName = new Label() { Text = "Account Name", FontSize = 20, FontFamily = "Raleway-Regular", TextColor = Color.Black, 
                 HorizontalOptions = LayoutOptions.CenterAndExpand, VerticalOptions = LayoutOptions.CenterAndExpand, Margin = new Thickness(side_margin,0, 0, 0)};
             var accountInput = new Entry() { Placeholder = "Star Chef", PlaceholderColor = Color.Gray, WidthRequest = ContentManager.screenWidth / 2, Margin = new Thickness(0,0,side_margin,0) };
-            var confirmButton = new Button() { Text = "Confirm", FontFamily = "Oswald-Regular", FontSize = 20, TextColor = Color.White, Margin = new Thickness(side_margin, vert_margin), BackgroundColor = Color.Blue };
+            var confirmButton = new Button() { Text = "Confirm", FontFamily = "Oswald-Regular", FontSize = 20, TextColor = Color.White, Margin = new Thickness(side_margin, vert_margin), BackgroundColor = Color.WhiteSmoke };
             confirmButton.Clicked += async (obj, arg) =>
             {
                 if (ContentManager.isLocal)
@@ -51,7 +51,8 @@ namespace ZestyKitchenHelper
                     LocalStorageController.SetMetaUserInfo(new MetaUserInfo(false));
                 }
                 await content.QuadraticFlight(10, 90, -80, 100, t => content.TranslationY = t.Y, 1500);
-                ContentManager.pageController.ToMainSelectionPage();
+                ContentManager.pageController.ToMainPage();
+
             };
 
             content = new StackLayout()

@@ -9,7 +9,7 @@ using Xamarin.Forms;
 using Utility;
 namespace ZestyKitchenHelper
 {
-    public class SingleSelectionPage : ContentPage
+    public class SingleSelectionPage : ContentPage, IMainPage
     {
         private const int spacing = 5;
         private const int storage_name_margin = 5;
@@ -21,12 +21,13 @@ namespace ZestyKitchenHelper
         private ScrollView scrollView;
         private Grid mainGrid;
         private ImageButton newButton;
+        private AbsoluteLayout content;
 
         private List<List<View>> gridList = new List<List<View>>();
 
         private Action<string> deleteStorageLocal, deleteStorageBase;
 
-        public SingleSelectionPage(Action<string> _deleteStorageLocal, Action<string> _deleteStorageBase)
+        public SingleSelectionPage(Action<string> _deleteStorageLocal, Action<string> _deleteStorageBase, ContentManager.StorageSelection storageType)
         {
             deleteStorageLocal = _deleteStorageLocal;
             deleteStorageBase = _deleteStorageBase;
@@ -36,8 +37,8 @@ namespace ZestyKitchenHelper
             add_view_button_width = grid_cell_width / 3;
             change_name_field_height = grid_cell_width / 8;
 
-            string title = ContentManager.GetStorageType() == ContentManager.cabinetStorageType ? "My Pantry" : "My Fridge";
-            var titleGrid = new TopPage(title).GetGrid();
+            string title = storageType == ContentManager.StorageSelection.cabinet ? "My Pantry" : "My Fridge";
+            var titleGrid = new TopPage(title, useReturnButton:false).GetGrid();
             titleGrid.HeightRequest = ContentManager.screenHeight * TopPage.top_bar_height_proportional;
             
             mainGrid = new Grid()
@@ -66,21 +67,23 @@ namespace ZestyKitchenHelper
                 Content = mainGrid
             };
 
-            SetView();
+            SetView(storageType);
 
-            Content = new StackLayout()
-            {
-                Children =
-                {
-                    titleGrid,
-                    scrollView
-                }
-            };
+
+            content = new AbsoluteLayout();
+            content.Children.Add(titleGrid, new Rectangle(0, 0, 1, 0.1), AbsoluteLayoutFlags.All);
+            content.Children.Add(scrollView, new Rectangle(0, 1, 1, 0.9), AbsoluteLayoutFlags.All);
+            Content = content;
+
         }
 
+        public AbsoluteLayout GetLayout()
+        {
+            return content;
+        }
 
        Dictionary<string,List<View>> mainGridChildren = new Dictionary<string, List<View>>();
-        public void SetView()
+        public void SetView(ContentManager.StorageSelection storageType)
         {
             mainGrid.Children.Clear();
             gridList.Clear();
@@ -88,7 +91,7 @@ namespace ZestyKitchenHelper
             var itemBase = new List<string>(); 
             var expiredStorages = new List<string>();
             var expiredItems = new List<int>();
-            if (ContentManager.storageSelection == ContentManager.StorageSelection.cabinet) {
+            if (storageType == ContentManager.StorageSelection.cabinet) {
                 itemBase = ContentManager.CabinetMetaBase.Keys.ToList();
                 ContentManager.GetItemExpirationInfo(expiredStorages, null, expiredItems);
 
@@ -116,9 +119,9 @@ namespace ZestyKitchenHelper
 
                 var addButton = new Button()
                 {
-                    BackgroundColor = Color.Red,
+                    BackgroundColor = ContentManager.default_button_color,
                     Text = "Add",
-                    TextColor = Color.Black,
+                    TextColor = Color.White,
                     WidthRequest = add_view_button_width,
                     HeightRequest = 40,
                     TranslationX = -add_view_button_width / 3 * 2,
@@ -129,9 +132,9 @@ namespace ZestyKitchenHelper
 
                 var viewButton = new Button()
                 {
-                    BackgroundColor = Color.Red,
+                    BackgroundColor = ContentManager.default_button_color,
                     Text = "View",
-                    TextColor = Color.Black,
+                    TextColor = Color.White,
                     WidthRequest = add_view_button_width,
                     HeightRequest = 40,
                     TranslationX = add_view_button_width / 3 * 2,
@@ -145,6 +148,7 @@ namespace ZestyKitchenHelper
                     BackgroundColor = Color.Red,
                     Text = "X",
                     TextColor = Color.White,
+                    Padding = 0,
                     WidthRequest = 30,
                     HeightRequest = 30,
                     HorizontalOptions = LayoutOptions.EndAndExpand,
@@ -158,6 +162,7 @@ namespace ZestyKitchenHelper
                     TextColor = Color.Black,
                     HeightRequest = change_name_field_height,
                     WidthRequest = 60,
+                    Padding = 0,
                     HorizontalOptions = LayoutOptions.EndAndExpand,
                     VerticalOptions = LayoutOptions.StartAndExpand,
                     TranslationX = -30,

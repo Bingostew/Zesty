@@ -3,31 +3,25 @@ using Xamarin.Forms;
 
 namespace ZestyKitchenHelper
 {
-    public class MainPage : ContentPage
+    public class MainPage
     {
-        public Button scanningButton = new Button { Text = "scan" };
-        public Grid grid;
-        public MainPage()
+        private static TabbedPage mainPage;
+
+        public static TabbedPage Create(SingleSelectionPage cabinetSelectPage, SingleSelectionPage fridgeSelectPage, UnplacedPage itemPage)
         {
-            grid = new Grid
+            if(mainPage!= null)
             {
-                RowDefinitions = {
-                    new RowDefinition(),
-                    new RowDefinition(),
-                    new RowDefinition()
-                },
-                ColumnDefinitions = {
-                    new ColumnDefinition(),
-                    new ColumnDefinition()
-                }
+                return mainPage;
+            }
+            mainPage = new TabbedPage()
+            {
+                Children =
+               {
+                    cabinetSelectPage, fridgeSelectPage, itemPage
+               }
             };
 
-            Button view = new Button() { BackgroundColor = Color.BlanchedAlmond, CornerRadius = 20, Margin = new Thickness(5) };
-            Button view1 = new Button() { BackgroundColor = Color.BlanchedAlmond, CornerRadius = 20, Margin = new Thickness(5) };
-            Button view2 = new Button() { BackgroundColor = Color.BlanchedAlmond, CornerRadius = 20, Margin = new Thickness(5) };
-
-
-            Content = grid;
+            return mainPage;
         }
     }
 }

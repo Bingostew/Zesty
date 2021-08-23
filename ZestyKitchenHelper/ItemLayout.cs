@@ -147,17 +147,20 @@ namespace ZestyKitchenHelper
             var height = ItemData.Name.Length > 10 ? long_name_height : default_name_height;
             var itemTitleBackground = new Button()
             {
+                IsEnabled = false,
                 BorderColor = Color.Black,
                 BorderWidth = 1,
+                BackgroundColor = Color.White
             };
             itemTitle = new Label()
-            { Text = ItemData.Name, BackgroundColor = Color.White, TextColor = Color.Black, FontSize = 12, FontAttributes = FontAttributes.Bold, LineBreakMode = LineBreakMode.WordWrap };
+            { Text = ItemData.Name, TextColor = Color.Black, FontSize = 12, FontAttributes = FontAttributes.Bold, LineBreakMode = LineBreakMode.WordWrap, Margin = new Thickness(2, 2) };
             GetAbsoluteLayout.Children.Add(itemTitleBackground, new Rectangle(0, 1, 1, height), AbsoluteLayoutFlags.All);
             GetAbsoluteLayout.Children.Add(itemTitle, new Rectangle(0, 1, 1, height), AbsoluteLayoutFlags.All);
             AbsoluteLayout.SetLayoutBounds(iconImage, new Rectangle(0, 0, 1, 1 - height));
 
             return this;
         }
+
 
         public ItemLayout AddInfoIcon()
         {
@@ -196,7 +199,7 @@ namespace ZestyKitchenHelper
     public class IconLayout : Layout<View>
     {
         ImageSource imageSource = "";
-        string iconName = "";
+        public string[] iconNames;
         AbsoluteLayout layout = new AbsoluteLayout();
         public Action<ImageButton> OnClickIconAction;
         public ImageButton imageButton;
@@ -240,16 +243,12 @@ namespace ZestyKitchenHelper
         {
             return imageSource.ToString();
         }
-        public string GetIconName()
-        {
-            return iconName;
-        }
-        public IconLayout(ImageSource source, string iconName)
+        public IconLayout(ImageSource source, params string[] iconNames)
         {
             imageSource = source;
             imageButton = new ImageButton() { Source = source, BackgroundColor = Color.Transparent, CornerRadius = 2 };
 
-            this.iconName = iconName;
+            this.iconNames = iconNames;
             imageButton.Clicked += (obj, args) =>
             {
                 OnClickIconAction?.Invoke(imageButton);

@@ -51,11 +51,13 @@ namespace ZestyKitchenHelper.Droid
             manager = SupportFragmentManager;
             base.OnCreate(savedInstanceState);
             Console.WriteLine(" Selection Activity 54 oncreate");
-            mainSelectionFrag = ContentManager.pageController.CreateSupportFragment(this);
-            manager.BeginTransaction().Replace(Android.Resource.Id.Content, mainSelectionFrag).Commit();
+
+            SetNativeView(ContentManager.pageController);
 
             ActionBar?.Hide();
             TouchEffect.activity = this;
+
+            ContentManager.SetNativeViewFunctionAction(SetNativeView);
 
             GetLoginResult(savedInstanceState);
 
@@ -63,6 +65,12 @@ namespace ZestyKitchenHelper.Droid
            // GetUserEvent();
         }
 
+        private void SetNativeView(Xamarin.Forms.VisualElement view)
+        {
+            var renderer = Xamarin.Forms.Platform.Android.Platform.CreateRendererWithContext(view, this);
+            renderer.Element.Layout(new Rectangle(0, 0, ContentManager.screenWidth, ContentManager.screenHeight));
+            SetContentView(renderer.View);
+        }
         protected override void OnStart()
         {
             base.OnStart();

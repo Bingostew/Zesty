@@ -28,7 +28,7 @@ namespace ZestyKitchenHelper
             //usernameLabel = new Label(){ FontSize = title_font_size, FontFamily = "Raleway-Regular", TextColor = Color.Gray, HorizontalTextAlignment = TextAlignment.End};
             //usernameLabel.Text = ContentManager.sessionUserProfile != null ? ContentManager.sessionUserProfile.Name : "";
             //ContentManager.sessionUserProfile.AddOnProfileChangedListener(u => usernameLabel.Text = u.Name);
-            profileIcon = new ImageButton() { Source = ContentManager.sessionUserProfile.IconImage, WidthRequest = 50, HeightRequest = 50, CornerRadius = 25 };
+            profileIcon = new ImageButton() { Source = ContentManager.sessionUserProfile.IconImage, WidthRequest = 50, HeightRequest = 50, CornerRadius = 25, BackgroundColor = Color.Transparent };
             ContentManager.sessionUserProfile.AddOnProfileChangedListener(u => profileIcon.Source = u.IconImage);
             grid = new Grid()
             {

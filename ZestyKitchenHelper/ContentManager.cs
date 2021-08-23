@@ -18,6 +18,7 @@ namespace ZestyKitchenHelper
         public static bool isLocal;
         public static bool isUserNew;
         private static Color _themeColor = Color.Wheat;
+        public static Color default_button_color = Color.FromRgba(0, 0, 0, 200);
         public static Color ThemeColor
         {
             get { return _themeColor; }
@@ -43,8 +44,7 @@ namespace ZestyKitchenHelper
         public const string cabinetMiddleIcon = "cabinet_divider_middle.png";
         public const string cabinetRightIcon = "cabinet_divider_right.png";
         public const string safeIcon = "swan.JPG";
-        public const string addIcon = "add_new_content.png";
-        public const string addItemIcon = "add_new_item.png";
+        public const string addIcon = "add_button.png";
         public const string subdivideIcon = "swan.JPG";
         public const string transIcon = "transparent.png";
         public const string fridgeIcon = "fridge_cell.png";
@@ -55,7 +55,7 @@ namespace ZestyKitchenHelper
         public const string pantryIcon = "pantry.png";
         public const string refridgeIcon = "fridge.png";
         public const string countIcon = "small_arrow.png";
-        public const string expWarningIcon = "apple.png";
+        public const string expWarningIcon = "warning_icon.png";
 
         public const string defaultSearchAllBarText = "Search item...";
         public const string exp_notification_title = "Zesty's Expiration Warning";
@@ -72,6 +72,8 @@ namespace ZestyKitchenHelper
         public const string fridgeEditIdGenerator = "Fridge";
         public const string IOSNotificationIdGenerator = "IOSNotification";
 
+        public static Action<VisualElement> SetNativeViewFunction;
+
         public static PageController pageController = new PageController();
 
         public static Dictionary<string, Cabinet> CabinetMetaBase = new Dictionary<string, Cabinet>();
@@ -79,6 +81,7 @@ namespace ZestyKitchenHelper
         private static List<Action<Color>> OnColorChangeEvents = new List<Action<Color>>();
         public static async void InitializeApp()
         {
+           
             // Initialize screen width and height
             screenHeight = DeviceDisplay.MainDisplayInfo.Height / DeviceDisplay.MainDisplayInfo.Density;
             screenWidth = DeviceDisplay.MainDisplayInfo.Width / DeviceDisplay.MainDisplayInfo.Density; 
@@ -90,7 +93,7 @@ namespace ZestyKitchenHelper
             IDGenerator.InitializeIDGroup(fridgeEditIdGenerator);
             IDGenerator.InitializeIDGroup(storageCellIdGenerator);
             IDGenerator.InitializeIDGroup(IOSNotificationIdGenerator);
-            //LocalStorageController.ResetDatabase(); // WARNING: FOR TESTING PURPOSES ONLY
+            LocalStorageController.ResetDatabase(); // WARNING: FOR TESTING PURPOSES ONLY
             LocalStorageController.InitializeLocalDataBase();
 
             // Initialize Important Grids
@@ -142,6 +145,12 @@ namespace ZestyKitchenHelper
 
                 // start UI sequence
                 pageController.InitializePageSequence();
+        }
+
+        public static void SetNativeViewFunctionAction(Action<VisualElement> SetNativeViewAction)
+        {
+            // Native view action can be used to set the root page
+            SetNativeViewFunction = SetNativeViewAction;
         }
         /// <summary>
         /// Returns the string that represents the storage the current user is in.
@@ -309,23 +318,28 @@ namespace ZestyKitchenHelper
             }
         }
 
-        public static readonly Dictionary<string, IconLayout> PresetIcons = new Dictionary<string, IconLayout>()
-        { 
-            {"carrot", new IconLayout("carrot.png", "carrot") },
-            {"apple",  new IconLayout("apple.png", "apple") },
-            {"blueberry", new IconLayout("blueberry.png", "blueberry") },
-            {"cookie",  new IconLayout("cookie.png", "cookie") },
-            {"chocolate",  new IconLayout("chocolate.png", "chocolate") },
-            {"cucumber",  new IconLayout("cucumber.png", "cucumber") },
-            {"egg",  new IconLayout("egg.png", "egg") },
-            {"grape",  new IconLayout("grape.png", "grape") },
-            {"lemon",  new IconLayout("lemon.png", "lemon") },
-            {"meat",  new IconLayout("meat.png", "meat") },
-           // {"meat",  new IconLayout("meat.png", "meat") },
-            {"orange",  new IconLayout("orange.png", "orange") },
-            {"watermelon",  new IconLayout("watermelon.png", "watermelon") },
-           // {"meat",  new IconLayout("meat.png", "meat") },
-            {"potato", new IconLayout("potato.png", "potato") }
+        public static readonly List<IconLayout> PresetIcons = new List<IconLayout>()
+        {
+             new IconLayout("carrot.png", "carrot"),
+             new IconLayout("apple.png", "apple"),
+             new IconLayout("blueberry.png", "blueberry"),
+             new IconLayout("cookie.png", "cookie"),
+             new IconLayout("chocolate.png", "chocolate"),
+             new IconLayout("cucumber.png", "cucumber"),
+             new IconLayout("egg.png", "egg"),
+             new IconLayout("grape.png", "grape"),
+             new IconLayout("lemon.png", "lemon", "lime"),
+            new IconLayout("meat.png", "meat"),
+             new IconLayout("banana.png", "banana", "plantain"),
+              new IconLayout("orange.png", "orange"),
+            new IconLayout("watermelon.png", "watermelon"),
+            new IconLayout("bread.png", "bread"),
+             new IconLayout("potato.png", "potato"),
+              new IconLayout("steak.png", "steak"),
+             new IconLayout("chicken.png", "chicken"),
+             new IconLayout("cheese.png", "cheese"),
+             new IconLayout("sausage.png", "sausage"),
+             new IconLayout("shrimp.png", "shrimp")
         };
         public static readonly Dictionary<string, IconLayout> DefaultIcons = new Dictionary<string, IconLayout>()
         {

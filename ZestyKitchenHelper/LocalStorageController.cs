@@ -78,6 +78,7 @@ namespace ZestyKitchenHelper
         //Retrieval Methods
         public static async Task<MetaUserInfo> GetMetaUserInfo()
         {
+            Console.WriteLine("LocalStorage 81 is user new " + ContentManager.isUserNew);
             if(!ContentManager.isUserNew)
                 return await SQLDatabase.Table<MetaUserInfo>().FirstAsync();
             return null;

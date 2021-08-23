@@ -11,6 +11,10 @@ using SQLite;
 
 namespace Utility
 {
+    public interface IMainPage
+    {
+        AbsoluteLayout GetLayout();
+    }
     public interface INotificationManager
     {
         event EventHandler NotificationReceived;

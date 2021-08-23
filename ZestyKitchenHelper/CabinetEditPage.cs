@@ -53,24 +53,24 @@ namespace ZestyKitchenHelper
 
             var saveGrid = new Grid()
             {
-                Margin = new Thickness(0,0,0, bottom_margin),
                 HorizontalOptions = LayoutOptions.CenterAndExpand,
                 VerticalOptions = LayoutOptions.EndAndExpand,
                 ColumnDefinitions =
                 {
-                    new ColumnDefinition(){ Width = 80 },
-                    new ColumnDefinition(){ Width = 80 },
-                    new ColumnDefinition(){Width = 80 }
+                    new ColumnDefinition(),
+                    new ColumnDefinition()
                 }
             };
 
-            var saveButton = new Button() { Text = "Save", BackgroundColor = Color.Blue, TextColor = Color.Black };
-            var cancelButton = new Button() { Text = "Exit", BackgroundColor = Color.Red, TextColor = Color.Black };
+            var saveButton = new Button() { Text = "Save", BackgroundColor = Color.WhiteSmoke, TextColor = Color.Black, BorderColor = Color.Black, BorderWidth = 1,
+                WidthRequest = ContentManager.screenWidth / 2, Margin = new Thickness(5)};
+            var cancelButton = new Button() { Text = "Exit", BackgroundColor = Color.WhiteSmoke, TextColor = Color.Black, BorderColor = Color.Black, BorderWidth = 1,
+                WidthRequest = ContentManager.screenWidth / 2, Margin = new Thickness(5) };
             saveButton.Clicked += (obj, args) => ConfirmationSaveEvent(() =>  ContentManager.pageController.ReturnToPrevious()  );
             cancelButton.Clicked +=(obj, args) => ConfirmationCancelEvent(() =>  ContentManager.pageController.ReturnToPrevious() );
 
             saveGrid.Children.Add(saveButton, 0, 0);
-            saveGrid.Children.Add(cancelButton, 2, 0);
+            saveGrid.Children.Add(cancelButton, 1, 0);
 
             pageContent.Children.Add(nameEntry);
 

@@ -11,10 +11,11 @@ namespace ZestyKitchenHelper
     {
         public const double info_view_height_proportional = 0.75;
         public const double info_view_width_proportional = 0.75;
-        private const int grid_font_size = 14;
+        private const int grid_font_size = 15;
         private const int side_margin = 10;
         private const int vertical_margin = 5;
-        private const int close_button_size = 30;
+        private const int close_button_size = 50;
+        private const int image_icon_size = 120;
         private double button_width;
 
 
@@ -45,11 +46,12 @@ namespace ZestyKitchenHelper
                 }
             };
 
-            var closeButton = new Button() { BackgroundColor = Color.Gray, Text = "X", TextColor = Color.Black, HorizontalOptions = LayoutOptions.End, WidthRequest = close_button_size, HeightRequest = close_button_size };
+            var closeButton = new Button() { BackgroundColor = Color.Gray, Text = "X", TextColor = Color.Black,
+                HorizontalOptions = LayoutOptions.End, WidthRequest = close_button_size, HeightRequest = close_button_size, CornerRadius = 0, Padding = 0 };
             closeButton.Clicked += (o, a) => ContentManager.pageController.RemoveInfoView(this);
             var itemName = new Label() { Text = item.Name, TextColor = Color.Black, FontSize = 25, HorizontalTextAlignment = TextAlignment.Center };
             var itemNameDivider = new BoxView() { HeightRequest = 1, WidthRequest = ContentManager.screenWidth * 0.5, Color = Color.Gray };
-            var itemImage = new Image() { Source = item.Icon.Substring(6), Aspect = Aspect.Fill, HorizontalOptions = LayoutOptions.Center };
+            var itemImage = new Image() { Source = item.Icon.Substring(6), WidthRequest = 120, HeightRequest = 120, Aspect = Aspect.Fill, HorizontalOptions = LayoutOptions.Center };
 
             var expirationDateTitle = new Label() { Text = "Expiration Date:", TextColor = Color.Black, FontSize = grid_font_size };
             var expDateText = item.daysUntilExp < 0 ? "?" : item.expMonth + "/" + item.expDay + "/" + item.expYear;

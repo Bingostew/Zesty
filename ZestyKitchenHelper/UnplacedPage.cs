@@ -10,7 +10,7 @@ using System.Timers;
 
 namespace ZestyKitchenHelper
 {
-    public class UnplacedPage : ContentPage
+    public class UnplacedPage : ContentPage, IMainPage
     {
         private const int side_margin = 5;
         private const int between_margin = 5;
@@ -20,9 +20,11 @@ namespace ZestyKitchenHelper
         private static Grid metaGrid;
         const string expIndicatorString = "Expiration Date";
         const string alphaIndicatorString = "A-Z";
+
+        private AbsoluteLayout content;
         public UnplacedPage(Action<Item> localUnplacedEvent, Action<Item> baseUnplaceEvent, Action<Item> deleteItemLocal, Action<Item> deleteItemBase)
         {
-            var titleGrid = new TopPage("Items").GetGrid();
+            var titleGrid = new TopPage("Items", useReturnButton: false).GetGrid();
             var addNewButton = new ImageButton() { Source = ContentManager.addIcon, BackgroundColor = Color.Transparent, Margin = new Thickness(side_margin, between_margin) };
             // Renewing contents in meta grid
             metaGrid = GridManager.GetGrid(ContentManager.metaGridName);
@@ -69,11 +71,11 @@ namespace ZestyKitchenHelper
             AbsoluteLayout.SetLayoutFlags(addNewButton, AbsoluteLayoutFlags.PositionProportional);
             AbsoluteLayout.SetLayoutBounds(sortSelector, new Rectangle(1, 0.25, .5, .1));
             AbsoluteLayout.SetLayoutFlags(sortSelector, AbsoluteLayoutFlags.All) ;
-            AbsoluteLayout.SetLayoutBounds(gridScroll, new Rectangle(0, 1, 1, .65));
+            AbsoluteLayout.SetLayoutBounds(gridScroll, new Rectangle(0, 1, 1, .625));
             AbsoluteLayout.SetLayoutFlags(gridScroll, AbsoluteLayoutFlags.All);
             AbsoluteLayout.SetLayoutBounds(addView, new Rectangle(0, 0, 1, 1));
             AbsoluteLayout.SetLayoutFlags(addView, AbsoluteLayoutFlags.All);
-            Content = new AbsoluteLayout()
+            content = new AbsoluteLayout()
             {
                 Children =
                 {
@@ -84,8 +86,14 @@ namespace ZestyKitchenHelper
                     gridScroll
                 }
             };
+
+            Content = content;
         }
 
+        public AbsoluteLayout GetLayout()
+        {
+            return content;
+        }
         protected override void OnDisappearing()
         {
             base.OnDisappearing();

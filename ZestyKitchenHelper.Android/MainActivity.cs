@@ -28,8 +28,8 @@ namespace ZestyKitchenHelper.Droid
     public class MainActivity : Auth0ClientActivity
     {
         public static Auth0Client client;
-        protected Android.Widget.Button loginButton;
-        protected Android.Widget.Button skipLoginField;
+        protected Android.Widget.Button cloudLoginButton;
+        protected Android.Widget.Button localLoginButton;
         protected TextView helpText;
         protected TextView loadingOverlay;
         protected TextView loadingText;
@@ -65,9 +65,9 @@ namespace ZestyKitchenHelper.Droid
 
             SetContentView(Resource.Layout.LoginPage);
             loadingOverlay = FindViewById<TextView>(Resource.Id.loadingOverlay);
-            skipLoginField = FindViewById<Android.Widget.Button>(Resource.Id.skipLoginButton);
+            localLoginButton = FindViewById<Android.Widget.Button>(Resource.Id.skipLoginButton);
             loadingText = FindViewById<TextView>(Resource.Id.loadingText);
-            loginButton = FindViewById<Android.Widget.Button>(Resource.Id.loginButton);
+            cloudLoginButton = FindViewById<Android.Widget.Button>(Resource.Id.loginButton);
             helpText = FindViewById<TextView>(Resource.Id.infoText);
 
             RemoveLoadingPage();
@@ -82,8 +82,23 @@ namespace ZestyKitchenHelper.Droid
                 alert.Show();
             };
 
-            loginButton.Click += (obj, args) => { ContentManager.isLocal = false; Login(); };
-            skipLoginField.Click += (obj, args) => { ContentManager.isLocal = true; ToSelectionActivity(); };
+            cloudLoginButton.Click += (obj, args) => 
+            {
+                if (Xamarin.Essentials.Connectivity.NetworkAccess != Xamarin.Essentials.NetworkAccess.Internet)
+                {
+                    Android.App.AlertDialog.Builder dialogBuilder = new Android.App.AlertDialog.Builder(this);
+                    Android.App.AlertDialog alert = dialogBuilder.Create();
+                    alert.SetTitle("Cloud Account");
+                    alert.SetButton("OK", (o, a) => alert.Hide());
+                    alert.SetMessage("Access to cloud account requires network connection.");
+                    alert.Show();
+                }
+                else
+                {
+                    ContentManager.isLocal = false; Login();
+                }
+            };
+            localLoginButton.Click += (obj, args) => { ContentManager.isLocal = true; ToSelectionActivity(); };
             
         }
         private void StartBackgroundCheck()
@@ -147,7 +162,7 @@ namespace ZestyKitchenHelper.Droid
             loadingOverlay.ScaleY = 1;
             loadingText.ScaleX = 1;
             loadingText.ScaleY = 1;
-            loginButton.Enabled = false;
+            cloudLoginButton.Enabled = false;
         }
         
         protected void RemoveLoadingPage()
@@ -156,7 +171,7 @@ namespace ZestyKitchenHelper.Droid
             loadingOverlay.ScaleY = 0;
             loadingText.ScaleX = 0;
             loadingText.ScaleY = 0;
-            loginButton.Enabled = true;
+            cloudLoginButton.Enabled = true;
         }
 
         private async void Login()
