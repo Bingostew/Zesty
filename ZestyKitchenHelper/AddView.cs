@@ -45,7 +45,7 @@ namespace ZestyKitchenHelper
         {
 
             formGridRowHeight = (form_height_proportional * ContentManager.screenHeight / form_grid_row_count * 2 - form_grid_spacing * (form_grid_row_count - 1)) / 3;
-            formIconWidthHeight = form_height_proportional * ContentManager.screenHeight / form_grid_row_count - form_icon_margin * 1.5 - form_grid_spacing * 2;
+            formIconWidthHeight = form_height_proportional * ContentManager.screenHeight / form_grid_row_count - form_icon_margin - form_grid_spacing * 2;
         }
         /// <summary>
         /// Initialized an instance of add form with a num pad.
@@ -65,15 +65,16 @@ namespace ZestyKitchenHelper
             presetScrollView = new ScrollView() { Content = presetSelectGrid, Orientation = ScrollOrientation.Horizontal, Margin = new Thickness(0, form_grid_spacing) };
             defaultSelectGrid = GridManager.InitializeGrid("Partial Default Grid", 2, 1, formIconWidthHeight, formIconWidthHeight);
             defaultSelectGrid.RowSpacing = form_icon_margin; defaultSelectGrid.ColumnSpacing = form_icon_margin;
+            GridManager.AddGridItem(defaultSelectGrid, ContentManager.GeneralIcons, true, GridOrganizer.OrganizeMode.VerticalLeft);
             defaultScrollView = new ScrollView() { Content = defaultSelectGrid, Orientation = ScrollOrientation.Horizontal, Margin = new Thickness(0, form_grid_spacing) };
-            foreach (var name in ContentManager.DefaultIcons.Keys)
+            
+            foreach (IconLayout icon in ContentManager.GeneralIcons)
             {
-                ContentManager.DefaultIcons[name].OnClickIconAction = (imageButton) =>
+                icon.OnClickIconAction = (imageButton) =>
                 {
-                    toggleIconSelect(imageButton, defaultSelectGrid); item.Icon = ContentManager.DefaultIcons[name].GetImageSource();
+                    toggleIconSelect(imageButton, defaultSelectGrid); item.Icon = icon.GetImageSource();
                 };
             }
-            GridManager.AddGridItem(defaultSelectGrid, ContentManager.DefaultIcons.Values, true);
 
             autoDetectLabel = new Label() { FontSize = 15, TextColor = Color.Black, BackgroundColor = Color.White, IsVisible = false, AnchorX = 0 };
 
@@ -140,6 +141,7 @@ namespace ZestyKitchenHelper
                 imageSelectorIndex = 1; toggleSelect(1, imageSelector, Color.SaddleBrown, Color.Wheat);
                 defaultScrollView.IsVisible = true;
                 presetScrollView.IsVisible = false;
+                Console.WriteLine("AddView 144 default select grid children length " + defaultSelectGrid.Children.Count + " " + ((Grid)defaultScrollView.Content).Children.Count);
             };
 
             Grid iconLabelGrid = GridManager.InitializeGrid(3, 1, GridLength.Star, GridLength.Star);
@@ -169,9 +171,11 @@ namespace ZestyKitchenHelper
             form.Children.Add(amountLabel, 0, 2);
             form.Children.Add(amountInput, 1, 2);
             form.Children.Add(presetScrollView, 1, 3);
+            form.Children.Add(defaultScrollView, 1, 3);
             form.Children.Add(iconLabelGrid, 0, 3);
             Grid.SetRowSpan(presetScrollView, 2);
             Grid.SetRowSpan(iconLabelGrid, 2);
+            Grid.SetRowSpan(defaultScrollView, 2);
 
             void setItem(int newText, int index)
             {
@@ -263,6 +267,7 @@ namespace ZestyKitchenHelper
                 HorizontalOptions = LayoutOptions.Center,
                 HeightRequest = ContentManager.screenHeight,
                 WidthRequest = ContentManager.screenWidth,
+                BackgroundColor = ContentManager.ThemeColor,
                 Children =
                 {
                     foregroundTint,
@@ -470,7 +475,7 @@ namespace ZestyKitchenHelper
             imageSelectorIndex = 0;
             selectorIndex = 0;
             presetScrollView.IsVisible = false;
-            defaultSelectGrid.IsVisible = false;
+            defaultScrollView.IsVisible = false;
             foreach (var button in imageSelector)
             {
                 button.BackgroundColor = Color.Wheat;

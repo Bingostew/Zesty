@@ -27,26 +27,23 @@ namespace ZestyKitchenHelper
         private Dictionary<ContentPage, List<List<object>>> navigationParams = new Dictionary<ContentPage, List<List<object>>>();
         private ContentPage cabinetSelectPage, fridgeSelectPage, unplacedPage; // 3 main pages
 
-        private bool isOnTabbedPage;
-
         private ContentPage currentPageContainer;
         private AbsoluteLayout currentPageContent;
+
+        public Action resizeIconAction;
+
         public async void InitializePageSequence()
         {
             Console.WriteLine("PageController 32 []]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]] " + ContentManager.isUserNew + ContentManager.isLocal);
 
             this.BarBackgroundColor = Color.WhiteSmoke;
             this.BarTextColor = Color.Black;
-            this.SelectedTabColor = Color.Gray;
-            this.UnselectedTabColor = ContentManager.ThemeColor;
- 
+            this.UnselectedTabColor = Color.Gray;
+            this.SelectedTabColor = ContentManager.ThemeColor;
+
             BackgroundColor = ContentManager.ThemeColor;
             ContentManager.AddOnBackgroundChangeListener(c => BackgroundColor = c);
 
-            if (Device.RuntimePlatform == Device.iOS)
-            {
-                currentPageContainer.Effects.Add(new SafeAreaPadding());
-            }
             ContentManager.AddOnBackgroundChangeListener(c => currentPageContainer.BackgroundColor = c);
             if (ContentManager.isUserNew)
             {
@@ -120,11 +117,13 @@ namespace ZestyKitchenHelper
             fridgeSelectPage = new SingleSelectionPage(LocalStorageController.DeleteFridgeSynchronous, FireBaseController.DeleteFridgeSynchronous, ContentManager.StorageSelection.fridge);
             unplacedPage = new UnplacedPage(LocalStorageController.AddItem, FireBaseController.SaveItem, LocalStorageController.DeleteItem, FireBaseController.DeleteItem);
 
-            cabinetSelectPage.IconImageSource = ContentManager.pantryIcon;
+            // offset view from the top of IOS black box 
+            if (Device.RuntimePlatform == Device.iOS)
+            {
+                cabinetSelectPage.Content.AddEffect(new SafeAreaPadding());
+            }
             cabinetSelectPage.Title = "Pantry";
-            fridgeSelectPage.IconImageSource = ContentManager.fridgeIcon;
             fridgeSelectPage.Title = "Fridge";
-            unplacedPage.IconImageSource = ContentManager.addIcon;
             unplacedPage.Title = "My Items";
 
             Children.Add(cabinetSelectPage);
@@ -151,9 +150,20 @@ namespace ZestyKitchenHelper
                 currentPageContainer = (ContentPage)CurrentPage;
                 currentPageContent = ((IMainPage)CurrentPage).GetLayout();
                 RecordTabbedNavigationInfo();
-            };
-        }
 
+                // offset view from the top of IOS black box 
+                if (Device.RuntimePlatform == Device.iOS)
+                {
+                    Console.WriteLine("PageController 157 inset set");
+                    currentPageContent.AddEffect(new SafeAreaPadding());
+                }
+
+                // For Android only, resize and detect icon expiration
+                resizeIconAction?.Invoke();
+                Console.WriteLine("Pagecontroller 163 resize action is null " + (resizeIconAction == null));
+            };
+            OverwriteRootPage(this);
+        }
         private void RecordTabbedNavigationInfo()
         {
             Console.WriteLine("PageController 159 storage type " + ContentManager.storageSelection);
@@ -210,14 +220,7 @@ namespace ZestyKitchenHelper
 
         public void ToAddItemPage(string name)
         {
-            if (ContentManager.storageSelection == ContentManager.StorageSelection.fridge)
-            {
-                SetView(new CabinetAddPage(name).Content);
-            }
-            else
-            {
-                SetView(new CabinetAddPage(name).Content);
-            }
+            OverwriteRootPage(new CabinetAddPage(name));
             navigationStack[currentPageContainer].Add(add_page_name);
             navigationParams[currentPageContainer].Add(new List<object>() { name });
         }
@@ -234,7 +237,7 @@ namespace ZestyKitchenHelper
             {
                 CurrentPage = fridgeSelectPage;
             }
-            Console.WriteLine("PageController 236 storage type " + ContentManager.storageSelection + " " + directSelectStorageType);
+            
             SetView(new CabinetViewPage(name, LocalStorageController.DeleteItem, FireBaseController.DeleteItem,
                 LocalStorageController.UpdateItem, FireBaseController.SaveItem, 
                 directSelectStorageType != null ? ContentManager.FromStorageType(directSelectStorageType) : ContentManager.storageSelection, 
@@ -247,11 +250,11 @@ namespace ZestyKitchenHelper
         {
             if (ContentManager.storageSelection == ContentManager.StorageSelection.cabinet)
             {
-                SetView(new CabinetEditPage(newShelf, LocalStorageController.AddCabinet, FireBaseController.SaveCabinet, name).Content);
+                OverwriteRootPage(new CabinetEditPage(newShelf, LocalStorageController.AddCabinet, FireBaseController.SaveCabinet, name));
             }
             else
             {
-                SetView(new FridgeEditPage(newShelf, LocalStorageController.AddFridge, FireBaseController.SaveFridge, name).Content);
+                OverwriteRootPage(new FridgeEditPage(newShelf, LocalStorageController.AddFridge, FireBaseController.SaveFridge, name));
             }
             navigationStack[currentPageContainer].Add(edit_page_name);
             navigationParams[currentPageContainer].Add(new List<object>() { newShelf, name });
@@ -284,7 +287,14 @@ namespace ZestyKitchenHelper
 
         private void OverwriteRootPage(Page newPage)
         {
-            isOnTabbedPage = newPage == this ? true : false;
+            // offset view from the top of IOS black box 
+            if (Device.RuntimePlatform == Device.iOS)
+            {
+                if(newPage is ContentPage)
+                    ((ContentPage)newPage).Content.AddEffect(new SafeAreaPadding());
+                else
+                    newPage.AddEffect(new SafeAreaPadding());
+            }
             ContentManager.SetNativeViewFunction(newPage);
         }
 
@@ -333,7 +343,7 @@ namespace ZestyKitchenHelper
         public void ReturnToPrevious()
         {
             var currentContentString = navigationStack[currentPageContainer].Last();
-            if(currentContentString == preference_page_name || currentContentString == add_view_name || currentContentString == scan_page_name)
+            if(currentContentString == preference_page_name || currentContentString == add_view_name || currentContentString == scan_page_name || currentContentString == add_page_name)
             {
                 OverwriteRootPage(this);
             }

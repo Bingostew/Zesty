@@ -127,7 +127,8 @@ namespace Utility
         public Item SetItem(int expYr, int expMth, int expD, int quantity, string productName, string image)
         {
             ID = IDGenerator.GetID(ContentManager.itemStorageIdGenerator);
-            expDay = expD; expMonth = expMth; expYear = expYr; Amount = quantity; Name = productName;
+            expDay = expD; expMonth = expMth; expYear = expYr; Amount = quantity;
+            Name = productName == null ? "Product" : productName;
             daysUntilExp = 0;
             Icon = image;
             weekWarning = false;

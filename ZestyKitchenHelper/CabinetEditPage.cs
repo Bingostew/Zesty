@@ -540,7 +540,6 @@ namespace ZestyKitchenHelper
     public class FridgeEditPage : EditPage
     {
         private const double main_fridge_width_percentage = 0.6;
-        private const double fridge_height_proportional = 0.6;
         private const double fridge_grid_spacing = 12;
         protected override string cellImageSource => ContentManager.fridgeIcon;
 
@@ -586,7 +585,7 @@ namespace ZestyKitchenHelper
                 ColumnSpacing = fridge_grid_spacing,
                 RowDefinitions = new RowDefinitionCollection()
                 {
-                    new RowDefinition(){Height = ContentManager.screenHeight * fridge_height_proportional}
+                    new RowDefinition()
                 },
                 ColumnDefinitions = new ColumnDefinitionCollection()
                 {

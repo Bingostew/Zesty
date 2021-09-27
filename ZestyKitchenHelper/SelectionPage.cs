@@ -127,26 +127,7 @@ namespace ZestyKitchenHelper
             grid.Children.Add(expWarningImage1, 0, 1);
             grid.Children.Add(expWarningImage2, 1, 1);
             grid.Children.Add(expWarningImage3, 0, 3);
-            var expiredCabinets = new List<string>();
-            var expiredFridges = new List<string>();
-            var expiredItems = new List<int>();
-            ContentManager.GetItemExpirationInfo(expiredCabinets, expiredFridges, expiredItems);
-
-            if (expiredCabinets.Count > 0)
-            {
-                expWarningImage1.IsVisible = true;
-                AnimateExpirationWarning(expWarningImage1);
-            }
-            if (expiredFridges.Count > 0)
-            {
-                expWarningImage2.IsVisible = true;
-                AnimateExpirationWarning(expWarningImage2);
-            }
-            if (expiredItems.Count > 0)
-            {
-                expWarningImage3.IsVisible = true;
-                AnimateExpirationWarning(expWarningImage3);
-            }
+          
 
             
             void SetSelection(ContentManager.StorageSelection selection)

@@ -13,6 +13,7 @@ namespace ZestyKitchenHelper
     {
         private const int spacing = 5;
         private const int storage_name_margin = 5;
+        private const int button_radius = 5;
         private double grid_cell_width;
         private double add_view_button_width;
         private double change_name_field_height;
@@ -35,7 +36,7 @@ namespace ZestyKitchenHelper
             // Calculate sizes
             grid_cell_width = (ContentManager.screenWidth / 2) - (spacing / 3);
             add_view_button_width = grid_cell_width / 3;
-            change_name_field_height = grid_cell_width / 8;
+            change_name_field_height = grid_cell_width / 6;
 
             string title = storageType == ContentManager.StorageSelection.cabinet ? "My Pantry" : "My Fridge";
             var titleGrid = new TopPage(title, useReturnButton:false).GetGrid();
@@ -94,7 +95,6 @@ namespace ZestyKitchenHelper
             if (storageType == ContentManager.StorageSelection.cabinet) {
                 itemBase = ContentManager.CabinetMetaBase.Keys.ToList();
                 ContentManager.GetItemExpirationInfo(expiredStorages, null, expiredItems);
-
             }
             else
             {
@@ -107,7 +107,7 @@ namespace ZestyKitchenHelper
                 var metaName = key;
                 var name = new Label() { Text = key.ToString(), TextColor = Color.Black, FontSize = 25, Margin = new Thickness(0, storage_name_margin),
                     HorizontalTextAlignment = TextAlignment.Center };
-                var model = ContentManager.GetStorageView(key);
+                var model = ContentManager.GetStorageView(storageType, key);
                 var button = new ImageButton() { Source = ContentManager.transIcon, Aspect = Aspect.Fill, BorderColor = Color.Black, 
                     BorderWidth = 1, BackgroundColor = Color.Transparent };
                 AbsoluteLayout preview = new AbsoluteLayout()
@@ -119,9 +119,10 @@ namespace ZestyKitchenHelper
 
                 var addButton = new Button()
                 {
-                    BackgroundColor = ContentManager.default_button_color,
+                    BackgroundColor = Color.WhiteSmoke,
                     Text = "Add",
-                    TextColor = Color.White,
+                    CornerRadius = button_radius,
+                    TextColor = Color.Black,
                     WidthRequest = add_view_button_width,
                     HeightRequest = 40,
                     TranslationX = -add_view_button_width / 3 * 2,
@@ -132,9 +133,12 @@ namespace ZestyKitchenHelper
 
                 var viewButton = new Button()
                 {
-                    BackgroundColor = ContentManager.default_button_color,
+                    BackgroundColor = Color.WhiteSmoke,
                     Text = "View",
-                    TextColor = Color.White,
+                    BorderColor = Color.Black,
+                    BorderWidth = 2,
+                    CornerRadius = button_radius,
+                    TextColor = Color.Black,
                     WidthRequest = add_view_button_width,
                     HeightRequest = 40,
                     TranslationX = add_view_button_width / 3 * 2,
@@ -145,9 +149,13 @@ namespace ZestyKitchenHelper
 
                 var deleteButton = new Button()
                 {
-                    BackgroundColor = Color.Red,
                     Text = "X",
-                    TextColor = Color.White,
+                    FontAttributes = FontAttributes.Bold,
+                    BorderWidth = 2,
+                    TextColor = Color.WhiteSmoke,
+                    BackgroundColor = Color.Transparent,
+                    FontSize = 20,
+                    FontFamily = "oswald-medium",
                     Padding = 0,
                     WidthRequest = 30,
                     HeightRequest = 30,
@@ -155,17 +163,17 @@ namespace ZestyKitchenHelper
                     VerticalOptions = LayoutOptions.StartAndExpand,
                     IsVisible = false
                 };
-                var changeNameButton = new Button()
+                var changeNameButton = new ImageButton()
                 {
-                    BackgroundColor = Color.DeepSkyBlue,
-                    Text = "Rename",
-                    TextColor = Color.Black,
+                    Source = ContentManager.changeNameIcon,
+                    BackgroundColor = Color.Transparent,
                     HeightRequest = change_name_field_height,
-                    WidthRequest = 60,
+                    WidthRequest = change_name_field_height,
+                    Aspect = Aspect.AspectFill,
                     Padding = 0,
                     HorizontalOptions = LayoutOptions.EndAndExpand,
                     VerticalOptions = LayoutOptions.StartAndExpand,
-                    TranslationX = -30,
+                    TranslationX = -40,
                     IsVisible = false
                 };
                 var changeNameField = new Entry()
@@ -235,7 +243,7 @@ namespace ZestyKitchenHelper
                 addButton.Clicked += (obj, args) => ContentManager.pageController.ToAddItemPage(metaName);
                 viewButton.Clicked += (obj, args) => ContentManager.pageController.ToViewItemPage(metaName);
                 button.Clicked += (object obj, EventArgs args) =>
-                    button.ToggleEffects(new ImageTint() { tint = Color.FromHsla(1, .1, .5, .5), ImagePath = ContentManager.buttonTintImage  }, new List<VisualElement>() { addButton, viewButton, deleteButton, changeNameButton});
+                    button.ToggleEffects(new ImageTint() { tint = Color.FromRgba(0,0,0,180), ImagePath = ContentManager.buttonTintImage  }, new List<VisualElement>() { addButton, viewButton, deleteButton, changeNameButton});
 
                
                 List<View> views = new List<View>() { preview, button, addButton, viewButton, deleteButton, changeNameButton, changeNameField };

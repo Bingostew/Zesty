@@ -56,50 +56,15 @@ namespace ZestyKitchenHelper.Droid
 
             ZXing.Net.Mobile.Forms.Android.Platform.Init();
 
+            var mainPage = new MainPage();
+            mainPage.InitializeLogin(LoginLocal, LoginCloud);
+            SetNativeView(mainPage);
             int uiOptions = (int)Window.DecorView.SystemUiVisibility;
             uiOptions |= (int)SystemUiFlags.LowProfile;
             uiOptions |= (int)SystemUiFlags.HideNavigation;
             uiOptions |= (int)SystemUiFlags.Fullscreen;
             uiOptions |= (int)SystemUiFlags.ImmersiveSticky;
             Window.DecorView.SystemUiVisibility = (StatusBarVisibility)uiOptions;
-
-            SetContentView(Resource.Layout.LoginPage);
-            loadingOverlay = FindViewById<TextView>(Resource.Id.loadingOverlay);
-            localLoginButton = FindViewById<Android.Widget.Button>(Resource.Id.skipLoginButton);
-            loadingText = FindViewById<TextView>(Resource.Id.loadingText);
-            cloudLoginButton = FindViewById<Android.Widget.Button>(Resource.Id.loginButton);
-            helpText = FindViewById<TextView>(Resource.Id.infoText);
-
-            RemoveLoadingPage();
-
-            helpText.Click += (obj, arg) =>
-            {
-                Android.App.AlertDialog.Builder dialogBuilder = new Android.App.AlertDialog.Builder(this);
-                Android.App.AlertDialog alert = dialogBuilder.Create();
-                alert.SetTitle("Account Information");
-                alert.SetButton("OK", (o, a) => alert.Hide());
-                alert.SetMessage("Local Account can only be used on this device. Cloud Account allows information to be edited on multiple devices.");
-                alert.Show();
-            };
-
-            cloudLoginButton.Click += (obj, args) => 
-            {
-                if (Xamarin.Essentials.Connectivity.NetworkAccess != Xamarin.Essentials.NetworkAccess.Internet)
-                {
-                    Android.App.AlertDialog.Builder dialogBuilder = new Android.App.AlertDialog.Builder(this);
-                    Android.App.AlertDialog alert = dialogBuilder.Create();
-                    alert.SetTitle("Cloud Account");
-                    alert.SetButton("OK", (o, a) => alert.Hide());
-                    alert.SetMessage("Access to cloud account requires network connection.");
-                    alert.Show();
-                }
-                else
-                {
-                    ContentManager.isLocal = false; Login();
-                }
-            };
-            localLoginButton.Click += (obj, args) => { ContentManager.isLocal = true; ToSelectionActivity(); };
-            
         }
         private void StartBackgroundCheck()
         {
@@ -112,8 +77,7 @@ namespace ZestyKitchenHelper.Droid
 
         private async Task LoginAsync()
         {
-            LoadingPage();
-            await client.LogoutAsync();
+            //await client.LogoutAsync();
             var loginResult = await client.LoginAsync();
             if (!loginResult.IsError)
             {
@@ -125,7 +89,7 @@ namespace ZestyKitchenHelper.Droid
                 {
                     Email = email,
                     Name = name,
-                    IconImage = ContentManager.addIcon
+                    IconImage = ContentManager.ProfileIcons[0]
                 };
 
 
@@ -156,42 +120,36 @@ namespace ZestyKitchenHelper.Droid
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
         }
 
-        protected void LoadingPage(/*Android.Views.View view*/)
-        {
-            loadingOverlay.ScaleX = 1;
-            loadingOverlay.ScaleY = 1;
-            loadingText.ScaleX = 1;
-            loadingText.ScaleY = 1;
-            cloudLoginButton.Enabled = false;
-        }
-        
-        protected void RemoveLoadingPage()
-        {
-            loadingOverlay.ScaleX = 0;
-            loadingOverlay.ScaleY = 0;
-            loadingText.ScaleX = 0;
-            loadingText.ScaleY = 0;
-            cloudLoginButton.Enabled = true;
-        }
-
-        private async void Login()
+        private async void LoginCloud()
         {
             await LoginAsync();
+            ContentManager.isLocal = false;
+            ToSelectionActivity();
+        }
+
+        private void LoginLocal()
+        {
+            ContentManager.isLocal = true;
             ToSelectionActivity();
         }
 
         private void ToSelectionActivity()
         {
             ContentManager.InitializeApp();
-            LoadingPage();
             StartBackgroundCheck();
             StartActivity(new Intent(this, typeof(SelectionActivity)));
-            RemoveLoadingPage();
         }
 
         protected async Task<BrowserResultType> Logout()
         {
             return await client.LogoutAsync();
+        }
+
+        private void SetNativeView(Xamarin.Forms.VisualElement view)
+        {
+            var renderer = Xamarin.Forms.Platform.Android.Platform.CreateRendererWithContext(view, this);
+            renderer.Element.Layout(new Rectangle(0, 0, ContentManager.screenWidth, ContentManager.screenHeight));
+            SetContentView(renderer.View);
         }
     }
     

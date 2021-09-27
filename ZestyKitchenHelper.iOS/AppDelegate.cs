@@ -21,30 +21,14 @@ namespace ZestyKitchenHelper.iOS
     public partial class AppDelegate : global::Xamarin.Forms.Platform.iOS.FormsApplicationDelegate
     {
         public static Action ToPageControllerAction;
-
-        public static UIView ConvertFormsToNative(Xamarin.Forms.VisualElement view, CGRect size)
-        {
-            var renderer = Platform.CreateRenderer(view);
-
-            renderer.NativeView.Frame = size;
-
-            renderer.NativeView.AutoresizingMask = UIViewAutoresizing.All;
-            renderer.NativeView.ContentMode = UIViewContentMode.ScaleToFill;
-
-            renderer.Element.Layout(size.ToRectangle());
-
-            var nativeView = renderer.NativeView;
-
-            nativeView.SetNeedsLayout();
-            
-            return nativeView;
-        }
+        private Auth0Client client;
+        private UserProfile userProfile;
 
         public override UIWindow Window
         {
             get; set;
         }
-        private UIStoryboard storyBoard = UIStoryboard.FromName("LoginStoryboard", null);
+        private UIStoryboard storyBoard = UIStoryboard.FromName("MainPageStoryboard", null);
         private UIViewController initialViewController;
         public static UIView currentView;
 
@@ -60,6 +44,13 @@ namespace ZestyKitchenHelper.iOS
 
             global::Xamarin.Forms.Forms.Init();
             global::ZXing.Net.Mobile.Forms.iOS.Platform.Init();
+
+
+            client = new Auth0Client(new Auth0ClientOptions()
+            {
+                Domain = "dev-4l7acohw.auth0.com",
+                ClientId = "Srn3fq8ccb7dnBmskN5VNGG2A4A0XKz4"
+            });
 
             ToPageControllerAction = ToPageController;
             UIApplication.SharedApplication.StatusBarHidden = true;
@@ -78,20 +69,61 @@ namespace ZestyKitchenHelper.iOS
             Window = new UIWindow(UIScreen.MainScreen.Bounds);
             NSTimer.CreateRepeatingScheduledTimer(10, t => InvokeOnMainThread(() => Console.WriteLine("AppDelegate 78 ping has ID Group " + IDGenerator.HasIDGroup("untitled shelf 0"))));
             LoadApplication(new App());
-            
-            initialViewController = storyBoard.InstantiateViewController("MainPageController");
-            Window.RootViewController = initialViewController;
-            Window.AddSubview(initialViewController.View);
-            Window.MakeKeyAndVisible();
 
+            ((MainPage)Xamarin.Forms.Application.Current.MainPage).InitializeLogin(
+                () => { ContentManager.isLocal = true; ToPageController(); },
+                 async () => { ContentManager.isLocal = false; await LoginAsync(); ToPageController(); });
             return base.FinishedLaunching(app, options);
+        }
+        private async Task LoginAsync()
+        {
+
+            var loginResult = await client.LoginAsync();
+
+            if (!loginResult.IsError)
+            {
+                var name = loginResult.User.FindFirst(c => c.Type == "name")?.Value;
+                var email = loginResult.User.FindFirst(c => c.Type == "email")?.Value;
+                var image = loginResult.User.FindFirst(c => c.Type == "picture")?.Value;
+
+                userProfile = new UserProfile()
+                {
+                    Email = email,
+                    Name = name,
+                    IconImage = ContentManager.ProfileIcons[0]
+                };
+
+
+                if (!await FireBaseController.HasUser(email))
+                {
+                    ContentManager.isUserNew = true;
+                    ContentManager.sessionUserProfile = userProfile;
+                }
+                else
+                {
+                    ContentManager.sessionUserProfile = await FireBaseController.GetUser(email);
+                    Console.WriteLine("Local Storage 85 user icon " + ContentManager.sessionUserProfile.IconImage + " user name " + ContentManager.sessionUserProfile.Name);
+                }
+
+                //  var serializedLoginResponse = JsonConvert.SerializeObject(userProfile);
+                AppDelegate.ToPageControllerAction.Invoke();
+
+            }
+            else
+            {
+                Console.WriteLine("Failure");
+            }
+        }
+
+
+        public async Task<IdentityModel.OidcClient.Browser.BrowserResultType> LogoutAsync()
+        {
+            return await client.LogoutAsync();
         }
 
         private void ToPageController()
         {
             ContentManager.InitializeApp();
-
-            SetNativeView(ContentManager.pageController);
 
             ContentManager.SetNativeViewFunctionAction(SetNativeView);
         }
@@ -141,17 +173,17 @@ namespace ZestyKitchenHelper.iOS
                 foreach (var item in itemList)
                 {
                     item.SetDaysUntilExpiration();
-                    if (item.daysUntilExp < 1 && !item.oneDayWarning)
+                    if (item.daysUntilExp < 1 && !item.oneDayWarning && ContentManager.sessionUserProfile.enableOneDayWarning)
                     {
                         expItemCount1++;
                         item.oneDayWarning = true;
                     }
-                    else if (item.daysUntilExp < 3 && !item.threeDaysWarning)
+                    else if (item.daysUntilExp < 3 && !item.threeDaysWarning && ContentManager.sessionUserProfile.enableThreeDayWarning)
                     {
                         expItemCount3++;
                         item.threeDaysWarning = true;
                     }
-                    else if (item.daysUntilExp < 7 && !item.weekWarning)
+                    else if (item.daysUntilExp < 7 && !item.weekWarning && ContentManager.sessionUserProfile.enableOneWeekWarning)
                     {
                         expItemCount7++;
                         item.weekWarning = true;
@@ -171,17 +203,17 @@ namespace ZestyKitchenHelper.iOS
                 foreach (var item in itemList)
                 {
                     item.SetDaysUntilExpiration();
-                    if (item.daysUntilExp < 1 && !item.oneDayWarning)
+                    if (item.daysUntilExp < 1 && !item.oneDayWarning && ContentManager.sessionUserProfile.enableOneDayWarning)
                     {
                         expItemCount1++;
                         item.oneDayWarning = true;
                     }
-                    else if (item.daysUntilExp < 3 && !item.threeDaysWarning)
+                    else if (item.daysUntilExp < 3 && !item.threeDaysWarning && ContentManager.sessionUserProfile.enableThreeDayWarning)
                     {
                         expItemCount3++;
                         item.threeDaysWarning = true;
                     }
-                    else if (item.daysUntilExp < 7 && !item.weekWarning)
+                    else if (item.daysUntilExp < 7 && !item.weekWarning && ContentManager.sessionUserProfile.enableOneWeekWarning)
                     {
                         expItemCount7++;
                         item.weekWarning = true;
@@ -222,86 +254,5 @@ namespace ZestyKitchenHelper.iOS
             var request = UNNotificationRequest.FromIdentifier(requestID, content, trigger);
             UNUserNotificationCenter.Current.AddNotificationRequest(request, (e) => { Console.WriteLine("NOTIFICATION COMPLETE: &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& FAILURE?" + (e != null)); });
         }
-
-        /*
-        public void GotoUnplacedPage(object obj, EventArgs args)
-        {
-            if (unplacedPage != null)
-            {
-                currentView = unplacedPage;
-                mainView.View = unplacedPage;
-            }
-            else { throw new NullReferenceException(); }
-        }
-        public void GotoSelectionPage(object obj, EventArgs args)
-        {
-            if (selectionPage != null)
-            {
-                currentView = selectionPage;
-                mainView.View = selectionPage;
-            }
-            else { throw new NullReferenceException(); }
-        }
-
-        public void GotoAddPage(string name)
-        {
-            /*
-            if (ContentManager.storageSelection == ContentManager.StorageSelection.fridge)
-            {
-
-            }
-            else
-            {
-                var cabinetAddPage = ConvertFormsToNative(new CabinetAddPage(name, (obj, args) => NavigateToSelection(ContentManager.StorageSelection.cabinet), 
-                    new Action<Utility.Item>((i) => { })),need change screensize);
-                currentView = cabinetAddPage;
-                mainView.View = cabinetAddPage;
-            }
-        }
-
-        public void GotoViewPage(string name)
-        {
-            
-            if (ContentManager.storageSelection == ContentManager.StorageSelection.fridge)
-            {
-
-            }
-            else
-            {
-                var cabinetViewPage = ConvertFormsToNative(new CabinetViewPage(name, (obj, args) => NavigateToSelection(ContentManager.StorageSelection.cabinet)), screensize);
-                currentView = cabinetViewPage;
-                mainView.View = cabinetViewPage;
-            }
-        }
-
-        private delegate void OnDestroyAction();
-        private event OnDestroyAction selectionBackPressedEvent;
-
-        public void GotoStorageCreationPage(object obj, EventArgs args)
-        {
-            
-            if (ContentManager.storageSelection == ContentManager.StorageSelection.cabinet)
-            {
-                var cabinetEditPage = ConvertFormsToNative(new CabinetEditPage(true, () => NavigateToSelection(ContentManager.StorageSelection.cabinet)), screensize); ;
-                currentView = cabinetEditPage;
-                mainView.View = cabinetEditPage;
-            }
-            else
-            {
-                
-            }
-    // ActionBar.Hide();
-        }
-        private void AddNavigation(Xamarin.Forms.ImageButton fridge, Xamarin.Forms.ImageButton cabinet)
-        {
-            fridge.Clicked += (obj, args) => NavigateToSelection(ContentManager.StorageSelection.fridge);
-            cabinet.Clicked += (obj, args) => NavigateToSelection(ContentManager.StorageSelection.cabinet);
-        }
-        private void NavigateToSelection(ContentManager.StorageSelection selection)
-        {
-            ContentManager.storageSelection = selection;
-            ContentManager.singleSelectionPage = new SingleSelectionPage(GotoAddPage, GotoViewPage, GotoStorageCreationPage, GotoSelectionPage);
-        }
-    */
     }
 }

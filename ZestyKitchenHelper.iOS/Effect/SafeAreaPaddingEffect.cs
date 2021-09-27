@@ -21,6 +21,7 @@ namespace ZestyKitchenHelper.iOS.Effect
             {
                 if(UIDevice.CurrentDevice.CheckSystemVersion(11, 0))
                 {
+                    element.BackgroundColor = ContentManager.ThemeColor;
                     padding = element.Padding;
                     var inset = UIApplication.SharedApplication.Windows[0].SafeAreaInsets;
                     if(inset.Top > 0)

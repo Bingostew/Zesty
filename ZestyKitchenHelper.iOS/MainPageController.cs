@@ -20,11 +20,6 @@ namespace ZestyKitchenHelper.iOS
         {
             base.AwakeFromNib();
 
-            client = new Auth0Client(new Auth0ClientOptions()
-            {
-                Domain = "dev-4l7acohw.auth0.com",
-                ClientId = "Srn3fq8ccb7dnBmskN5VNGG2A4A0XKz4"
-            });
 
         }
 
@@ -32,78 +27,9 @@ namespace ZestyKitchenHelper.iOS
         {
             base.ViewDidLoad();
 
-            CloudAccountButton.TouchUpInside += async (obj, args) =>
-            {
-                if (Xamarin.Essentials.Connectivity.NetworkAccess != Xamarin.Essentials.NetworkAccess.Internet)
-                {
-                    UIAlertController loginAlert = UIAlertController.Create("Cloud Account",
-                      "Access to cloud account requires network connection.", UIAlertControllerStyle.Alert);
-                    loginAlert.AddAction(UIAlertAction.Create("OK", UIAlertActionStyle.Cancel, null));
-                    PresentViewController(loginAlert, true, null);
-                }
-                else
-                {
-                    ContentManager.isLocal = false; await LoginAsync();
-                }
-            };
-            LocalAccountButton.TouchUpInside += (obj, args) => {
-                ContentManager.isLocal = true; AppDelegate.ToPageControllerAction.Invoke();
-                CloudAccountButton.Enabled = false; LocalAccountButton.Enabled = false;
-            };
-            HelpButton.TouchUpInside += (o, a) =>
-            {
-                UIAlertController loginAlert = UIAlertController.Create("Account Information",
-                    "Local Account can only be used on this device. Cloud Account allows information to be edited on multiple devices.", UIAlertControllerStyle.Alert);
-                loginAlert.AddAction(UIAlertAction.Create("OK", UIAlertActionStyle.Cancel, null));
-                PresentViewController(loginAlert, true, null);
-            };
         }
 
-        private async Task LoginAsync()
-        { 
-
-            var loginResult = await client.LoginAsync();
-
-            if (!loginResult.IsError)
-            {
-                var name = loginResult.User.FindFirst(c => c.Type == "name")?.Value;
-                var email = loginResult.User.FindFirst(c => c.Type == "email")?.Value;
-                var image = loginResult.User.FindFirst(c => c.Type == "picture")?.Value;
-
-                userProfile = new UserProfile()
-                {
-                    Email = email,
-                    Name = name,
-                    IconImage = ContentManager.addIcon
-                };
-
-
-                if (!await FireBaseController.HasUser(email))
-                {
-                    ContentManager.isUserNew = true;
-                    ContentManager.sessionUserProfile = userProfile;
-                }
-                else
-                {
-                    ContentManager.sessionUserProfile = await FireBaseController.GetUser(email);
-                    Console.WriteLine("Local Storage 85 user icon " + ContentManager.sessionUserProfile.IconImage + " user name " + ContentManager.sessionUserProfile.Name);
-                }
-
-                //  var serializedLoginResponse = JsonConvert.SerializeObject(userProfile);
-                AppDelegate.ToPageControllerAction.Invoke();
-
-            }
-            else
-            {
-                Console.WriteLine("Failure");
-            }
-        }
-
-
-        public async Task<IdentityModel.OidcClient.Browser.BrowserResultType> LogoutAsync()
-        {
-            return await client.LogoutAsync();
-        }
+      
         public MainPageController (IntPtr handle) : base (handle)
 		{
 		}

@@ -16,11 +16,14 @@ namespace ZestyKitchenHelper
         Label title;
         public SetUpPage()
         {
-            title = new Label() { Text = "Welcome To Zesty", FontSize = 25, FontFamily = "Oswald-Regular", TextColor = Color.Black, HorizontalOptions = LayoutOptions.CenterAndExpand };
+            title = new Label() { Text = "Welcome To Zesty", FontSize = 25, FontFamily = "Oswald-Regular", TextColor = Color.Black, 
+                HorizontalOptions = LayoutOptions.CenterAndExpand };
             var accountName = new Label() { Text = "Account Name", FontSize = 20, FontFamily = "Raleway-Regular", TextColor = Color.Black, 
-                HorizontalOptions = LayoutOptions.CenterAndExpand, VerticalOptions = LayoutOptions.CenterAndExpand, Margin = new Thickness(side_margin,0, 0, 0)};
-            var accountInput = new Entry() { Placeholder = "Star Chef", PlaceholderColor = Color.Gray, WidthRequest = ContentManager.screenWidth / 2, Margin = new Thickness(0,0,side_margin,0) };
-            var confirmButton = new Button() { Text = "Confirm", FontFamily = "Oswald-Regular", FontSize = 20, TextColor = Color.White, Margin = new Thickness(side_margin, vert_margin), BackgroundColor = Color.WhiteSmoke };
+                HorizontalOptions = LayoutOptions.CenterAndExpand, Margin = new Thickness(side_margin,0, 0, 0)};
+            var accountInput = new Entry() { Placeholder = "Star Chef", PlaceholderColor = Color.Gray, WidthRequest = ContentManager.screenWidth / 2, 
+                Margin = new Thickness(0,0,side_margin,0) };
+            var confirmButton = new Button() { Text = "Confirm", FontFamily = "Oswald-Regular", FontSize = 20, TextColor = Color.Black, Margin = new Thickness(side_margin, vert_margin), 
+                BackgroundColor = Color.WhiteSmoke, CornerRadius = 5, BorderColor = Color.Black, BorderWidth = 1};
             confirmButton.Clicked += async (obj, arg) =>
             {
                 if (ContentManager.isLocal)
@@ -28,7 +31,7 @@ namespace ZestyKitchenHelper
                     ContentManager.sessionUserProfile = new UserProfile()
                     {
                         Name = accountInput.Text,
-                        IconImage = ContentManager.addIcon,
+                        IconImage = ContentManager.ProfileIcons[0],
                         IsLocal = true
                     };
                     LocalStorageController.AddUser(ContentManager.sessionUserProfile);
@@ -41,7 +44,7 @@ namespace ZestyKitchenHelper
                     {
                         Name = accountInput.Text,
                         Email = ContentManager.sessionUserProfile.Email,
-                        IconImage = ContentManager.addIcon,
+                        IconImage = ContentManager.ProfileIcons[0],
                         IsLocal = false
                     };
                     await FireBaseController.AddUser(remoteUser);
@@ -60,6 +63,7 @@ namespace ZestyKitchenHelper
                 HorizontalOptions = LayoutOptions.CenterAndExpand,
                 VerticalOptions = LayoutOptions.CenterAndExpand,
                 WidthRequest = ContentManager.screenWidth,
+                BackgroundColor= ContentManager.ThemeColor,
                 Children =
                 {
                     title,
@@ -75,7 +79,7 @@ namespace ZestyKitchenHelper
                 }
             };
 
-            Content = content;
+            Content = new StackLayout() { BackgroundColor = ContentManager.ThemeColor, Children = { content } };
         }
     }
 }

@@ -39,11 +39,11 @@ namespace ZestyKitchenHelper
             searchAllBar.Unfocused += (obj, args) => GridManager.FilterItemGrid(ContentManager.MetaItemBase.Values, metaGrid, searchAllBar.Text);
             addNewButton.Clicked += (obj, args) => { addView.ResetForm(); ContentManager.pageController.ToAddView(addView); };
 
+            var sortSelectorIcon = new Image() { Source = ContentManager.sortIcon };
             var sortSelector = new Picker()
             {
                 Margin = new Thickness(side_margin, between_margin),
                 ItemsSource = new List<string>() { expIndicatorString, alphaIndicatorString },
-                Title = "Sort Order",
             };
             sortSelector.SelectedIndexChanged += (obj, args) =>
             {
@@ -65,12 +65,14 @@ namespace ZestyKitchenHelper
 
             AbsoluteLayout.SetLayoutBounds(titleGrid, new Rectangle(0, 0, 1, TopPage.top_bar_height_proportional));
             AbsoluteLayout.SetLayoutFlags(titleGrid, AbsoluteLayoutFlags.All);
-            AbsoluteLayout.SetLayoutBounds(searchAllBar, new Rectangle(1, 0.13, 1, .1));
+            AbsoluteLayout.SetLayoutBounds(searchAllBar, new Rectangle(0, 0.13, 0.8, .1));
             AbsoluteLayout.SetLayoutFlags(searchAllBar, AbsoluteLayoutFlags.All);
             AbsoluteLayout.SetLayoutBounds(addNewButton, new Rectangle(0, .25, 100,100));
             AbsoluteLayout.SetLayoutFlags(addNewButton, AbsoluteLayoutFlags.PositionProportional);
-            AbsoluteLayout.SetLayoutBounds(sortSelector, new Rectangle(1, 0.25, .5, .1));
-            AbsoluteLayout.SetLayoutFlags(sortSelector, AbsoluteLayoutFlags.All) ;
+            AbsoluteLayout.SetLayoutBounds(sortSelector, new Rectangle(1, 0.13, .2, .1));
+            AbsoluteLayout.SetLayoutFlags(sortSelector, AbsoluteLayoutFlags.All);
+            AbsoluteLayout.SetLayoutBounds(sortSelectorIcon, AbsoluteLayout.GetLayoutBounds(sortSelector));
+            AbsoluteLayout.SetLayoutFlags(sortSelectorIcon, AbsoluteLayoutFlags.All);
             AbsoluteLayout.SetLayoutBounds(gridScroll, new Rectangle(0, 1, 1, .625));
             AbsoluteLayout.SetLayoutFlags(gridScroll, AbsoluteLayoutFlags.All);
             AbsoluteLayout.SetLayoutBounds(addView, new Rectangle(0, 0, 1, 1));
@@ -82,6 +84,7 @@ namespace ZestyKitchenHelper
                     titleGrid,
                     searchAllBar,
                     addNewButton,
+                    sortSelectorIcon,
                     sortSelector,
                     gridScroll
                 }

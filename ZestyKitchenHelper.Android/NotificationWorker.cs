@@ -92,6 +92,9 @@ namespace ZestyKitchenHelper.Droid
         }
         public override Result DoWork()
         {
+            if (ContentManager.sessionUserProfile == null)
+                return Result.InvokeRetry();
+
             SetItemList();
             int expItemCount1 = 0;
             int expItemCount3 = 0;
@@ -99,17 +102,17 @@ namespace ZestyKitchenHelper.Droid
             foreach (var item in itemList)
             {
                 item.SetDaysUntilExpiration();
-                if (item.daysUntilExp < 1 && !item.oneDayWarning)
+                if (item.daysUntilExp < 1 && !item.oneDayWarning && ContentManager.sessionUserProfile.enableOneDayWarning)
                 {
                     expItemCount1++;
                     item.oneDayWarning = true;
                 }
-                else if (item.daysUntilExp < 3 && !item.threeDaysWarning)
+                else if (item.daysUntilExp < 3 && !item.threeDaysWarning && ContentManager.sessionUserProfile.enableThreeDayWarning)
                 {
                     expItemCount3++;
                     item.threeDaysWarning = true;
                 }
-                else if (item.daysUntilExp < 7 && !item.weekWarning)
+                else if (item.daysUntilExp < 7 && !item.weekWarning && ContentManager.sessionUserProfile.enableOneWeekWarning)
                 {
                     expItemCount7++;
                     item.weekWarning = true;

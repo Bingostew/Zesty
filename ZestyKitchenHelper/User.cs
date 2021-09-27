@@ -15,6 +15,9 @@ namespace ZestyKitchenHelper
         public bool IsLocal { get; set; }
         public string Email { get; set; }
         public string IconImage { get; set; }
+        public bool enableOneDayWarning { get; set; }
+        public bool enableThreeDayWarning { get; set; }
+        public bool enableOneWeekWarning { get; set; }
         public void AddOnProfileChangedListener(Action<UserProfile> action)
         {
             onProfileChangeEvent.Add(action);   
@@ -22,7 +25,8 @@ namespace ZestyKitchenHelper
         public void ChangeProfileWithListener(string name, string email, string icon)
         {
             Name = name; Email = email; IconImage = icon;
-            foreach(var changeEvent in onProfileChangeEvent)
+            enableOneDayWarning = true; enableOneWeekWarning = true; enableThreeDayWarning = true;
+            foreach (var changeEvent in onProfileChangeEvent)
             {
                 changeEvent?.Invoke(this);
             }

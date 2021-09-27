@@ -21,6 +21,13 @@ namespace ZestyKitchenHelper
         {
             var itemStorage = ContentManager.GetSelectedStorage(currentStorageName);
             itemIcon.TranslationY += args.Location.Y; itemIcon.TranslationX += args.Location.X;
+            if(args.Type == TouchActionEventArgs.TouchActionType.Entered)
+            {
+                // re-adding the item to be at the front layer
+                var pUnplacedGrid = GridManager.GetGrid(ContentManager.pUnplacedGridName);
+                var index = pUnplacedGrid.Children.IndexOf(itemIcon);
+                GridManager.AddGridItemAtPosition(pUnplacedGrid, new List<View>() { itemIcon }, new Vector2D<int>(index % 4, (int)(index / 4)));
+            }
             if (args.Type == TouchActionEventArgs.TouchActionType.Released)
             {
                 itemIcon.TranslationX = 0;
@@ -34,7 +41,7 @@ namespace ZestyKitchenHelper
                 {
                     cell.GetButton().RemoveEffect(typeof(ImageTint));
                 }
-                args.ContactView[0].AddEffect(new ImageTint() { tint = Color.FromHsla(1, .1, .5, .5), ImagePath = ContentManager.buttonTintImage });
+                args.ContactView[0].AddEffect(new ImageTint() { tint = ContentManager.button_tint_color, ImagePath = ContentManager.buttonTintImage });
                 if (args.Type == TouchActionEventArgs.TouchActionType.Released)
                 {
                     args.ContactView[0].RemoveEffect(typeof(ImageTint));
@@ -59,6 +66,7 @@ namespace ZestyKitchenHelper
             touchEvent.OnTouchEvent += (obj, args) => OnScreenTouch(args, view, storageName, updateShelf);
             view.iconImage.AddEffect(touchEvent);
 
+         
         }
 
         public static void ClearEffects(this VisualElement element)

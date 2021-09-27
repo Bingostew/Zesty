@@ -19,6 +19,7 @@ namespace ZestyKitchenHelper
         public static bool isUserNew;
         private static Color _themeColor = Color.Wheat;
         public static Color default_button_color = Color.FromRgba(0, 0, 0, 200);
+        public static Color button_tint_color = Color.FromHsla(1, .1, .5, .5);
         public static Color ThemeColor
         {
             get { return _themeColor; }
@@ -35,6 +36,7 @@ namespace ZestyKitchenHelper
         public static double screenWidth;
         public static double screenHeight;
         public static double item_layout_size;
+        public const int tab_icon_image_size = 30;
         private const int storage_margin = 10;
         public const int exp_warning_size = 50;
 
@@ -43,7 +45,8 @@ namespace ZestyKitchenHelper
         public const string cabinetLeftIcon = "cabinet_divider_left.png";
         public const string cabinetMiddleIcon = "cabinet_divider_middle.png";
         public const string cabinetRightIcon = "cabinet_divider_right.png";
-        public const string safeIcon = "swan.JPG";
+        public const string changeNameIcon = "change_name_icon.png";
+        public const string viewInStorageIcon = "view_in_storage.png";
         public const string addIcon = "add_button.png";
         public const string subdivideIcon = "swan.JPG";
         public const string transIcon = "transparent.png";
@@ -53,13 +56,18 @@ namespace ZestyKitchenHelper
         public const string deleteCellIcon = "delete_cell_button.png";
         public const string backButton = "back_arrow.png";
         public const string pantryIcon = "pantry.png";
+        public const string pantryWarningIcon = "pantry_warning.png";
         public const string refridgeIcon = "fridge.png";
+        public const string fridgeWarningIcon = "fridge_warning.png";
+        public const string allItemIcon = "all_items.png";
+        public const string allItemWarning = "all_items_warning.png";
         public const string countIcon = "small_arrow.png";
         public const string expWarningIcon = "warning_icon.png";
+        public const string sortIcon = "sort.png";
 
         public const string defaultSearchAllBarText = "Search item...";
         public const string exp_notification_title = "Zesty's Expiration Warning";
-
+        public const string package_name = "com.companyname.zestykitchenhelper";
         public const string cabinetStorageType = "Cabinet";
         public const string fridgeStorageType = "Fridge";
         public const string metaGridName = "Meta Grid";
@@ -81,10 +89,6 @@ namespace ZestyKitchenHelper
         private static List<Action<Color>> OnColorChangeEvents = new List<Action<Color>>();
         public static async void InitializeApp()
         {
-           
-            // Initialize screen width and height
-            screenHeight = DeviceDisplay.MainDisplayInfo.Height / DeviceDisplay.MainDisplayInfo.Density;
-            screenWidth = DeviceDisplay.MainDisplayInfo.Width / DeviceDisplay.MainDisplayInfo.Density; 
             item_layout_size = screenWidth / 4;
 
             // Initialize ID Groups
@@ -93,7 +97,7 @@ namespace ZestyKitchenHelper
             IDGenerator.InitializeIDGroup(fridgeEditIdGenerator);
             IDGenerator.InitializeIDGroup(storageCellIdGenerator);
             IDGenerator.InitializeIDGroup(IOSNotificationIdGenerator);
-            LocalStorageController.ResetDatabase(); // WARNING: FOR TESTING PURPOSES ONLY
+            //LocalStorageController.ResetDatabase(); // WARNING: FOR TESTING PURPOSES ONLY
             LocalStorageController.InitializeLocalDataBase();
 
             // Initialize Important Grids
@@ -341,9 +345,13 @@ namespace ZestyKitchenHelper
              new IconLayout("sausage.png", "sausage"),
              new IconLayout("shrimp.png", "shrimp")
         };
-        public static readonly Dictionary<string, IconLayout> DefaultIcons = new Dictionary<string, IconLayout>()
+        public static readonly List<View> GeneralIcons = new List<View>()
         {
-            {"product",  new IconLayout("carrot.png", "carrot") }
+            new IconLayout("fruit.png"),
+            new IconLayout("bottle.png"),
+            new IconLayout("can.png"),
+            new IconLayout("vegetable.png"),
+            new IconLayout("snack_bag.png")
         };
 
         public static readonly Dictionary<string, string> PresetExpirationBase = new Dictionary<string, string>()
@@ -363,9 +371,7 @@ namespace ZestyKitchenHelper
 
         public static readonly List<string> ProfileIcons = new List<string>()
         {
-            addIcon,
-            "apple.png",
-            "potato.png"
+            "user_icon.png"
         };
         public static Dictionary<int, ItemLayout> UnplacedItemBase = new Dictionary<int, ItemLayout>();
         public static Dictionary<int, ItemLayout> MetaItemBase = new Dictionary<int, ItemLayout>();

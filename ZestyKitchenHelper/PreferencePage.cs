@@ -26,6 +26,9 @@ namespace ZestyKitchenHelper
 
         public PreferencePage()
         {
+            // Register background change listener
+            BackgroundColor = ContentManager.ThemeColor;
+            ContentManager.AddOnBackgroundChangeListener(c => BackgroundColor = c);
             // Title section
             var titleGrid = GridManager.InitializeGrid(1, 3, 50, GridLength.Star);
             var returnButton = new ImageButton() { Source = ContentManager.backButton };
@@ -39,17 +42,17 @@ namespace ZestyKitchenHelper
             {
                 RowDefinitions =
                 {
-                    new RowDefinition() {Height = icon_size}
+                    new RowDefinition() {Height = icon_size + 10}
                 },
                 ColumnDefinitions =
                 {
-                    new ColumnDefinition(){Width = icon_size },
+                    new ColumnDefinition(){Width = icon_size + 10 },
                     new ColumnDefinition()
                 }
             };
 
 
-            userIcon = new ImageButton() { Source = user.IconImage, WidthRequest = icon_size, HeightRequest = icon_size, CornerRadius = icon_size / 2, Margin = new Thickness(5) };
+            userIcon = new ImageButton() { Source = user.IconImage, WidthRequest = icon_size, HeightRequest = icon_size, BackgroundColor = Color.Transparent, CornerRadius = icon_size / 2, Margin = new Thickness(5) };
             ContentManager.sessionUserProfile.AddOnProfileChangedListener(u => userIcon.Source = u.IconImage);
             usernameLabel = new Label() { Text = user.Name, FontFamily = main_font, FontSize = 30, TextColor = Color.Black, Margin = new Thickness(0, 30, 0, 0) };
             ContentManager.sessionUserProfile.AddOnProfileChangedListener(u => usernameLabel.Text = u.Name);
@@ -87,10 +90,11 @@ namespace ZestyKitchenHelper
             var preferenceLabel = new Label() { Text = "Preferences", FontSize = title_font_size, FontFamily = title_font, TextColor = Color.Black, Margin = new Thickness(side_margin, 0) };
             var themeLabel = new Label() { Text = "Background Theme", FontFamily = main_font, FontSize = main_font_size, TextColor = Color.Black, Margin = new Thickness(side_margin, 0) };
             var themeCarousel = new CarouselView() { HeightRequest = theme_square_size + 70, PeekAreaInsets = new Thickness(30, 0), Margin = new Thickness(0, 0, side_margin, 0), Loop = false };
+
             themeCarousel.ItemTemplate = new DataTemplate(() =>
             {
-                ImageButton image = new ImageButton() { IsEnabled = false, WidthRequest = theme_square_size, HeightRequest = theme_square_size, 
-                    BorderColor = Color.Black, BorderWidth = 2, CornerRadius = theme_square_size / 2, Margin = new Thickness(20)  };
+                ImageButton image = new ImageButton() { IsEnabled = false, WidthRequest = theme_square_size, HeightRequest = theme_square_size,
+                    BorderColor = Color.Black, BorderWidth = 2, CornerRadius = theme_square_size / 2, Margin = new Thickness(20) };
                 image.SetBinding(Image.SourceProperty, "Image");
                 image.SetBinding(Image.BackgroundColorProperty, "Color");
 
@@ -107,24 +111,53 @@ namespace ZestyKitchenHelper
             int currentThemeIndex = 0;
             themeCarousel.Scrolled += (o, a) =>
             {
-                if(a.CenterItemIndex != currentThemeIndex)
+                if (a.CenterItemIndex != currentThemeIndex)
                 {
                     currentThemeIndex = a.CenterItemIndex;
                     ContentManager.ThemeColor = themeList[currentThemeIndex].Color;
                 }
             };
 
-            var notificationLabel = new Label() { Text = "Notification", FontFamily = main_font, FontSize = main_font_size, TextColor = Color.Black, Margin = new Thickness(side_margin, 0) };
+            var notifLabel = new Label() { Text = "Notification", FontFamily = main_font, FontSize = main_font_size, TextColor = Color.Black, Margin = new Thickness(side_margin, 0) };
+            var notifGrid = GridManager.InitializeGrid(3, 2, 50, GridLength.Star);
+            notifGrid.Margin = new Thickness(0, 0, side_margin, 0);
+            var oneDayNotif = new Switch() { IsToggled = true, WidthRequest = 80, OnColor = Color.Goldenrod };
+            var threeDayNotif = new Switch() { IsToggled = true, WidthRequest = 80, OnColor = Color.Goldenrod };
+            var oneWeekNotif = new Switch() { IsToggled = true, WidthRequest = 80, OnColor = Color.Goldenrod };
+            var oneDayLabel = new Label() { Text = "1 day", FontSize = small_font_size, FontFamily = main_font, TextColor = Color.Black, VerticalTextAlignment = TextAlignment.Center };
+            var threeDayLabel = new Label() { Text = "3 days", FontSize = small_font_size, FontFamily = main_font, TextColor = Color.Black, VerticalTextAlignment = TextAlignment.Center };
+            var oneWeekLabel = new Label() { Text = "1 week", FontSize = small_font_size, FontFamily = main_font, TextColor = Color.Black, VerticalTextAlignment = TextAlignment.Center };
+            oneDayNotif.Toggled += (o, a) => { ContentManager.sessionUserProfile.enableOneDayWarning = a.Value; updateUser(); };
+            threeDayNotif.Toggled += (o, a) => { ContentManager.sessionUserProfile.enableThreeDayWarning = a.Value; updateUser(); };
+            oneWeekNotif.Toggled += (o, a) => { ContentManager.sessionUserProfile.enableOneWeekWarning = a.Value; updateUser(); };
+            GridManager.AddGridItem(notifGrid, new List<View>() { oneDayLabel, oneDayNotif, threeDayLabel, threeDayNotif, oneWeekLabel, oneWeekNotif }, true, Utility.GridOrganizer.OrganizeMode.HorizontalRight);
+
+            async void updateUser()
+            {
+                if (ContentManager.isLocal)
+                {
+                    LocalStorageController.UpdateUser(ContentManager.sessionUserProfile);
+                }
+                else
+                {
+                    await FireBaseController.UpdateUser(ContentManager.sessionUserProfile);
+                }
+            }
 
             preferenceSection.Children.Add(preferenceLabel, 0, 0);
             Grid.SetColumnSpan(preferenceLabel, 2);
             preferenceSection.Children.Add(themeLabel, 0, 1);
             preferenceSection.Children.Add(themeCarousel, 1, 1);
+            preferenceSection.Children.Add(notifLabel, 0, 2);
+            preferenceSection.Children.Add(notifGrid, 1, 2);
+            Grid.SetRowSpan(notifGrid, 3);
+
 
             content = new ScrollView()
             {
                 Content = new StackLayout()
                 {
+                    HeightRequest = ContentManager.screenHeight,
                     Spacing = 5,
                     Children =
                     {
