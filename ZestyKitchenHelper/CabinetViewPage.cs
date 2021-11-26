@@ -8,234 +8,222 @@ using Utility;
 
 namespace ZestyKitchenHelper
 {
-    public class CabinetViewPage : ContentPage, INavigatablePage
+    public class CabinetViewPage : ContentPage
     {
-        const int max_grid_count = 20;
-        private Grid currentGrid;
+        const int layout_margin = 5;
+        private const double storage_width_proportional_cabinet = 0.5;
+        private const double storage_width_proportional_fridge = 0.5;
+        private const double tool_grid_height_proportional = 0.05;
+        private const double storage_height_proportional = 0.3;
+        private const int main_font_size = 15;
+        const string expIndicatorString = "Expiration Date";
+        const string alphaIndicatorString = "Alphabetical";
+
         private AbsoluteLayout viewOverlay;
-        private string storageName;
+        private IStorage storage;
         private Dictionary<int, Grid> expandedViews = new Dictionary<int, Grid>();
-        private int dictIter;
+        private Grid currentGrid;
         Action<Item> deleteItemLocalEvent, deleteItemBaseEvent, updateItemLocalEvent, updateItemBaseEvent;
-        Action<string, string, string> saveStorageLocalEvent, saveStorageBaseEvent;
+
+        // If directSelectIndex is > -1, then the cell with this index will be displayed immediately after user enters the view.
         public CabinetViewPage(string name, Action<Item> deleteItemLocal, Action<Item> deleteItemBase, Action<Item> updateItemLocal, Action<Item> updateItemBase,
-            Action<string, string, string> _saveStorageLocalEvent, Action<string, string, string> _saveStorageBaseEvent)
+            ContentManager.StorageSelection storageSelection, int directSelectIndex = -1)
         {
-            saveStorageBaseEvent = _saveStorageBaseEvent;
-            saveStorageLocalEvent = _saveStorageLocalEvent;
             updateItemLocalEvent = updateItemLocal;
             updateItemBaseEvent = updateItemBase;
             deleteItemBaseEvent = deleteItemBase;
             deleteItemLocalEvent = deleteItemLocal;
-            var backgroundImage = ContentManager.storageSelection == ContentManager.StorageSelection.fridge ? ContentManager.fridgeIcon : ContentManager.cabinetIcon;
-            storageName = name;
+
+            var titleGrid = new TopPage(name, extraReturnAction: () =>
+           {
+               foreach (var cell in storage.GetGridCells())
+               {
+                   cell.GetButton().RemoveEffect(typeof(ImageTint));
+               }
+           }).GetGrid();
+            titleGrid.HeightRequest = ContentManager.screenHeight * TopPage.top_bar_height_proportional;
+
+            var backgroundImage = storageSelection == ContentManager.StorageSelection.fridge ? ContentManager.fridgeIcon : ContentManager.cabinetCellIcon;
             Image backgroundCell = new Image()
-            { Source = backgroundImage, Aspect = Aspect.Fill };
-            ImageButton backButton = new ImageButton() { Source = ContentManager.backButton, WidthRequest = 100, HeightRequest = 100 };
+            { Source = backgroundImage, Aspect = Aspect.Fill, WidthRequest = ContentManager.screenWidth - (layout_margin * 2)};
+            ImageButton backButton = new ImageButton() { Source = ContentManager.backButton, BackgroundColor = Color.Transparent, WidthRequest = 100, HeightRequest = 100 };
             backButton.Clicked += (obj, args) =>
             {
-                if (currentGrid != null) { currentGrid.IsVisible = false; }
                 viewOverlay.IsVisible = false;
             };
-            const string expIndicatorString = "Expiration Date";
-            const string alphaIndicatorString = "Alphabetical";
+
+            // searching and sorting 
+            var sortSelectorIcon = new ImageButton()
+            {
+                Source = ContentManager.sortIcon,
+                BackgroundColor = Color.Transparent
+            };
             var sortSelector = new Picker()
             {
+                Margin = new Thickness(layout_margin),
                 ItemsSource = new List<string>() { expIndicatorString, alphaIndicatorString },
                 Title = "Sort Order",
             };
-            sortSelector.SelectedIndexChanged += (obj, args) =>
+            var searchBar = new SearchBar()
             {
-                switch (sortSelector.SelectedItem)
-                {
-                    case expIndicatorString: GridOrganizer.SortItemGrid(currentGrid, GridOrganizer.SortingType.Expiration_Close); break;
-                    case alphaIndicatorString: GridOrganizer.SortItemGrid(currentGrid, GridOrganizer.SortingType.A_Z); break;
-                }
-
+                Margin = new Thickness(layout_margin),
+                Placeholder = "Search"
             };
-            var lastPageButton = new ImageButton() { Source = ContentManager.countIcon, Rotation = 180, Aspect = Aspect.Fill, WidthRequest = 50 };
-            lastPageButton.Clicked += (obj, args) =>
+            var toolGrid = new Grid()
             {
-                var index = currentGrid.GetGridChilrenList().IndexOf(currentGrid.Children[0]);
-                if (index > max_grid_count) NextPresetPage(index - max_grid_count);
-                else NextPresetPage(0);
-            };
-            var nextPageButton = new ImageButton() { Source = ContentManager.countIcon, Aspect = Aspect.Fill, WidthRequest = 50};
-            nextPageButton.Clicked += (obj, args) =>
-            {
-                Console.WriteLine("children count " + currentGrid.GetGridChilrenList().IndexOf(currentGrid.Children[currentGrid.Children.Count - 1]));
-                var index = currentGrid.GetGridChilrenList().IndexOf(currentGrid.Children[currentGrid.Children.Count - 1]);
-                if (index < currentGrid.GetGridChilrenList().Count - 1) NextPresetPage(index + 1);
-            };
-            Grid toolGrid = new Grid()
-            {
-                ColumnSpacing = 20,
+                Margin = new Thickness(layout_margin, 0),
                 RowDefinitions =
                 {
-                    new RowDefinition(){Height = 50}
+                    new RowDefinition(){Height = ContentManager.screenHeight *tool_grid_height_proportional }
                 },
                 ColumnDefinitions =
                 {
-                    new ColumnDefinition(){Width = 40 },
-                    new ColumnDefinition(){Width = 40 },
-                    new ColumnDefinition()
+                    new ColumnDefinition(){Width = new GridLength(5, GridUnitType.Star)},  new ColumnDefinition(){Width = new GridLength(1, GridUnitType.Star)}
                 }
             };
-            toolGrid.Children.Add(lastPageButton, 0, 0);
-            toolGrid.Children.Add(nextPageButton, 1, 0);
-            toolGrid.Children.Add(sortSelector, 2, 0);
+            toolGrid.Children.Add(searchBar, 0, 0);
+            toolGrid.Children.Add(sortSelectorIcon, 1, 0);
+            toolGrid.Children.Add(sortSelector, 1, 0);
 
-            AbsoluteLayout.SetLayoutBounds(toolGrid, new Rectangle(150, 40, .6, 100));
-            AbsoluteLayout.SetLayoutFlags(toolGrid, AbsoluteLayoutFlags.WidthProportional);
-            AbsoluteLayout.SetLayoutBounds(backgroundCell, new Rectangle(0, 100, 1, Application.Current.MainPage.Height - 100));
-            AbsoluteLayout.SetLayoutFlags(backgroundCell, AbsoluteLayoutFlags.WidthProportional);
             viewOverlay = new AbsoluteLayout()
             {
                 IsVisible = false,
-                BackgroundColor = Color.Wheat,
-                WidthRequest = Application.Current.MainPage.Width,
+                BackgroundColor = ContentManager.ThemeColor,
+                WidthRequest = ContentManager.screenWidth - (layout_margin * 2),
+                HeightRequest = ContentManager.screenHeight * 0.4,
+                Margin = new Thickness(layout_margin, 0, layout_margin, layout_margin),
                 Children =
                 {
-                    backgroundCell,
-                    backButton,
-                    toolGrid
+                    backgroundCell
                 }
             };
-            viewOverlay.ChildAdded += (obj, args) => viewOverlay.ForceLayout();
+            ContentManager.AddOnBackgroundChangeListener(c => viewOverlay.BackgroundColor = c);
 
-            var storageLabel = new Label() { Text = name, FontSize = 40, TextColor = Color.Black, HorizontalTextAlignment = TextAlignment.Center };
-            var returnButton = new ImageButton() { Source = ContentManager.backButton, WidthRequest = 100, HeightRequest = 100 };
-            returnButton.Clicked += (o,a) => ContentManager.pageController.ToSingleSelectionPage();
-            var storage = ContentManager.GetStorageView(name);
-            storage.HorizontalOptions = LayoutOptions.CenterAndExpand;
-            storage.WidthRequest = Application.Current.MainPage.Width * .8;
-            storage.HeightRequest = 7 * Application.Current.MainPage.Height / 8;
+            ScrollView gridContainer = new ScrollView() { WidthRequest = ContentManager.screenWidth };
+            gridContainer.Scrolled += (o, a) => Console.WriteLine("CabinetView 74 gridcontainer scrolled");
+            viewOverlay.Children.Add(gridContainer, AbsoluteLayout.GetLayoutBounds(backgroundCell), AbsoluteLayout.GetLayoutFlags(backgroundCell));
 
-            var itemBase = ContentManager.GetItemBase();
-            foreach (int index in itemBase[name].Keys)
+            sortSelector.SelectedIndexChanged += (obj, args) =>
             {
-                foreach (var button in itemBase[name][index].Keys)
+                if (currentGrid != null)
                 {
-                    var grid = GetItemGrid(itemBase[name][index][button]);
-                    ScrollView gridContainer = new ScrollView() { Content = grid };
-                    viewOverlay.Children.Add(grid, AbsoluteLayout.GetLayoutBounds(backgroundCell), AbsoluteLayout.GetLayoutFlags(backgroundCell));
-                    button.Clicked += (obj, args) =>
-                        {
-                            viewOverlay.IsVisible = true;
-                            currentGrid = grid;
-                            grid.IsVisible = true;
-                        };
-                }
-            }
-            Content = new AbsoluteLayout()
-            {
-                Children =
-                {
-                    new StackLayout()
+                    switch (sortSelector.SelectedItem)
                     {
-                        WidthRequest = Application.Current.MainPage.Width,
-                        Children =
-                        {
-                            returnButton,
-                            storageLabel,
-                            storage,
-                        }
-                    },
-                    viewOverlay
+                        case expIndicatorString: GridOrganizer.SortItemGrid(currentGrid, GridOrganizer.ItemSortingMode.Expiration_Close); break;
+                        case alphaIndicatorString: GridOrganizer.SortItemGrid(currentGrid, GridOrganizer.ItemSortingMode.A_Z); break;
+                    }
                 }
             };
-        }
-        private void NextPresetPage(int currentAmount)
-        {
-            currentGrid.Children.Clear();
-            //var currentAmount = presetResult.IndexOf(presetSelectGrid.Children.Last() as IconLayout);
-            List<View> results = new List<View>();
-            var max = max_grid_count + currentAmount < currentGrid.GetGridChilrenList().Count ? max_grid_count + currentAmount : currentGrid.GetGridChilrenList().Count;
-            Console.WriteLine("min " + currentAmount + " max " + max);
-            for (int i = currentAmount; i < max; i++)
-            {
-                results.Add(currentGrid.GetGridChilrenList()[i] as View);
-            }
-            currentGrid.OrganizeGrid(results, GridOrganizer.OrganizeMode.HorizontalLeft);
-        }
-        public void SetView()
-        {
 
-        }
-
-        private Grid GetItemGrid(List<ItemLayout> itemList)
-        {
-            List<ItemLayout> list = new List<ItemLayout>();
-            List<ItemLayout> resultList = new List<ItemLayout>();
-            Grid cellItemGrid = new Grid()
+            searchBar.Unfocused += (o, a) =>
             {
-                ColumnSpacing = 5,
-                IsVisible = false,
+                var currentGridChildren = currentGrid.Children.Cast<ItemLayout>();
+                Grid filteredGrid = GridManager.InitializeGrid(1, 4, new GridLength(ContentManager.item_layout_size, GridUnitType.Absolute), GridLength.Star);
+                GridManager.FilterItemGrid(currentGridChildren, filteredGrid, searchBar.Text);
+                gridContainer.Content = filteredGrid;
+            };
+
+            // storage model
+            var storageView = ContentManager.GetStorageView(storageSelection, name);
+            storageView.HeightRequest = ContentManager.screenHeight * storage_height_proportional;
+            storage = ContentManager.GetSelectedStorage(storageSelection, name);
+            var storageViewWidth = storageSelection == ContentManager.StorageSelection.cabinet ? storage_width_proportional_cabinet : storage_width_proportional_fridge;
+
+            // expiration info grid
+            var totalItemIcon = new ImageButton() { Source = ContentManager.allItemIcon, BackgroundColor = Color.Transparent };
+            var totalItemLabel = new Label() { TextColor = Color.Black, FontFamily = "oswald_regular", VerticalTextAlignment = TextAlignment.Center, FontSize = main_font_size };
+            var expiredIcon = new ImageButton() { Source = ContentManager.expWarningIcon, BackgroundColor = Color.Transparent };
+            var expiredAmountLabel = new Label() { TextColor = Color.Black, FontFamily = "oswald_regular", VerticalTextAlignment = TextAlignment.Center, FontSize = main_font_size };
+            var almostExpiredIcon = new ImageButton() { Source = ContentManager.expWarningIcon, BackgroundColor = Color.Transparent };
+            var almostExpiredAmountLabel = new Label() { TextColor = Color.Black, FontFamily = "oswald_regular", VerticalTextAlignment = TextAlignment.Center, FontSize = main_font_size };
+            var expInfoGrid = new Grid()
+            {
                 RowDefinitions =
                 {
-                    new RowDefinition(), new RowDefinition(), new RowDefinition(), new RowDefinition(), new RowDefinition()
+                    new RowDefinition(),
+                    new RowDefinition(),
+                    new RowDefinition()
                 },
-                ColumnDefinitions =
+                ColumnDefinitions = {
+                    new ColumnDefinition(){Width = new GridLength(1, GridUnitType.Star) }, new ColumnDefinition(){Width = new GridLength(2, GridUnitType.Star)}
+                }
+            };
+            GridManager.AddGridItem(expInfoGrid, new List<View>() { totalItemIcon, totalItemLabel, expiredIcon, expiredAmountLabel, almostExpiredIcon, almostExpiredAmountLabel }, true);
+
+            var storageViewAndExpGrid = GridManager.InitializeGrid(1, 2, GridLength.Star, GridLength.Star);
+            storageViewAndExpGrid.HeightRequest = ContentManager.screenHeight * storage_height_proportional;
+            GridManager.AddGridItem(storageViewAndExpGrid, new List<View>() { storageView, expInfoGrid }, true);
+
+            // sets the text info for all item amount, expired item amount, and almost expired item amount
+            void calculateExpirationAmount(Grid itemLayoutGrid)
+            {
+                int expiredItemCount = 0;
+                int almostExpiredItemCount = 0;
+                foreach (ItemLayout item in itemLayoutGrid.Children)
                 {
-                    new ColumnDefinition(),  new ColumnDefinition(),  new ColumnDefinition(),  new ColumnDefinition()
+                    if (item.ItemData.daysUntilExp == 0)
+                    {
+                        expiredItemCount++;
+                    }
+                    else if (item.ItemData.daysUntilExp <= 7 && item.ItemData.daysUntilExp > 0)
+                    {
+                        almostExpiredItemCount++;
+                    }
+                }
+                totalItemLabel.Text = "Items: " + itemLayoutGrid.Children.Count;
+                expiredAmountLabel.Text = "Expired: " + expiredItemCount;
+                almostExpiredAmountLabel.Text = "Almost Expired: " + almostExpiredItemCount;
+            }
+            foreach (var cell in storage.GetGridCells())
+            {
+                // Set up listener to show overlay
+                ImageButton button = cell.GetButton();
+                var grid = cell.GetItemGrid();
+                currentGrid = grid;
+                grid.ChildRemoved += (o, a) => { calculateExpirationAmount(grid); };
+                grid.WidthRequest = WidthRequest = ContentManager.screenWidth - (layout_margin * 2);
+                grid.Margin = new Thickness(layout_margin,0 );
+
+                button.Clicked += async (obj, args) =>
+                {
+                    viewOverlay.IsVisible = true;
+                    gridContainer.Content = grid;
+                    var viewOverlayXOffset = ContentManager.screenWidth * 0.75;
+                    await viewOverlay.LinearInterpolator(viewOverlayXOffset, 200, t => viewOverlay.TranslationX = viewOverlayXOffset - t);
+                    calculateExpirationAmount(grid);
+                    grid.IsVisible = true;
+                };
+
+                foreach (var child in grid.Children)
+                {
+                    child.IsVisible = true;
+                }
+            }
+            Console.WriteLine("Cabinet View 136 " + directSelectIndex);
+            // Set direct view of cell
+            if (directSelectIndex >= 0)
+            {
+                Console.WriteLine("CabinetView 140 View item grid children: overlayed");
+                viewOverlay.IsVisible = true;
+                var cell = storage.GetGridCell(directSelectIndex);
+                var grid = cell.GetItemGrid();
+                gridContainer.Content = grid;
+                grid.IsVisible = true;
+                cell.GetButton().AddEffect(new ImageTint() { tint = ContentManager.button_tint_color });
+            }
+
+            Content = new StackLayout()
+            {
+                HeightRequest = ContentManager.screenHeight,
+                WidthRequest = ContentManager.screenWidth,
+                Children = {
+                            titleGrid,
+                            storageViewAndExpGrid,
+                            toolGrid,
+                            viewOverlay
                 }
             };
 
-
-            foreach (var item in itemList)
-            {
-                ItemLayout itemInstance = new ItemLayout();
-                itemInstance.ItemData = item.ItemData;
-                itemInstance.AddMainImage().AddAmountMark().AddExpirationMark().AddTitle();
-                list.Add(itemInstance);
-                if (list.Count <= max_grid_count) resultList.Add(itemInstance);
-
-                itemInstance.AddDeleteButton();
-                itemInstance.deleteButton.IsVisible = false;
-                itemInstance.iconImage.Clicked += (obj, args) =>
-                {
-                    itemInstance.iconImage.ToggleEffects(
-                        new ImageTint() { tint = Color.FromRgba(100, 50, 50, 80) }, new List<VisualElement>() { itemInstance.deleteButton });
-                    Console.WriteLine("the icon image clicked");
-                };
-
-            
-                itemInstance.deleteButton.Clicked += (obj, args) =>
-                {
-                    if (itemInstance.ItemData.amount > 1)
-                    {
-                        item.SubtractAmount();
-                        itemInstance.amountLabel.Text = item.amountLabel.Text;
-                        updateItemBaseEvent.Invoke(item.ItemData);
-                        updateItemLocalEvent.Invoke(item.ItemData);
-                    }
-                    else
-                    {
-                        var index = cellItemGrid.GetGridChilrenList().IndexOf(cellItemGrid.Children[0]);
-                        cellItemGrid.Children.Clear();
-                        var removedList = cellItemGrid.GetGridChilrenList() as List<ItemLayout>;
-                        removedList.Remove(itemInstance);
-                        cellItemGrid.SetGridChildrenList(removedList);
-                        NextPresetPage(index);
-                        ContentManager.GetInfoBase()[storageName][item.ParentCellIndex].Children.Remove(item);
-                        ContentManager.GetItemBase()[storageName][item.ParentCellIndex][item.ParentButton].Remove(item);
-                        ContentManager.MetaItemBase.Remove(item.ItemData.ID);
-                        string itemInfo, rowInfo;
-                        ContentManager.SetLocalCabinet(item.StorageName, out rowInfo, out itemInfo);
-                        saveStorageLocalEvent?.Invoke(item.StorageName, rowInfo, itemInfo);
-                        saveStorageBaseEvent?.Invoke(item.StorageName, rowInfo, itemInfo);
-                        deleteItemLocalEvent?.Invoke(item.ItemData); 
-                        deleteItemBaseEvent?.Invoke(item.ItemData);
-                        item.StorageName = string.Empty;
-                    }
-                };
-            }
-
-            cellItemGrid.SetGridChildrenList(list);
-            cellItemGrid.OrganizeGrid(resultList, GridOrganizer.OrganizeMode.HorizontalLeft);
-            AbsoluteLayout.SetLayoutBounds(cellItemGrid, new Rectangle(0, 100, 1, Application.Current.MainPage.Height - 100));
-            AbsoluteLayout.SetLayoutFlags(cellItemGrid, AbsoluteLayoutFlags.WidthProportional); ;
-            return cellItemGrid;
         }
-   }
+    }
 }

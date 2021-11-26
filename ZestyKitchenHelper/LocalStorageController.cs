@@ -28,109 +28,155 @@ namespace ZestyKitchenHelper
             () => { return new SQLiteAsyncConnection(DatabasePath, SQLFlags); } 
             );
         static SQLiteAsyncConnection SQLDatabase => sqlStorageInitializer.Value;
-        bool isInitialized = false;
+        static bool isInitialized = false;
 
-        public LocalStorageController()
+        public static void InitializeLocalDataBase()
         {
             SafeFireAndForget(InitializeAsync(), false);
         }
 
-        async Task InitializeAsync()
+        static async Task InitializeAsync()
         {
-            if (!isInitialized && !SQLDatabase.TableMappings.Any(m => m.MappedType.Name == typeof(Item).Name))
+            bool hasMappings;
+            Task<int> getHasMappingTask = SQLDatabase.Table<UserProfile>().CountAsync();
+            getHasMappingTask.Wait();
+            hasMappings = getHasMappingTask.Result > 0;
+
+            if (!isInitialized && !hasMappings)
             {
+                Console.WriteLine("Local 40 init storage " + SQLDatabase.TableMappings.Count());
+                ContentManager.isUserNew = true;
                 await SQLDatabase.CreateTableAsync(typeof(Item), CreateFlags.None).ConfigureAwait(false);
+                await SQLDatabase.CreateTableAsync(typeof(StorageCell), CreateFlags.None).ConfigureAwait(false);
                 await SQLDatabase.CreateTableAsync(typeof(Cabinet), CreateFlags.None).ConfigureAwait(false);
                 await SQLDatabase.CreateTableAsync(typeof(Fridge), CreateFlags.None).ConfigureAwait(false);
+                await SQLDatabase.CreateTableAsync(typeof(UserProfile), CreateFlags.None).ConfigureAwait(false);
+                await SQLDatabase.CreateTableAsync(typeof(MetaUserInfo), CreateFlags.None).ConfigureAwait(false);
 
                 isInitialized = true;
             }
+          
         }
 
-        public static async void DeleteTableAsync<T>()
-        {
-            await SQLDatabase.DeleteAllAsync<T>();
-        }
-        public static async void SaveItemAsync<T>(T item)
-        {
-            await SQLDatabase.InsertAsync(item);
-
-        }
-        public static async void UpdateItemsAsync<T>(T item)
-        {
-            await SQLDatabase.UpdateAsync(item);
-        }
-        public static async void DeleteItemAsync<T>(T item)
-        {
-            await SQLDatabase.DeleteAsync(item);
-        }
-        public static async void DeleteFridgeAsync(string name)
-        {
-            await SQLDatabase.Table<Fridge>().DeleteAsync(f => f.Name == name);
-        }
-        public static async void DeleteCabinetAsync(string name)
-        {
-            await SQLDatabase.Table<Cabinet>().DeleteAsync(f => f.Name == name);
-        }
-        public static async void SaveFridgeLocal(string name, string fridgeRows, string rowItems)
-        {
-            var tryFridge = await GetFridgeAsync(name);
-            if (tryFridge != null)
-            {
-                UpdateItemsAsync(new Fridge().SetFridge(fridgeRows, rowItems, name));
-            }
-            else
-            {
-                Fridge fridge = new Fridge().SetFridge(fridgeRows, rowItems, name);
-                SaveItemAsync(fridge);
-            }
-        }
-        public static async void SaveCabinetLocal(string name, string cabinetRows, string rowItems)
-        {
-            var tryCabinet = await GetCabinetAsync(name);
-            if (tryCabinet != null)
-            {
-                UpdateItemsAsync(new Cabinet().SetCabinet(cabinetRows, rowItems, name));
-            }
-            else
-            {
-                Cabinet cabinet = new Cabinet().SetCabinet(cabinetRows, rowItems, name);
-                SaveItemAsync(cabinet);
-            }
-        }
-        public static async void UpdateItemAsync(Item item)
-        {
-            var toUpdate = GetItemAsync(item);
-            await SQLDatabase.Table<Item>().DeleteAsync((i) => i.ID == item.ID);
-            SaveItemAsync(item);
-        }
-        public static Task<Item> GetItemAsync(Item item)
-        {
-            return SQLDatabase.Table<Item>().Where(i => i.name == item.name).FirstOrDefaultAsync();
-        }
-        public static Task<Cabinet> GetCabinetAsync(string name)
-        {
-            return SQLDatabase.Table<Cabinet>().Where(c => c.Name == name).FirstOrDefaultAsync();
-        }
-        public static Task<Fridge> GetFridgeAsync(string name)
-        {
-            return SQLDatabase.Table<Fridge>().Where(f => f.Name == name).FirstOrDefaultAsync();
-        }
-        public static Task<List<Cabinet>> GetCabinetListAsync()
-        {
-            return SQLDatabase.Table<Cabinet>().ToListAsync();
-        }
-        public static Task<List<Fridge>> GetFridgeListAsync()
-        {
-            return SQLDatabase.Table<Fridge>().ToListAsync();
-        }
-        public static Task<List<Item>> GetItemListAsync()
-        {
-            return SQLDatabase.Table<Item>().ToListAsync();
-        }
-        private async void SafeFireAndForget(Task task, bool returnToContext, Action<Exception> onException = null)
+        private static async void SafeFireAndForget(Task task, bool returnToContext, Action<Exception> onException = null)
         {
             await task.ConfigureAwait(returnToContext);
+        }
+
+        public static void ResetDatabase()
+        {
+
+            Console.WriteLine("LocalStorage 63 database reset started +====================+");
+            SQLDatabase.DeleteAllAsync<Item>();
+            SQLDatabase.DeleteAllAsync<StorageCell>();
+            SQLDatabase.DeleteAllAsync<Cabinet>();
+            SQLDatabase.DeleteAllAsync<Fridge>();
+            SQLDatabase.DeleteAllAsync<UserProfile>();
+            SQLDatabase.DeleteAllAsync<MetaUserInfo>();
+            Console.WriteLine("LocalStorage 63 database reset end +====================+");
+        }
+        //Retrieval Methods
+        public static async Task<MetaUserInfo> GetMetaUserInfo()
+        {
+            Console.WriteLine("LocalStorage 81 is user new " + ContentManager.isUserNew);
+            if(!ContentManager.isUserNew)
+                return await SQLDatabase.Table<MetaUserInfo>().FirstAsync();
+            return null;
+        }
+        public static async Task<UserProfile> GetUserAsync()
+        {
+            return await SQLDatabase.Table<UserProfile>().FirstAsync();
+        }
+        public static Task<List<T>> GetTableListAsync<T>() where T : new()
+        {
+            return SQLDatabase.Table<T>().ToListAsync();
+        }
+        public static Task<Item> GetItemAsync(int ID)
+        {
+            return SQLDatabase.Table<Item>().Where(i => i.ID == ID).FirstOrDefaultAsync();
+        }
+        public static Task<Cabinet> GetCabinetAsync(string cabinetName)
+        {
+            return SQLDatabase.Table<Cabinet>().Where(c => c.Name == cabinetName).FirstOrDefaultAsync();
+        }
+        public static Task<Fridge> GetFridgeAsync(string fridgeName)
+        {
+            return SQLDatabase.Table<Fridge>().Where(c => c.Name == fridgeName).FirstOrDefaultAsync();
+        }
+
+        // Insertion/Update Methods
+        public static async void SetMetaUserInfo(MetaUserInfo metaUserInfo)
+        {
+            var currentInfo = await GetMetaUserInfo();
+            if (currentInfo != null)
+                await SQLDatabase.DeleteAsync(currentInfo);
+            await SQLDatabase.InsertAsync(metaUserInfo);
+        }
+        public static async void AddUser(UserProfile user)
+        {
+            await SQLDatabase.InsertAsync(user);
+        }
+        public static async void UpdateUser(UserProfile user)
+        {
+            var currentUser = await GetUserAsync();
+            if (currentUser == null)
+                return;
+            await SQLDatabase.DeleteAllAsync(SQLDatabase.TableMappings.First(m => m.MappedType == typeof(UserProfile)));
+            await SQLDatabase.InsertAsync(user);
+        }
+        public static async void AddItem(Item item)
+        {
+            await SQLDatabase.InsertAsync(item);
+        }
+        public static async void UpdateItem(Item item)
+        {
+            if (await GetItemAsync(item.ID) != null)
+                await SQLDatabase.UpdateAsync(item);
+        }
+        public static async void AddCabinet(string name)
+        {
+            Cabinet cabinet = ContentManager.CabinetMetaBase[name];
+            await SQLDatabase.InsertAsync(cabinet);
+
+            foreach (StorageCell cell in cabinet.GetGridCells())
+            {
+                Console.WriteLine("LocalStorageController 100 cell " + cell.RowSpan);
+                await SQLDatabase.InsertAsync(cell);
+            }
+        }
+        public static async void AddFridge(string name)
+        {
+            Fridge fridge = ContentManager.FridgeMetaBase[name];
+            await SQLDatabase.InsertAsync(fridge);
+
+            foreach (StorageCell cell in fridge.GetGridCells())
+            {
+                await SQLDatabase.InsertAsync(cell);
+            }
+        }
+
+        public static async void UpdateStorageCell(StorageCell storageCell)
+        {
+            await SQLDatabase.UpdateAsync(storageCell);
+        }
+
+        //Deletion Methods
+        public static Task DeleteTable<T>() where T : new()
+        {
+             return SQLDatabase.DeleteAllAsync<T>();
+        }
+        public static async void DeleteCabinetSynchronous(string name)
+        {
+            SQLDatabase.DeleteAsync(ContentManager.CabinetMetaBase[name]);
+        }
+        public static async void DeleteFridgeSynchronous(string name)
+        {
+            SQLDatabase.DeleteAsync(ContentManager.FridgeMetaBase[name]);
+        }
+        public static async void DeleteItem(Item item)
+        {
+            if (await GetItemAsync(item.ID) != null)
+                await SQLDatabase.DeleteAsync(item);
         }
     }
 }

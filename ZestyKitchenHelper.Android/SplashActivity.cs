@@ -18,9 +18,8 @@ using Xamarin.Forms.Platform.Android;
 namespace ZestyKitchenHelper.Droid
 {
     [Activity(MainLauncher = true, NoHistory = true, Theme = "@style/MainTheme.Splash")]
-    public class SplashActivity : FragmentActivity
+    public class SplashActivity : FormsAppCompatActivity
     {
-        Android.Support.V4.App.FragmentManager manager;
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -31,6 +30,7 @@ namespace ZestyKitchenHelper.Droid
         protected override void OnResume()
         {
             base.OnResume();
+            LoadApplication(new App());
             Intent intent = new Intent(this, typeof(MainActivity));
             StartActivity(intent);
         }

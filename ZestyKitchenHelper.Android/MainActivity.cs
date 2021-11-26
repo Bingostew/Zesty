@@ -24,12 +24,13 @@ namespace ZestyKitchenHelper.Droid
 {
     [Activity(Icon = "@mipmap/icon", Theme = "@style/MainTheme", LaunchMode = LaunchMode.SingleTask)]
     [IntentFilter(new[] { Intent.ActionView }, Categories = new[] {Intent.CategoryDefault, Intent.CategoryBrowsable},
-       DataScheme = "com.companyname.app1", DataHost = "dev-4l7acohw.auth0.com", DataPathPrefix = "/android/com.companyname.app1/callback")]
+       DataScheme = "com.companyname.zestykitchenhelper", DataHost = "dev-4l7acohw.auth0.com", DataPathPrefix = "/android/com.companyname.zestykitchenhelper/callback")]
     public class MainActivity : Auth0ClientActivity
     {
         public static Auth0Client client;
-        protected Android.Widget.Button loginButton;
-        protected TextView skipLoginField;
+        protected Android.Widget.Button cloudLoginButton;
+        protected Android.Widget.Button localLoginButton;
+        protected TextView helpText;
         protected TextView loadingOverlay;
         protected TextView loadingText;
         private UserProfile userProfile;
@@ -40,7 +41,7 @@ namespace ZestyKitchenHelper.Droid
 
             ActivityMediator.Instance.Send(intent.DataString);
         }
-        protected override void OnResume()
+        protected async override void OnResume()
         {
             base.OnResume();
             Platform.OnResume();
@@ -50,46 +51,20 @@ namespace ZestyKitchenHelper.Droid
         {
             client = new Auth0Client(new Auth0ClientOptions()
             { Domain = "dev-4l7acohw.auth0.com", ClientId = "Srn3fq8ccb7dnBmskN5VNGG2A4A0XKz4" }) ;
+
             base.OnCreate(savedInstanceState);
-            SetContentView(Resource.Layout.LoginPage);
-            loadingOverlay = FindViewById<TextView>(Resource.Id.loadingOverlay);
-            skipLoginField = FindViewById<TextView>(Resource.Id.skipLoginButton);
-            loadingText = FindViewById<TextView>(Resource.Id.loadingText);
-            loginButton = FindViewById<Android.Widget.Button>(Resource.Id.loginButton);
-            
-          // LocalStorageController.DeleteTableAsync<Cabinet>();
-          // LocalStorageController.DeleteTableAsync<Fridge>();
-          // LocalStorageController.DeleteTableAsync<Item>();
 
-            RemoveLoadingPage();
-            loginButton.Click += (obj, args) => { Login(); loginButton.Enabled = false; };
-            skipLoginField.Click += (obj, args) => 
-            {
-                Android.App.AlertDialog.Builder dialogBuilder = new Android.App.AlertDialog.Builder(this);
-                Android.App.AlertDialog alert = dialogBuilder.Create();
-                alert.SetTitle("Skip Log In?");
-                alert.SetButton2("Skip", (o,a) => ToSelectionActivity());
-                alert.SetButton("Cancel", (o, a) => alert.Hide());
-                alert.SetMessage("Logging in allows the same information to be edited on multiple devices.");
-                alert.Show();
-            };
-        }
+            ZXing.Net.Mobile.Forms.Android.Platform.Init();
 
-        private async void SetSavedInstance()
-        {
-            if (ContentManager.sessionUserName != null && ContentManager.sessionUserName.Length > 0)
-            {
-                ContentManager.ParseLocalCabinets(await FireBaseMediator.fireBaseController.GetUserCabinetList(ContentManager.sessionUserName),
-                    await LocalStorageController.GetItemListAsync());
-                ContentManager.ParseLocalFridge(await FireBaseMediator.fireBaseController.GetUserFridgeList(ContentManager.sessionUserName), 
-                    await LocalStorageController.GetItemListAsync());
-                ContentManager.ParseLocalItems(await FireBaseMediator.fireBaseController.GetUserItemList(ContentManager.sessionUserName));
-            }
-
-           // ContentManager.ParseLocalCabinets(await LocalStorageController.GetCabinetListAsync(), await LocalStorageController.GetItemListAsync());
-           // ContentManager.ParseLocalFridge(await LocalStorageController.GetFridgeListAsync(), await LocalStorageController.GetItemListAsync());
-           // ContentManager.ParseLocalItems(await LocalStorageController.GetItemListAsync());
-
+            var mainPage = new MainPage();
+            mainPage.InitializeLogin(LoginLocal, LoginCloud);
+            SetNativeView(mainPage);
+            int uiOptions = (int)Window.DecorView.SystemUiVisibility;
+            uiOptions |= (int)SystemUiFlags.LowProfile;
+            uiOptions |= (int)SystemUiFlags.HideNavigation;
+            uiOptions |= (int)SystemUiFlags.Fullscreen;
+            uiOptions |= (int)SystemUiFlags.ImmersiveSticky;
+            Window.DecorView.SystemUiVisibility = (StatusBarVisibility)uiOptions;
         }
         private void StartBackgroundCheck()
         {
@@ -99,10 +74,10 @@ namespace ZestyKitchenHelper.Droid
             WorkManager.GetInstance(this).EnqueueUniquePeriodicWork(expiration_work_id, ExistingPeriodicWorkPolicy.Replace, periodicWork);
         }
 
+
         private async Task LoginAsync()
         {
-            LoadingPage();
-            await client.LogoutAsync();
+            //await client.LogoutAsync();
             var loginResult = await client.LoginAsync();
             if (!loginResult.IsError)
             {
@@ -114,20 +89,21 @@ namespace ZestyKitchenHelper.Droid
                 {
                     Email = email,
                     Name = name,
+                    IconImage = ContentManager.ProfileIcons[0]
                 };
-                
-                
-                if (!await FireBaseMediator.fireBaseController.HasUser("gmail"))
+
+
+                if (!await FireBaseController.HasUser(email))
                 {
-                    await FireBaseMediator.fireBaseController.AddUser(name, "gmail");
+                    ContentManager.isUserNew = true;
+                    ContentManager.sessionUserProfile = userProfile;
                 }
-                
-                var intent = new Intent(this, typeof(SelectionActivity));
-                var serializedLoginResponse = JsonConvert.SerializeObject(userProfile);
-                ContentManager.sessionUserName = userProfile.Email;
-                FireBaseController.sessionUserProfile = await FireBaseMediator.fireBaseController.GetUserObject(userProfile.Email);
-                intent.PutExtra("LoginResult", serializedLoginResponse);
-                StartActivity(intent); 
+                else
+                {
+                    ContentManager.sessionUserProfile = await FireBaseController.GetUser(email);
+                }
+
+                //  var serializedLoginResponse = JsonConvert.SerializeObject(userProfile);
                 Console.WriteLine("REEEEE");
             }
             else
@@ -135,38 +111,30 @@ namespace ZestyKitchenHelper.Droid
                 Console.WriteLine("failure");
             }
         }
-        protected void LoadingPage(/*Android.Views.View view*/)
+
+        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Permission[] grantResults)
         {
-            loadingOverlay.ScaleX = 1;
-            loadingOverlay.ScaleY = 1;
-            loadingText.ScaleX = 1;
-            loadingText.ScaleY = 1;
-            loginButton.Enabled = false;
-        }
-        
-        protected void RemoveLoadingPage()
-        {
-            loadingOverlay.ScaleX = 0;
-            loadingOverlay.ScaleY = 0;
-            loadingText.ScaleX = 0;
-            loadingText.ScaleY = 0;
-            loginButton.Enabled = true;
+
+            Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+            ZXing.Net.Mobile.Android.PermissionsHandler.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+            base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
         }
 
-        private async void Login()
+        private async void LoginCloud()
         {
             await LoginAsync();
-            if (!await FireBaseMediator.fireBaseController.HasUser(userProfile.Email))
-            {
-                await FireBaseMediator.fireBaseController.AddUser(userProfile.Name, userProfile.Email);
-            }
+            ContentManager.isLocal = false;
+            ToSelectionActivity();
+        }
+
+        private void LoginLocal()
+        {
+            ContentManager.isLocal = true;
             ToSelectionActivity();
         }
 
         private void ToSelectionActivity()
         {
-            SetSavedInstance();
-            LoadingPage();
             StartBackgroundCheck();
             StartActivity(new Intent(this, typeof(SelectionActivity)));
         }
@@ -174,6 +142,13 @@ namespace ZestyKitchenHelper.Droid
         protected async Task<BrowserResultType> Logout()
         {
             return await client.LogoutAsync();
+        }
+
+        private void SetNativeView(Xamarin.Forms.VisualElement view)
+        {
+            var renderer = Xamarin.Forms.Platform.Android.Platform.CreateRendererWithContext(view, this);
+            renderer.Element.Layout(new Rectangle(0, 0, ContentManager.screenWidth, ContentManager.screenHeight));
+            SetContentView(renderer.View);
         }
     }
     

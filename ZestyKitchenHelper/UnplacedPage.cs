@@ -10,95 +10,107 @@ using System.Timers;
 
 namespace ZestyKitchenHelper
 {
-    public class UnplacedPage : ContentPage
+    public class UnplacedPage : ContentPage, IMainPage
     {
+        private const int side_margin = 5;
+        private const int between_margin = 5;
 
-        public SearchBar searchAllBar = new SearchBar();
+        public SearchBar searchAllBar;
         private ScrollView gridScroll;
-        private static Grid unplacedGrid;
+        private static Grid metaGrid;
         const string expIndicatorString = "Expiration Date";
         const string alphaIndicatorString = "A-Z";
+
+        private AbsoluteLayout content;
         public UnplacedPage(Action<Item> localUnplacedEvent, Action<Item> baseUnplaceEvent, Action<Item> deleteItemLocal, Action<Item> deleteItemBase)
         {
-            var returnButton = new ImageButton() { Source = ContentManager.backButton };
-            returnButton.Clicked += (o,a) => ContentManager.pageController.ToMainSelectionPage();
-            var addNewButton = new ImageButton() { Source = ContentManager.addIcon };
-            unplacedGrid = AddView.InitializeNewGrid(4, -1);
-            var addForm = AddView.GetAddForm(unplacedGrid, localUnplacedEvent, baseUnplaceEvent, "", false);
+            var titleGrid = new TopPage("Items", useReturnButton: false).GetGrid();
+            var addNewButton = new ImageButton() { Source = ContentManager.addIcon, BackgroundColor = Color.Transparent, Margin = new Thickness(side_margin, between_margin) };
+            // Renewing contents in meta grid
+            metaGrid = GridManager.GetGrid(ContentManager.metaGridName);
+            GridManager.AddGridItem(metaGrid, ContentManager.MetaItemBase.Values, true);
+
+            var addView = new AddView(localUnplacedEvent, baseUnplaceEvent, "", false);
+            searchAllBar = new SearchBar() { Margin = new Thickness(side_margin, 0) };
             searchAllBar.Text = ContentManager.defaultSearchAllBarText;
+            searchAllBar.TextColor = Color.Black;
             searchAllBar.Focused += (obj, args) => searchAllBar.Text = "";
             searchAllBar.Unfocused += (obj, args) => { if (searchAllBar.Text.Length == 0) searchAllBar.Text = ContentManager.defaultSearchAllBarText; };
-            searchAllBar.Unfocused += (obj, args) => ListSorter.OnSearchUnplacedGrid(unplacedGrid, searchAllBar.Text);
+            searchAllBar.Unfocused += (obj, args) => GridManager.FilterItemGrid(ContentManager.MetaItemBase.Values, metaGrid, searchAllBar.Text);
+            addNewButton.Clicked += (obj, args) => { addView.ResetForm(); ContentManager.pageController.ToAddView(addView); };
+
+            var sortSelectorIcon = new Image() { Source = ContentManager.sortIcon };
             var sortSelector = new Picker()
             {
+                Margin = new Thickness(side_margin, between_margin),
                 ItemsSource = new List<string>() { expIndicatorString, alphaIndicatorString },
-                Title = "Sort Order",
             };
             sortSelector.SelectedIndexChanged += (obj, args) =>
             {
-                unplacedGrid.SetGridChildrenList(unplacedGrid.Children.Cast<ItemLayout>().ToList());
                 switch (sortSelector.SelectedItem)
                 {
-                    case expIndicatorString: GridOrganizer.SortItemGrid(unplacedGrid, GridOrganizer.SortingType.Expiration_Close); break;
-                    case alphaIndicatorString: GridOrganizer.SortItemGrid(unplacedGrid, GridOrganizer.SortingType.A_Z); break;
+                    case expIndicatorString: GridOrganizer.SortItemGrid(metaGrid, GridOrganizer.ItemSortingMode.Expiration_Close); break;
+                    case alphaIndicatorString: GridOrganizer.SortItemGrid(metaGrid, GridOrganizer.ItemSortingMode.A_Z); break;
                 }
-                unplacedGrid.SetGridChildrenList(unplacedGrid.Children.Cast<ItemLayout>().ToList());
             };
 
 
-            addNewButton.Clicked += (obj, args) => { addForm.IsVisible = true; };
             gridScroll = new ScrollView()
             {
+                Margin = new Thickness(side_margin),
                 VerticalScrollBarVisibility = ScrollBarVisibility.Always,
-                Content = unplacedGrid
+                HeightRequest = Height * 0.8,
+                Content = metaGrid
             };
 
-            foreach(var placed in ContentManager.MetaItemBase.Values)
-            {
-                placed.SetMarkingVisibility(true);
-                if (!ContentManager.UnplacedItems.Contains(placed.ItemData))
-                    AddView.AddUnplacedGrid(unplacedGrid, null, null, placed, false);
-            }
-            var pageWidth = Application.Current.MainPage.Width;
-            AbsoluteLayout.SetLayoutBounds(returnButton, new Rectangle(0, 0, 70, 70));
-            AbsoluteLayout.SetLayoutFlags(returnButton, AbsoluteLayoutFlags.PositionProportional);
-            AbsoluteLayout.SetLayoutBounds(searchAllBar, new Rectangle(100, 10, pageWidth - 100, 40));
-            AbsoluteLayout.SetLayoutFlags(searchAllBar, AbsoluteLayoutFlags.None);
-            AbsoluteLayout.SetLayoutBounds(addNewButton, new Rectangle(.2, 50, 100, 50));
-            AbsoluteLayout.SetLayoutFlags(addNewButton, AbsoluteLayoutFlags.XProportional);
-            AbsoluteLayout.SetLayoutBounds(sortSelector, new Rectangle(.7, 50, 200, 50));
-            AbsoluteLayout.SetLayoutFlags(sortSelector, AbsoluteLayoutFlags.XProportional);
-            AbsoluteLayout.SetLayoutBounds(gridScroll, new Rectangle(0, 100, 1, .8));
-            AbsoluteLayout.SetLayoutFlags(gridScroll, AbsoluteLayoutFlags.SizeProportional);
-
-            Content = new AbsoluteLayout()
+            AbsoluteLayout.SetLayoutBounds(titleGrid, new Rectangle(0, 0, 1, TopPage.top_bar_height_proportional));
+            AbsoluteLayout.SetLayoutFlags(titleGrid, AbsoluteLayoutFlags.All);
+            AbsoluteLayout.SetLayoutBounds(searchAllBar, new Rectangle(0, 0.13, 0.8, .1));
+            AbsoluteLayout.SetLayoutFlags(searchAllBar, AbsoluteLayoutFlags.All);
+            AbsoluteLayout.SetLayoutBounds(addNewButton, new Rectangle(0, .25, 100,100));
+            AbsoluteLayout.SetLayoutFlags(addNewButton, AbsoluteLayoutFlags.PositionProportional);
+            AbsoluteLayout.SetLayoutBounds(sortSelector, new Rectangle(1, 0.13, .2, .1));
+            AbsoluteLayout.SetLayoutFlags(sortSelector, AbsoluteLayoutFlags.All);
+            AbsoluteLayout.SetLayoutBounds(sortSelectorIcon, AbsoluteLayout.GetLayoutBounds(sortSelector));
+            AbsoluteLayout.SetLayoutFlags(sortSelectorIcon, AbsoluteLayoutFlags.All);
+            AbsoluteLayout.SetLayoutBounds(gridScroll, new Rectangle(0, 1, 1, .625));
+            AbsoluteLayout.SetLayoutFlags(gridScroll, AbsoluteLayoutFlags.All);
+            AbsoluteLayout.SetLayoutBounds(addView, new Rectangle(0, 0, 1, 1));
+            AbsoluteLayout.SetLayoutFlags(addView, AbsoluteLayoutFlags.All);
+            content = new AbsoluteLayout()
             {
                 Children =
                 {
-                    returnButton,
+                    titleGrid,
                     searchAllBar,
                     addNewButton,
+                    sortSelectorIcon,
                     sortSelector,
-                    gridScroll,
-                    addForm
+                    gridScroll
                 }
             };
+
+            Content = content;
         }
 
-        public static void UpdateGrid(Item removed)
+        public AbsoluteLayout GetLayout()
         {
-            ItemLayout removedLayout = unplacedGrid.Children.Where(i => (i as ItemLayout).ItemData.ID == removed.ID).FirstOrDefault() as ItemLayout;
-            AddView.RemoveUnplacedGrid(unplacedGrid, removedLayout);
-            /*
-            if(removed != null)
-            {
-                var list = unplacedGrid.GetGridChilrenList() as List<View>;
-                var removedLayout = list.Where(l => (l as ItemLayout).ItemData.ID == removed.ID).FirstOrDefault();
-                if(removedLayout != null) list.Remove(removedLayout);
-                unplacedGrid.SetGridChildrenList(list);
-            }
-            AddView.ChangePageUnplacedGrid(unplacedGrid, 0, -1, ""); */
+            return content;
         }
-
-    }
+        public void SetLayout(AbsoluteLayout layout)
+        {
+            content = layout;
+            Content = content;
+        }
+        protected override void OnDisappearing()
+        {
+            base.OnDisappearing();
+            GridManager.FilterItemGrid(ContentManager.MetaItemBase.Values, metaGrid, "");
+        }
+        public void UpdateLayout()
+        {
+            metaGrid = GridManager.GetGrid(ContentManager.metaGridName);
+            GridManager.AddGridItem(metaGrid, ContentManager.MetaItemBase.Values, true);
+        }
+        }
 }

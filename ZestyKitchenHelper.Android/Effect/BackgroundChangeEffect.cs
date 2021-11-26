@@ -15,7 +15,7 @@ using Xamarin.Forms;
 using ZestyKitchenHelper.Droid.Effects;
 using Xamarin.Forms.Platform.Android;
 
-[assembly: ResolutionGroupName("App")]
+[assembly: ResolutionGroupName("Zesty")]
 [assembly: ExportEffect(typeof(BackgroundChangeEffect), "BackgroundChangeEvent")]
 namespace ZestyKitchenHelper.Droid.Effects
 {

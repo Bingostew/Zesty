@@ -32,21 +32,23 @@ namespace ZestyKitchenHelper.Droid.Effects
         ScreenTouch touchEffect;
         private bool isInContact;
         private bool capture;
-        private Point viewPoint = new Point();
+
         protected override void OnAttached()
         {
             Console.WriteLine("touch attached exe wow!");
             touchEffect = (ScreenTouch)Element.Effects.FirstOrDefault(e => e is ScreenTouch);
             capture = touchEffect.Capture;
+           
+            
             if(Control != null && touchEffect != null)
             {
+                
               //  viewDictionary.Add(Control, this);
 
                 Control.Touch += OnTouch;
-
+                
                 fromPixels = Control.Context.FromPixels;
             }
-
         }
 
        
@@ -80,8 +82,8 @@ namespace ZestyKitchenHelper.Droid.Effects
 
                         coordinate = new Point(motionEvent.GetX(pointerIndex),
                                                        motionEvent.GetY(pointerIndex));
-                        if (!capture) { CheckCollision(touchEffect.ContactViews, coordinate, TouchActionEventArgs.TouchActionType.Moved); }
-                        else { CheckOverlay(touchEffect.ContactViews, touchEffect.ContactÍnitiators, coordinate, TouchActionEventArgs.TouchActionType.Moved); }
+                        if (!capture) { CheckCollision(touchEffect.ContactView, coordinate, TouchActionEventArgs.TouchActionType.Moved); }
+                        //else { CheckOverlay(touchEffect.ContactView, coordinate, TouchActionEventArgs.TouchActionType.Moved); }
 
                     }
                     break;
@@ -91,19 +93,20 @@ namespace ZestyKitchenHelper.Droid.Effects
                     Console.WriteLine("done");
                     coordinate = new Point(motionEvent.GetX(pointerIndex),
                                                      motionEvent.GetY(pointerIndex));
-                    if (!capture) { CheckCollision(touchEffect.ContactViews, coordinate, TouchActionEventArgs.TouchActionType.Released); }
-                    else { CheckOverlay(touchEffect.ContactViews, touchEffect.ContactÍnitiators, coordinate, TouchActionEventArgs.TouchActionType.Released); }
+
+                    if (!capture) { CheckCollision(touchEffect.ContactView, coordinate, TouchActionEventArgs.TouchActionType.Released); }
+                    //else { CheckOverlay(touchEffect.ContactViews, touchEffect.ContactInitiators, coordinate, TouchActionEventArgs.TouchActionType.Released); }
                     break;
             }
         }
 
-        Vector2D GetAbsolutePositionAndroid(Android.Views.View view)
+        Vector2D<double> GetAbsolutePositionAndroid(Android.Views.View view)
         {
             var x = view.GetX();
             var y = view.GetY();
             var parent = (Android.Views.View)view.Parent;
             while(parent != null && typeof(Android.Views.View).IsAssignableFrom(parent.Parent.GetType())) { x += parent.GetX(); y += parent.GetY(); parent = (Android.Views.View)parent.Parent; }
-            return new Vector2D(x, y);
+            return new Vector2D<double>(x, y);
         }
 
         int GetStatusBarHeight()
@@ -117,53 +120,8 @@ namespace ZestyKitchenHelper.Droid.Effects
             return statusBarHeight;
         }
 
-        void CheckOverlay(Dictionary<int, List<Xamarin.Forms.ImageButton>> contactBase, List<Xamarin.Forms.ImageButton> contactInitiators, Point coordinate, TouchActionEventArgs.TouchActionType type)
-        {
-            Console.WriteLine("check" + Control);
-            var viewXL = new Rectangle(contactInitiators[0].GetAbsolutePosition().X, contactInitiators[0].GetAbsolutePosition().Y, contactInitiators[0].Width, contactInitiators[0].Height);
-            var viewXR = new Rectangle(contactInitiators[1].GetAbsolutePosition().X, contactInitiators[1].GetAbsolutePosition().Y, contactInitiators[1].Width, contactInitiators[1].Height);
-            var viewYT = new Rectangle(contactInitiators[2].GetAbsolutePosition().X, contactInitiators[2].GetAbsolutePosition().Y, contactInitiators[2].Width, contactInitiators[2].Height);
-            var viewYB = new Rectangle(contactInitiators[3].GetAbsolutePosition().X, contactInitiators[3].GetAbsolutePosition().Y, contactInitiators[3].Width, contactInitiators[3].Height);
-            foreach(var i in contactInitiators)
-            {
-               // Console.WriteLine(" x " + i.GetAbsolutePosition().X + " y " + i.GetAbsolutePosition().Y);
-            }
 
-            // top buffer, top buffer is wrong
-            isInContact = false;
-            List<int> contactIndexes = new List<int>();
-            List<Xamarin.Forms.View> contactViews = new List<Xamarin.Forms.View>();
-            foreach (var index in contactBase.Keys)
-            {
-                foreach (var button in contactBase[index])
-                {
-                    var bound = new Rectangle(button.GetAbsolutePosition().X, button.GetAbsolutePosition().Y, button.Width, button.Height);
-                    
-                    Console.WriteLine(" top " + viewYT.Top);
-                    /*
-                    Console.WriteLine("viewxl " + viewXL.IntersectsWith(bound) +
-                       " xr " + viewXR.IntersectsWith(bound) + " yt " + viewYT.IntersectsWith(bound)
-                       + " yb " + viewYB.IntersectsWith(bound));*/
-                    
-                    if (viewXL.IntersectsWith(bound) || viewXR.IntersectsWith(bound) || viewYT.IntersectsWith(bound) || viewYB.IntersectsWith(bound))
-                    {
-                        isInContact = true;
-                        contactIndexes.Add(index);
-                        contactViews.Add(button);
-                    }
-                }
-            }
-            if (isInContact)
-            {
-                FireEvent(this, type, coordinate, contactIndexes, contactViews);
-            }
-            else
-            {
-                FireEvent(this, type, coordinate, null, null);
-            }
-        }
-
-        void CheckCollision(Dictionary<int, List<Xamarin.Forms.ImageButton>> contactBase, Point coordinate, TouchActionEventArgs.TouchActionType type)
+        void CheckCollision(IStorage contactBase, Point coordinate, TouchActionEventArgs.TouchActionType type)
         {
             List<int> contactIndexes = new List<int>();
             List<Xamarin.Forms.View> contactViews = new List<Xamarin.Forms.View>();
@@ -173,18 +131,19 @@ namespace ZestyKitchenHelper.Droid.Effects
                     fromPixels(GetAbsolutePositionAndroid(Control).Y - GetStatusBarHeight() + (Control.Height / 2)) - 10,
                     20, 20);
 
-                foreach (var index in contactBase.Keys)
+                foreach (var cell in contactBase.GetGridCells())
                 {
-                    foreach (var button in contactBase[index])
+                    var child = cell.GetButton();
+
+                    var contactRect = new Rectangle(child.GetAbsolutePosition().X, child.GetAbsolutePosition().Y, child.Width, child.Height);
+                    if (contactRect.IntersectsWith(controlRect))
                     {
-                        var contactRect = new Rectangle(button.GetAbsolutePosition().X, button.GetAbsolutePosition().Y, button.Width, button.Height);
-                        if (contactRect.IntersectsWith(controlRect))
-                        {
-                            isInContact = true;
-                            contactIndexes.Add(index);
-                            contactViews.Add(button);
-                        }
+                        isInContact = true;
+
+                        contactIndexes.Add(cell.Index);
+                        contactViews.Add(child);
                     }
+
                 }
             }
             if (isInContact)
@@ -213,13 +172,13 @@ namespace ZestyKitchenHelper.Droid.Effects
 
             // Call the method
             onTouchAction(touchEffect.Element,
-                new TouchActionEventArgs(actionType, point, pressPoint, isInContact, contactIndexes, contactView));
+                new TouchActionEventArgs(actionType, point, isInContact, contactIndexes, contactView));
             isInContact = false;
         }
 
         protected override void OnDetached()
         {
-            ///Control.Touch -= OnTouch;
+            //Control.Touch -= OnTouch;
         }
     }
 }

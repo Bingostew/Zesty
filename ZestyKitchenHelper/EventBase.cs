@@ -18,11 +18,18 @@ namespace ZestyKitchenHelper
             Exited,
             Cancelled
         }
-        public TouchActionEventArgs(TouchActionType type, Point location, Point originLocation, bool isInContact, List<int> contactIndex, List<View> view)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="type">Type of action registered</param>
+        /// <param name="location">Location of point</param>
+        /// <param name="isInContact"></param>
+        /// <param name="contactIndex">The ID of each StorageCells in contact</param>
+        /// <param name="view"></param>
+        public TouchActionEventArgs(TouchActionType type, Point location, bool isInContact, List<int> contactIndex, List<View> view)
         {
             Type = type;
             Location = location;
-            OldLocation = originLocation;
             IsInContact = isInContact;
             ContactIndex = contactIndex;
             ContactView = view;
@@ -40,7 +47,7 @@ namespace ZestyKitchenHelper
     public class BackgroundChange : RoutingEffect
     {
         public Color color { get; set; }
-        public BackgroundChange() : base("App.BackgroundChangeEvent")
+        public BackgroundChange() : base("Zesty.BackgroundChangeEvent")
         {
         }
     }
@@ -48,19 +55,15 @@ namespace ZestyKitchenHelper
     public class ImageTint : RoutingEffect
     {
         public Color tint { get; set; }
-        public Image Image { get; set; }
-        public ImageTint() : base("App.ImageTintEvent") { }
+        public string ImagePath { get; set; }
+        public ImageTint() : base("Zesty.ImageTintEvent") { }
     }
 
     public class ScreenTouch : RoutingEffect
     { 
-        public ScreenTouch() : base("App.ScreenTouchEvent"){}
+        public ScreenTouch() : base("Zesty.ScreenTouchEvent"){}
         public bool Capture = false;
-        /// <summary>
-        /// For item buffers, must be in this order (Left, Right, Top, Bottom)
-        /// </summary>
-        public List<ImageButton> ContactÍnitiators { get; set; }
-        public Dictionary<int, List<ImageButton>> ContactViews { get; set; }
+        public Utility.IStorage ContactView { get; set; }
 
         public event TouchActionEventHandler OnTouchEvent;
         public void OnTouchAction(Element element, TouchActionEventArgs args)
@@ -68,5 +71,11 @@ namespace ZestyKitchenHelper
             OnTouchEvent?.Invoke(element, args);
         }
     }
+
+    public class SafeAreaPadding : RoutingEffect
+    {
+        public SafeAreaPadding() : base("Zesty.SafeAreaPaddingEvent") { }
+    }
+
 
 }

@@ -44,34 +44,49 @@ namespace ZestyKitchenHelper.Droid
          AndroidX.Fragment.App.Fragment selectionFrag;
         AndroidX.Fragment.App.Fragment viewFrag;
         AndroidX.Fragment.App.Fragment unplacedFrag;
-
          AndroidX.Fragment.App.FragmentManager manager;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
             manager = SupportFragmentManager;
             base.OnCreate(savedInstanceState);
-            Console.WriteLine("oncreate");
-            mainSelectionFrag = ContentManager.pageController.CreateSupportFragment(this);
-            manager.BeginTransaction().Replace(Android.Resource.Id.Content, mainSelectionFrag).Commit();
+            Console.WriteLine(" Selection Activity 54 oncreate");
+
+            SetNativeView(ContentManager.pageController);
 
             ActionBar?.Hide();
             TouchEffect.activity = this;
-            ContentManager.pageController.InitializePageSequence();
+
+            ContentManager.SetNativeViewFunctionAction(SetNativeView);
 
             GetLoginResult(savedInstanceState);
+
+            ContentManager.InitializeApp();
 
            // UpdateUserEvent();
            // GetUserEvent();
         }
+
+        private void SetNativeView(Xamarin.Forms.VisualElement view)
+        {
+            var renderer = Xamarin.Forms.Platform.Android.Platform.CreateRendererWithContext(view, this);
+            renderer.Element.Layout(new Rectangle(0, 0, ContentManager.screenWidth, ContentManager.screenHeight));
+            SetContentView(renderer.View);
+        }
         protected override void OnStart()
         {
             base.OnStart();
+            int uiOptions = (int)Window.DecorView.SystemUiVisibility;
+            uiOptions |= (int)SystemUiFlags.LowProfile;
+            uiOptions |= (int)SystemUiFlags.HideNavigation;
+            uiOptions |= (int)SystemUiFlags.Fullscreen;
+            uiOptions |= (int)SystemUiFlags.ImmersiveSticky;
+            Window.DecorView.SystemUiVisibility = (StatusBarVisibility)uiOptions;
         }
         protected override void OnResume()
         {
             base.OnResume();
-            if(ContentManager.singleSelectionPage != null) ContentManager.singleSelectionPage.SetView();
+           // if(ContentManager.singleSelectionPage != null) ContentManager.singleSelectionPage.SetView();
         }
         protected override void OnStop()
         {
@@ -85,7 +100,7 @@ namespace ZestyKitchenHelper.Droid
 
         private async void GetUserEvent()
         {
-            var user = await FireBaseMediator.fireBaseController.GetUser(ContentManager.sessionUserName);
+            var user = await FireBaseController.GetUser(ContentManager.sessionUserProfile.Name);
             if (user != null)
             {
 

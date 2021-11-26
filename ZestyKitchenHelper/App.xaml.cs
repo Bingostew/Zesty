@@ -8,14 +8,10 @@ namespace ZestyKitchenHelper
     {
         public App()
         {
-            InitializeComponent();
-
-            MainPage = ContentManager.pageController;
+            MainPage = new MainPage();
         }
-
         protected override void OnStart()
         {
-
         }
 
         protected override void OnSleep()

@@ -1,43 +1,116 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Utility;
 using Xamarin.Forms;
+using ZXing.Mobile;
+using ZXing.Net.Mobile.Forms;
 
 namespace ZestyKitchenHelper
 {
     public class SelectionPage : ContentPage
     {
-        public ImageButton cabinetButton = new ImageButton()
+        private const int grid_margin = 10;
+        private const string main_label_font = "Raleway_Regular";
+
+        StackLayout content;
+        private ImageButton cabinetButton = new ImageButton()
         {
+            Margin = new Thickness(0, grid_margin),
             Source = ContentManager.pantryIcon,
             Aspect = Aspect.AspectFill,
+            BackgroundColor = Color.Transparent,
             WidthRequest = 300, HeightRequest = 300
         };
-        public ImageButton fridgeButton = new ImageButton()
+        private ImageButton fridgeButton = new ImageButton()
         {
+            Margin = new Thickness(0, grid_margin),
             Source = ContentManager.refridgeIcon,
             Aspect = Aspect.AspectFill,
+            BackgroundColor = Color.Transparent,
             WidthRequest = 300,
             HeightRequest = 300
         };
-        public ImageButton addUnplaceButton = new ImageButton()
+        private ImageButton addUnplaceButton = new ImageButton()
         {
-            Source = ContentManager.addIcon
+            Margin = new Thickness(0, grid_margin),
+            Source = ContentManager.addIcon,
+            BackgroundColor = Color.Transparent
         };
-        
+        private Label cabinetLabel = new Label()
+        {
+            Margin = new Thickness(grid_margin),
+            FontSize = 30,
+            TextColor = Color.Black,
+            HorizontalOptions = LayoutOptions.Center,
+            Text = "My Pantries",
+            FontFamily = main_label_font
+        };
+        private Label fridgeLabel = new Label()
+        {
+            Margin = new Thickness(grid_margin),
+            FontSize = 30,
+            TextColor = Color.Black,
+            HorizontalOptions = LayoutOptions.Center,
+            Text = "My Fridges",
+            FontFamily = main_label_font
+        };
+        private Label unplacedLabel = new Label()
+        {
+            Margin = new Thickness(grid_margin),
+            FontSize = 30,
+            HorizontalOptions = LayoutOptions.Center,
+            TextColor = Color.Black,
+            Text = "All Items",
+            FontFamily = main_label_font
+        };
+        private Image expWarningImage1 = new Image()
+        {
+            IsVisible = false,
+            Source = ContentManager.expWarningIcon,
+            WidthRequest =  ContentManager.exp_warning_size,
+            HeightRequest =  ContentManager.exp_warning_size,
+            HorizontalOptions = LayoutOptions.End,
+            VerticalOptions = LayoutOptions.Start,
+        };
+        private Image expWarningImage2 = new Image()
+        {
+            IsVisible = false,
+            Source = ContentManager.expWarningIcon,
+            WidthRequest =  ContentManager.exp_warning_size,
+            HeightRequest =  ContentManager.exp_warning_size,
+            HorizontalOptions = LayoutOptions.End,
+            VerticalOptions = LayoutOptions.Start
+        };
+        private Image expWarningImage3 = new Image()
+        {
+            IsVisible = false,
+            Source =ContentManager.expWarningIcon,
+            WidthRequest =  ContentManager.exp_warning_size,
+            HeightRequest =  ContentManager.exp_warning_size,
+            HorizontalOptions = LayoutOptions.End,
+            VerticalOptions = LayoutOptions.Start
+        };
+
 
         public SelectionPage()
         {
+            var titleGrid = new TopPage("Main Page", null, true, false).GetGrid();
+            titleGrid.HeightRequest = ContentManager.screenHeight * TopPage.top_bar_height_proportional;
+
             Grid grid = new Grid()
             {
-                BackgroundColor = Color.Wheat,
+                BackgroundColor = ContentManager.ThemeColor,
+                Margin = new Thickness(grid_margin),
                 RowDefinitions =
                 {
-                    new RowDefinition(),
-                    new RowDefinition(),
+                    new RowDefinition(){Height = GridLength.Auto },
+                    new RowDefinition(){Height = GridLength.Star },
+                    new RowDefinition(){Height = GridLength.Auto },
+                    new RowDefinition(){Height = GridLength.Star },
                 },
                 ColumnDefinitions =
                 {
@@ -45,22 +118,44 @@ namespace ZestyKitchenHelper
                     new ColumnDefinition()
                 }
             };
+            ContentManager.AddOnBackgroundChangeListener(c => grid.BackgroundColor = c);
+            List<View> gridChildren = new List<View>(){ cabinetLabel, cabinetButton, fridgeLabel, fridgeButton, unplacedLabel, addUnplaceButton, 
+                new Label() { Text = "Testing Page" }};
+            grid.OrganizeGrid(gridChildren, GridOrganizer.OrganizeMode.TwoRowSpanLeft);
 
-            grid.Children.Add(cabinetButton, 0, 0);
-            grid.Children.Add(fridgeButton, 1, 0);
-            grid.Children.Add(addUnplaceButton, 0, 1);
+            // Check if any items in the given categories are expired. If so, show expiration warning.
+            grid.Children.Add(expWarningImage1, 0, 1);
+            grid.Children.Add(expWarningImage2, 1, 1);
+            grid.Children.Add(expWarningImage3, 0, 3);
+          
 
+            
             void SetSelection(ContentManager.StorageSelection selection)
             {
                 ContentManager.storageSelection = selection;
             }
 
             cabinetButton.Clicked += (obj, args) => SetSelection(ContentManager.StorageSelection.cabinet);
-            cabinetButton.Clicked += (obj, args) => ContentManager.pageController.InitializeSingleSelectionPage(ContentManager.StorageSelection.cabinet);
+            cabinetButton.Clicked += (obj, args) => ContentManager.pageController.ToSingleSelectionPage();
             fridgeButton.Clicked += (obj, args) => SetSelection(ContentManager.StorageSelection.fridge);
-            fridgeButton.Clicked += (obj, args) => ContentManager.pageController.InitializeSingleSelectionPage(ContentManager.StorageSelection.fridge);
+            fridgeButton.Clicked += (obj, args) => ContentManager.pageController.ToSingleSelectionPage();
             addUnplaceButton.Clicked += (o,a) => ContentManager.pageController.ToUnplacedPage();
-            Content = grid;
+
+            content = new StackLayout()
+            {
+                WidthRequest = ContentManager.screenWidth,
+                HeightRequest = ContentManager.screenHeight,
+                Children =
+                {
+                    titleGrid, grid
+                }
+            };
+            Content = content;
+        }
+
+        private void AnimateExpirationWarning(View view)
+        {
+            view.QuadraticInterpolator(1.3, 2000, (t) => { if (t >= 1) { view.Scale = t; } }, null, true);
         }
     }
 }
