@@ -23,6 +23,7 @@ namespace ZestyKitchenHelper.iOS.Renderer
         public override void ItemSelected(UITabBar tabbar, UITabBarItem item)
         {
             ResizeIcons();
+            item.SetTitleTextAttributes(new UITextAttributes() { Font = UIFont.PreferredCaption1 }, UIControlState.Normal);
         }
 
         public void ResizeIcons()

@@ -61,6 +61,8 @@ namespace ZestyKitchenHelper.Droid
 
             GetLoginResult(savedInstanceState);
 
+            ContentManager.InitializeApp();
+
            // UpdateUserEvent();
            // GetUserEvent();
         }

@@ -81,6 +81,7 @@ namespace ZestyKitchenHelper
         public const string IOSNotificationIdGenerator = "IOSNotification";
 
         public static Action<VisualElement> SetNativeViewFunction;
+        public static Action PopNativeViewFunction; // IOS Only
 
         public static PageController pageController = new PageController();
 
@@ -97,7 +98,7 @@ namespace ZestyKitchenHelper
             IDGenerator.InitializeIDGroup(fridgeEditIdGenerator);
             IDGenerator.InitializeIDGroup(storageCellIdGenerator);
             IDGenerator.InitializeIDGroup(IOSNotificationIdGenerator);
-            //LocalStorageController.ResetDatabase(); // WARNING: FOR TESTING PURPOSES ONLY
+            LocalStorageController.ResetDatabase(); // WARNING: FOR TESTING PURPOSES ONLY
             LocalStorageController.InitializeLocalDataBase();
 
             // Initialize Important Grids
@@ -151,10 +152,11 @@ namespace ZestyKitchenHelper
                 pageController.InitializePageSequence();
         }
 
-        public static void SetNativeViewFunctionAction(Action<VisualElement> SetNativeViewAction)
+        public static void SetNativeViewFunctionAction(Action<VisualElement> SetNativeViewAction, /*ios only*/ Action RemoveNativeViewAction = null)
         {
             // Native view action can be used to set the root page
             SetNativeViewFunction = SetNativeViewAction;
+            PopNativeViewFunction = RemoveNativeViewAction;
         }
         /// <summary>
         /// Returns the string that represents the storage the current user is in.

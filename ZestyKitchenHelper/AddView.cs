@@ -25,6 +25,9 @@ namespace ZestyKitchenHelper
 
         private const double numpad_height_proportional = 0.35;
         private static readonly Color numpadBackground = new Color(255, 255, 255, 80);
+        private static readonly Color unselectedColor = Color.Gold;
+        private static readonly Color selectedColor = Color.WhiteSmoke;
+
         private const int numpad_font_size = 20;
         private const int numpad_spacing = 5;
 
@@ -41,6 +44,7 @@ namespace ZestyKitchenHelper
         List<IconLayout> presetResult = new List<IconLayout>();
         List<int> presetResultSorter = new List<int>();
         List<Item> newItem = new List<Item>();
+        AbsoluteLayout manualEditLayout;
         static AddView()
         {
 
@@ -55,6 +59,9 @@ namespace ZestyKitchenHelper
         public AddView(Action<Item> localUnplacedEvent, Action<Item> baseUnplacedEvent,
             string storageName = "", bool limited = true, Grid partialUnplacedGrid = null)
         {
+            BackgroundColor = ContentManager.ThemeColor;
+            ContentManager.AddOnBackgroundChangeListener(c => BackgroundColor = c);
+
             item = new Item().SetItem(-1, -1, -1, 1, "product", ContentManager.addIcon);
             Grid currentGrid = new Grid();
 
@@ -78,11 +85,9 @@ namespace ZestyKitchenHelper
 
             autoDetectLabel = new Label() { FontSize = 15, TextColor = Color.Black, BackgroundColor = Color.White, IsVisible = false, AnchorX = 0 };
 
-            var foregroundTint = new Image() { BackgroundColor = Color.FromRgba(0, 0, 0, 98), HeightRequest = ContentManager.screenHeight, WidthRequest = ContentManager.screenWidth };
-
             Grid form = new Grid()
             {
-                BackgroundColor = Color.FromRgb(200, 200, 200),
+                BackgroundColor = ContentManager.ThemeColor,
                 RowSpacing = form_grid_spacing,
                 ColumnSpacing = form_grid_spacing,
                 RowDefinitions =
@@ -99,46 +104,52 @@ namespace ZestyKitchenHelper
                     new ColumnDefinition()
                 }
             };
+            ContentManager.AddOnBackgroundChangeListener(c => form.BackgroundColor = c);
 
             void ClearText(Button button)
             {
                 button.Text = "";
-                toggleSelect(selectorIndex, formSelector, Color.BlanchedAlmond, Color.Wheat);
+                toggleSelect(selectorIndex, formSelector, selectedColor, unselectedColor);
             }
 
-            nameInput = new Entry() { HeightRequest = form_height_proportional * ContentManager.screenHeight / form_grid_row_count, Placeholder = "Product" };
-            nameInput.Unfocused += (obj, args) => { item.Name = nameInput.Text; autoDetectExpiration(nameInput.Text); if (imageSelectorIndex == 0) changeSelectedIcon(); };
+            nameInput = new Entry() { HeightRequest = form_height_proportional * ContentManager.screenHeight / form_grid_row_count, Placeholder = "Product", 
+                BackgroundColor = unselectedColor, PlaceholderColor = Color.Black, Margin = new Thickness(0, form_label_horizontal_margin, form_label_horizontal_margin, 0) };
+            nameInput.Unfocused += (obj, args) => { nameInput.BackgroundColor = unselectedColor; item.Name = nameInput.Text; autoDetectExpiration(nameInput.Text); if (imageSelectorIndex == 0) changeSelectedIcon(); };
+            nameInput.Focused += (obj, args) => { nameInput.BackgroundColor = selectedColor; };
             nameInput.Completed += (obj, args) => { item.Name = nameInput.Text; if (imageSelectorIndex == 0) changeSelectedIcon(); };
             var nameLabel = new Label() { Text = "Name: ", FontSize = form_label_font_size, TextColor = Color.Black, Margin = new Thickness(form_label_horizontal_margin, 0), VerticalTextAlignment = TextAlignment.Center };
             var dateLabel = new Label() { Text = "Exp. Date: ", FontSize = form_label_font_size, TextColor = Color.Black, Margin = new Thickness(form_label_horizontal_margin, 0), VerticalTextAlignment = TextAlignment.Center };
             var amountLabel = new Label() { Text = "Amount: ", FontSize = form_label_font_size, TextColor = Color.Black, Margin = new Thickness(form_label_horizontal_margin, 0), VerticalTextAlignment = TextAlignment.Center };
             var iconLabel = new Label() { Text = "Icon: ", FontSize = form_label_font_size, TextColor = Color.Black, HeightRequest = formGridRowHeight, VerticalTextAlignment = TextAlignment.Center };
-            var dateMonth = new Button() { BorderColor = Color.Black, BorderWidth = form_input_border_width, BackgroundColor = Color.Transparent };
+            var dateMonth = new Button() { BorderColor = Color.Black, BorderWidth = form_input_border_width, BackgroundColor = Color.Transparent, TextColor = Color.Black };
             dateMonth.Clicked += (obj, arg) => { selectorIndex = 0; ClearText(dateMonth); };
-            var dateDay = new Button() { BorderColor = Color.Black, BorderWidth = form_input_border_width, BackgroundColor = Color.Transparent, };
+            var dateDay = new Button() { BorderColor = Color.Black, BorderWidth = form_input_border_width, BackgroundColor = Color.Transparent, TextColor = Color.Black };
             dateDay.Clicked += (obj, arg) => { selectorIndex = 1; ClearText(dateDay); };
-            var dateYear = new Button() { BorderColor = Color.Black, BorderWidth = form_input_border_width };
+            var dateYear = new Button() { BorderColor = Color.Black, BorderWidth = form_input_border_width, TextColor = Color.Black };
             dateYear.Clicked += (obj, arg) => { selectorIndex = 2; ClearText(dateYear); };
-            var amountInput = new Button() { BorderColor = Color.Black, BorderWidth = form_input_border_width, BackgroundColor = Color.Transparent, Margin = new Thickness(0, 0, form_label_horizontal_margin, 0) };
+            var amountInput = new Button() { BorderColor = Color.Black, BorderWidth = form_input_border_width, BackgroundColor = Color.Transparent, 
+               Margin = new Thickness(0, 0, form_label_horizontal_margin, 0), TextColor = Color.Black };
             amountInput.Clicked += (obj, arg) => { selectorIndex = 3; ClearText(amountInput); };
             Grid expGrid = GridManager.InitializeGrid(1, 3, GridLength.Star, GridLength.Star);
             expGrid.ColumnSpacing = form_grid_spacing;
             expGrid.Margin = new Thickness(0, 0, form_label_horizontal_margin, 0);
             GridManager.AddGridItem(expGrid, new List<View>() { dateMonth, dateDay, dateYear }, true);
 
-            var iconSelect1 = new Button() { HeightRequest = formGridRowHeight, Text = "Preset", TextColor = Color.Black, CornerRadius = form_icon_select_border_radius, BorderColor = Color.Wheat, BorderWidth = 3 };
+            var iconSelect1 = new Button() { HeightRequest = formGridRowHeight, Text = "Preset", TextColor = Color.Black, CornerRadius = form_icon_select_border_radius, 
+                BorderColor = Color.Black, BorderWidth = 2 };
             iconSelect1.Clicked += (obj, arg) =>
             {
-                imageSelectorIndex = 0; toggleSelect(0, imageSelector, Color.SaddleBrown, Color.Wheat);
+                imageSelectorIndex = 0; toggleSelect(0, imageSelector, selectedColor, unselectedColor);
 
                 defaultScrollView.IsVisible = false;
                 presetScrollView.IsVisible = true;
                 changeSelectedIcon();
             };
-            var iconSelect2 = new Button() { HeightRequest = formGridRowHeight, Text = "General", TextColor = Color.Black, CornerRadius = form_icon_select_border_radius, BorderColor = Color.Wheat, BorderWidth = 3 };
+            var iconSelect2 = new Button() { HeightRequest = formGridRowHeight, Text = "General", TextColor = Color.Black, CornerRadius = form_icon_select_border_radius,
+                BorderColor = Color.Black, BorderWidth = 2 };
             iconSelect2.Clicked += (obj, arg) =>
             {
-                imageSelectorIndex = 1; toggleSelect(1, imageSelector, Color.SaddleBrown, Color.Wheat);
+                imageSelectorIndex = 1; toggleSelect(1, imageSelector, selectedColor, unselectedColor);
                 defaultScrollView.IsVisible = true;
                 presetScrollView.IsVisible = false;
                 Console.WriteLine("AddView 144 default select grid children length " + defaultSelectGrid.Children.Count + " " + ((Grid)defaultScrollView.Content).Children.Count);
@@ -195,7 +206,7 @@ namespace ZestyKitchenHelper
                 string newText = oldText;
                 if (oldText.Length < limit)
                 {
-                    toggleSelect(selectorIndex, formSelector, Color.BlanchedAlmond, Color.Wheat);
+                    toggleSelect(selectorIndex, formSelector, selectedColor, unselectedColor);
                     newText = oldText + addedText;
                     formSelector[selectorIndex].Text = newText;
                     if (oldText.Length == limit - 1 && selectorIndex < formSelector.Count - 1)
@@ -219,7 +230,7 @@ namespace ZestyKitchenHelper
                         formSelector[selectorIndex].Text = newText;
                         setItem(int.Parse(newText), selectorIndex);
                         selectorIndex++;
-                        toggleSelect(selectorIndex, formSelector, Color.BlanchedAlmond, Color.Wheat);
+                        toggleSelect(selectorIndex, formSelector, selectedColor, unselectedColor);
                     }
                     else
                     {
@@ -231,11 +242,13 @@ namespace ZestyKitchenHelper
                     newText = oldText + addedText;
                     formSelector[selectorIndex].Text = newText;
                     setItem(int.Parse(newText), selectorIndex);
-                    selectorIndex++; toggleSelect(selectorIndex, formSelector, Color.BlanchedAlmond, Color.Wheat);
+                    selectorIndex++; toggleSelect(selectorIndex, formSelector, selectedColor, unselectedColor);
                 }
             }
 
             Grid numPadGrid = GridManager.InitializeGrid(4, 3, GridLength.Star, GridLength.Star);
+            numPadGrid.BackgroundColor = ContentManager.ThemeColor;
+            ContentManager.AddOnBackgroundChangeListener(c => numPadGrid.BackgroundColor = c);
             numPadGrid.Margin = new Thickness(form_label_horizontal_margin, 0);
             numPadGrid.RowSpacing = numpad_spacing;
             numPadGrid.ColumnSpacing = numpad_spacing;
@@ -262,7 +275,7 @@ namespace ZestyKitchenHelper
             var exitButton = new Button() { Text = "Exit", BackgroundColor = Color.WhiteSmoke, TextColor = Color.Black, Margin = new Thickness(5), BorderColor = Color.Black, BorderWidth = 1 };
             var newFormButton = new Button() { BackgroundColor = Color.WhiteSmoke, Text = "Add", TextColor = Color.Black, Margin = new Thickness(5), BorderColor = Color.Black, BorderWidth = 1 };
 
-            AbsoluteLayout manualEditLayout = new AbsoluteLayout()
+            manualEditLayout = new AbsoluteLayout()
             {
                 HorizontalOptions = LayoutOptions.Center,
                 HeightRequest = ContentManager.screenHeight,
@@ -270,7 +283,6 @@ namespace ZestyKitchenHelper
                 BackgroundColor = ContentManager.ThemeColor,
                 Children =
                 {
-                    foregroundTint,
                     form,
                     autoDetectLabel,
                     numPadGrid,
@@ -310,8 +322,6 @@ namespace ZestyKitchenHelper
                 ResetForm();
             };
 
-            AbsoluteLayout.SetLayoutBounds(foregroundTint, new Rectangle(0, 0, 1, 1));
-            AbsoluteLayout.SetLayoutFlags(foregroundTint, AbsoluteLayoutFlags.All);
             AbsoluteLayout.SetLayoutBounds(autoDetectLabel, new Rectangle(0, 0, 1, .06));
             AbsoluteLayout.SetLayoutFlags(autoDetectLabel, AbsoluteLayoutFlags.All);
             AbsoluteLayout.SetLayoutBounds(form, new Rectangle(0, 0, 1, form_height_proportional));
@@ -425,12 +435,13 @@ namespace ZestyKitchenHelper
         {
             foreach (IconLayout icon in selectedGrid.Children)
             {
-                icon.imageButton.BorderWidth = 0;
+                icon.imageButton.BackgroundColor = Color.Transparent;
+                icon.imageButton.BorderWidth = 1;
             }
             if (selected != null)
             {
-                selected.BorderWidth = 2;
-                selected.BorderColor = Color.DarkGoldenrod;
+                selected.BackgroundColor = selectedColor;
+                selected.BorderWidth += 3;
             }
         }
 
@@ -478,11 +489,11 @@ namespace ZestyKitchenHelper
             defaultScrollView.IsVisible = false;
             foreach (var button in imageSelector)
             {
-                button.BackgroundColor = Color.Wheat;
+                button.BackgroundColor = unselectedColor;
             }
             foreach (var button in formSelector)
             {
-                button.BackgroundColor = Color.BurlyWood;
+                button.BackgroundColor = unselectedColor;
                 button.Text = "";
             }
             item = new Item().SetItem(-1, -1, -1, 1, "product", ContentManager.addIcon);

@@ -23,6 +23,7 @@ namespace ZestyKitchenHelper.iOS
         public static Action ToPageControllerAction;
         private Auth0Client client;
         private UserProfile userProfile;
+        private UIViewController mainViewController;
 
         public override UIWindow Window
         {
@@ -73,6 +74,9 @@ namespace ZestyKitchenHelper.iOS
             ((MainPage)Xamarin.Forms.Application.Current.MainPage).InitializeLogin(
                 () => { ContentManager.isLocal = true; ToPageController(); },
                  async () => { ContentManager.isLocal = false; await LoginAsync(); ToPageController(); });
+
+            mainViewController = Window.RootViewController;
+
             return base.FinishedLaunching(app, options);
         }
         private async Task LoginAsync()
@@ -123,9 +127,8 @@ namespace ZestyKitchenHelper.iOS
 
         private void ToPageController()
         {
+            ContentManager.SetNativeViewFunctionAction(SetNativeView, PopTopNativeView);
             ContentManager.InitializeApp();
-
-            ContentManager.SetNativeViewFunctionAction(SetNativeView);
         }
 
         private void SetNativeView(Xamarin.Forms.VisualElement view)
@@ -139,7 +142,12 @@ namespace ZestyKitchenHelper.iOS
 
             renderer.Element.Layout(UIScreen.MainScreen.Bounds.ToRectangle());
 
-            Window.RootViewController = renderer.ViewController;
+            Window.RootViewController.View.AddSubview(renderer.NativeView);
+        }
+
+        private void PopTopNativeView()
+        {
+            Window.RootViewController.View.Subviews.Last().RemoveFromSuperview();
         }
 
         public override bool OpenUrl(UIApplication application, NSUrl url, string sourceApplication, NSObject annotation)

@@ -18,13 +18,11 @@ namespace ZestyKitchenHelper
         private double add_view_button_width;
         private double change_name_field_height;
 
-        private List<View> newSelectionButton = new List<View>();
         private ScrollView scrollView;
         private Grid mainGrid;
         private ImageButton newButton;
         private AbsoluteLayout content;
-
-        private List<List<View>> gridList = new List<List<View>>();
+        private ContentManager.StorageSelection currentStorageSelection;
 
         private Action<string> deleteStorageLocal, deleteStorageBase;
 
@@ -32,7 +30,7 @@ namespace ZestyKitchenHelper
         {
             deleteStorageLocal = _deleteStorageLocal;
             deleteStorageBase = _deleteStorageBase;
-
+            currentStorageSelection = storageType;
             // Calculate sizes
             grid_cell_width = (ContentManager.screenWidth / 2) - (spacing / 3);
             add_view_button_width = grid_cell_width / 3;
@@ -60,7 +58,6 @@ namespace ZestyKitchenHelper
 
             newButton = new ImageButton() { Source = ContentManager.addIcon, Aspect = Aspect.Fill, BackgroundColor = Color.Transparent };
             newButton.Clicked += (obj, args) => ContentManager.pageController.ToStorageCreationPage(true);
-            newSelectionButton.Add(newButton);
 
             scrollView = new ScrollView()
             {
@@ -68,8 +65,7 @@ namespace ZestyKitchenHelper
                 Content = mainGrid
             };
 
-            SetView(storageType);
-
+            UpdateLayout();
 
             content = new AbsoluteLayout();
             content.Children.Add(titleGrid, new Rectangle(0, 0, 1, 0.1), AbsoluteLayoutFlags.All);
@@ -83,16 +79,21 @@ namespace ZestyKitchenHelper
             return content;
         }
 
-       Dictionary<string,List<View>> mainGridChildren = new Dictionary<string, List<View>>();
-        public void SetView(ContentManager.StorageSelection storageType)
+        public void SetLayout(AbsoluteLayout layout)
         {
+            content = layout;
+            Content = content;
+        }
+
+        Dictionary<string, List<View>> mainGridChildren = new Dictionary<string, List<View>>();
+        public void UpdateLayout()
+        {
+            mainGridChildren.Clear(); // Need to clear children to prevent the same children to be assigned to two different views, causing invisibility bugs
             mainGrid.Children.Clear();
-            gridList.Clear();
-            gridList.Add(newSelectionButton);
             var itemBase = new List<string>(); 
             var expiredStorages = new List<string>();
             var expiredItems = new List<int>();
-            if (storageType == ContentManager.StorageSelection.cabinet) {
+            if (currentStorageSelection == ContentManager.StorageSelection.cabinet) {
                 itemBase = ContentManager.CabinetMetaBase.Keys.ToList();
                 ContentManager.GetItemExpirationInfo(expiredStorages, null, expiredItems);
             }
@@ -107,7 +108,7 @@ namespace ZestyKitchenHelper
                 var metaName = key;
                 var name = new Label() { Text = key.ToString(), TextColor = Color.Black, FontSize = 25, Margin = new Thickness(0, storage_name_margin),
                     HorizontalTextAlignment = TextAlignment.Center };
-                var model = ContentManager.GetStorageView(storageType, key);
+                var model = ContentManager.GetStorageView(currentStorageSelection, key);
                 var button = new ImageButton() { Source = ContentManager.transIcon, Aspect = Aspect.Fill, BorderColor = Color.Black, 
                     BorderWidth = 1, BackgroundColor = Color.Transparent };
                 AbsoluteLayout preview = new AbsoluteLayout()
@@ -212,10 +213,10 @@ namespace ZestyKitchenHelper
                             ContentManager.RemoveSelectedStorage(key);
                             mainGrid.Children.Clear();
                             mainGridChildren.Remove(key);
+                            var gridChildrenList = mainGridChildren.Values.ToList();
+                            gridChildrenList.Insert(0, new List<View>() { newButton });
                             // Re-layout grid after deletion
-                            var mainGridChildrenList = mainGridChildren.Values.ToList();
-                            mainGridChildrenList.Insert(0, new List<View>() { newButton });
-                            GridOrganizer.OrganizeGrid(mainGrid, mainGridChildrenList, GridOrganizer.OrganizeMode.HorizontalLeft);  
+                             mainGrid.OrganizeGrid(gridChildrenList, GridOrganizer.OrganizeMode.HorizontalLeft);  
                         },
                         () => { });
                 };
@@ -262,9 +263,11 @@ namespace ZestyKitchenHelper
                     expWarningImage.QuadraticInterpolator(1.3, 2000, (t) => { if (t >= 1) { expWarningImage.Scale = t; } }, null, true);
                 }
                 if (!mainGridChildren.ContainsKey(metaName)) mainGridChildren.Add(metaName, views);
-                gridList.Insert(1, views);
             }
-            mainGrid.OrganizeGrid(gridList, GridOrganizer.OrganizeMode.HorizontalLeft);
+            var gridChildren = mainGridChildren.Values.ToList();
+            gridChildren.Insert(0, new List<View>() { newButton });
+            mainGrid.OrganizeGrid(gridChildren, GridOrganizer.OrganizeMode.HorizontalLeft);
+            Console.WriteLine("SIngle Selection 275 main grid children length " + mainGridChildren.Values.Count);
         }
     }
 }

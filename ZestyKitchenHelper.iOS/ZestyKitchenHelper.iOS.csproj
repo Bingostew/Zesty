@@ -68,6 +68,7 @@
     <LaunchForBackgroundFetch>false</LaunchForBackgroundFetch>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Renderers\CustomTabbedPageRenderer.cs" />
     <Compile Include="Effect\ImageTintEffect.cs" />
     <Compile Include="Effect\TouchEffect.cs" />
     <Compile Include="Effect\TouchRecognizer.cs" />
@@ -297,5 +298,15 @@
   </ItemGroup>
   <ItemGroup>
     <BundleResource Include="Resources\steak.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\all_items.png">
+      <SubType>Designer</SubType>
+    </BundleResource>
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\all_items_warning.png">
+      <SubType>Designer</SubType>
+    </BundleResource>
   </ItemGroup>
 </Project>

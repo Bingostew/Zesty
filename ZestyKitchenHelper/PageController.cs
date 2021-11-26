@@ -50,7 +50,8 @@ namespace ZestyKitchenHelper
                 SetUpPage setupPage = new SetUpPage();
                 setupPage.Title = "Zesty";
                 Children.Add(setupPage);
-                CurrentPage = setupPage;
+                Console.WriteLine("PageCOntroller 53 is change native view action null " + (ContentManager.SetNativeViewFunction == null));
+                ContentManager.SetNativeViewFunction(setupPage);
             }
             else
             {
@@ -73,6 +74,7 @@ namespace ZestyKitchenHelper
         {
             Console.WriteLine("PageController 60 View Overlay Set");
 
+            // Bug: For cabinet edit page, currentpage is not part of tabbed page, thus overlay is not added to the correct page
             currentPageContent.Children.Add(viewOverlaybackgroundTint, new Rectangle(0, 0, 1, 1), layoutFlags);
             currentPageContent.Children.Add(viewOverlay, new Rectangle(xProportional, yProportional, width, height), layoutFlags);
         }
@@ -83,30 +85,34 @@ namespace ZestyKitchenHelper
         }
         public void ShowAlert(string title, string body, string confirmString, string cancelString, Action onConfirmAction, Action onCancelAction)
         {
-            Button confirmButton = new Button() { Text = confirmString, TextColor = Color.Black };
-            Button cancelButton = new Button() { Text = cancelString, TextColor = Color.Black };
+            Button confirmButton = new Button() { Text = confirmString, TextColor = Color.Black, BackgroundColor = Color.AntiqueWhite, CornerRadius = 10 };
+            Button cancelButton = new Button() { Text = cancelString, TextColor = Color.Black, BackgroundColor = Color.AntiqueWhite, CornerRadius = 10 };
             Grid buttonGrid = GridManager.InitializeGrid(1, 2, GridLength.Star, GridLength.Star);
             buttonGrid.VerticalOptions = LayoutOptions.EndAndExpand;
             GridManager.AddGridItem(buttonGrid, new List<View>() { confirmButton, cancelButton }, false);
 
-            StackLayout view = new StackLayout()
+            Frame frame = new Frame()
             {
-                BackgroundColor = Color.WhiteSmoke,
-                Children =
+                BackgroundColor = Color.Bisque,
+                CornerRadius = 45,
+                Content = new StackLayout()
+                {
+                    Children =
                 {
                     new Label(){Text = title, TextColor = Color.Black, FontFamily = "Oswald-Medium", FontSize = 25, HorizontalTextAlignment = TextAlignment.Center},
                     new Label(){Text = body, TextColor = Color.Black, Margin = new Thickness(10) , FontFamily = "Raleway-Regular", FontSize = 15},
                    buttonGrid
                 }
+                }
             };
+        
+            confirmButton.Clicked += (o, a) => { onConfirmAction?.Invoke(); RemoveViewOverlay(frame); };
+            cancelButton.Clicked += (o, a) => { onCancelAction?.Invoke(); RemoveViewOverlay(frame); };
 
-            confirmButton.Clicked += (o, a) => { onConfirmAction?.Invoke(); RemoveViewOverlay(view); };
-            cancelButton.Clicked += (o, a) => { onCancelAction?.Invoke(); RemoveViewOverlay(view); };
+            frame.AnchorX = 0.5;
+            frame.AnchorY = 0.5;
 
-            view.AnchorX = 0.5;
-            view.AnchorY = 0.5;
-
-            SetViewOverlay(view, 300, 300, 0.5, 0.5, AbsoluteLayoutFlags.PositionProportional);
+            SetViewOverlay(frame, 300, 300, 0.5, 0.5, AbsoluteLayoutFlags.PositionProportional);
         }
 
         public void ToMainPage()
@@ -167,8 +173,6 @@ namespace ZestyKitchenHelper
         private void RecordTabbedNavigationInfo()
         {
             Console.WriteLine("PageController 159 storage type " + ContentManager.storageSelection);
-            currentPageContainer = (ContentPage)CurrentPage;
-            currentPageContent = ((IMainPage)CurrentPage).GetLayout();
             if (CurrentPage == cabinetSelectPage)
             {
                 ContentManager.storageSelection = ContentManager.StorageSelection.cabinet;
@@ -200,19 +204,33 @@ namespace ZestyKitchenHelper
             //ContentManager.singleSelectionPage.SetView();
             if (ContentManager.storageSelection == ContentManager.StorageSelection.cabinet)
             {
-                SetView(new SingleSelectionPage(LocalStorageController.DeleteCabinetSynchronous, FireBaseController.DeleteCabinetSynchronous, ContentManager.StorageSelection.cabinet).Content);
+                // Populate page with new content to remove overlayed pages
+                var cabinetPage = new SingleSelectionPage(LocalStorageController.DeleteCabinetSynchronous, FireBaseController.DeleteCabinetSynchronous, ContentManager.StorageSelection.cabinet);
+                ReturnToBasePage(cabinetPage);
+
+                currentPageContent = cabinetPage.GetLayout();
             }
             else
             {
-                SetView(new SingleSelectionPage(LocalStorageController.DeleteFridgeSynchronous, FireBaseController.DeleteFridgeSynchronous, ContentManager.StorageSelection.fridge).Content);
+                // Populate page with new content to remove overlayed pages
+                var fridgePage = new SingleSelectionPage(LocalStorageController.DeleteCabinetSynchronous, FireBaseController.DeleteCabinetSynchronous, ContentManager.StorageSelection.fridge);
+                ReturnToBasePage(fridgePage);
+
+                currentPageContent = fridgePage.GetLayout();
             }
             navigationStack[currentPageContainer].Add(single_selection_name);
             navigationParams[currentPageContainer].Add(new List<object>() { });
         }
         public void ToUnplacedPage()
         {
-            SetView(new UnplacedPage(LocalStorageController.AddItem, FireBaseController.SaveItem,
-               LocalStorageController.DeleteItem, FireBaseController.DeleteItem).Content);
+            UnplacedPage unplacedPage = (UnplacedPage)Children[1];
+
+            ReturnToBasePage(unplacedPage);
+            /*
+            OverwriteRootPage(this);
+            this.CurrentPage = unplacedPage;
+            currentPageContent = unplacedPage.GetLayout();*/
+            unplacedPage.UpdateLayout();
 
             navigationStack[currentPageContainer].Add(unplaced_page_name);
             navigationParams[currentPageContainer].Add(new List<object>() { });
@@ -250,11 +268,11 @@ namespace ZestyKitchenHelper
         {
             if (ContentManager.storageSelection == ContentManager.StorageSelection.cabinet)
             {
-                OverwriteRootPage(new CabinetEditPage(newShelf, LocalStorageController.AddCabinet, FireBaseController.SaveCabinet, name));
+               SetView(new CabinetEditPage(newShelf, LocalStorageController.AddCabinet, FireBaseController.SaveCabinet, name).Content);
             }
             else
             {
-                OverwriteRootPage(new FridgeEditPage(newShelf, LocalStorageController.AddFridge, FireBaseController.SaveFridge, name));
+                SetView(new FridgeEditPage(newShelf, LocalStorageController.AddFridge, FireBaseController.SaveFridge, name).Content);
             }
             navigationStack[currentPageContainer].Add(edit_page_name);
             navigationParams[currentPageContainer].Add(new List<object>() { newShelf, name });
@@ -263,7 +281,7 @@ namespace ZestyKitchenHelper
         public void ToAddView(AddView addview)
         {
             OverwriteRootPage(addview);
-            //SetView(addview.Content);
+           // currentPageContent = addview.GetLayout();
             navigationStack[currentPageContainer].Add(add_view_name);
             navigationParams[currentPageContainer].Add(new List<object>() { addview });
         }
@@ -285,8 +303,47 @@ namespace ZestyKitchenHelper
             navigationParams[currentPageContainer].Add(new List<object>() { preferencePage });
         }
 
+        // Preform different operations to return to SingleSelectPage and UnplacedPage for IOS/Android.
+        private void ReturnToBasePage(IMainPage page)
+        {
+            if (Device.RuntimePlatform == Device.iOS)
+            {
+                ((IMainPage)currentPageContainer).SetLayout(page.GetLayout());
+                currentPageContainer.BackgroundColor = ContentManager.ThemeColor;
+                currentPageContainer.Content.AddEffect(new SafeAreaPadding());
+                resizeIconAction?.Invoke();
+            }
+            else// No work
+            {
+                Console.WriteLine("Page Controller 322 Root Overwritten");
+                ContentManager.SetNativeViewFunction(this);
+              //  currentPageContainer.Content = null;
+                ((IMainPage)currentPageContainer).SetLayout(page.GetLayout());
+                /*
+
+                var index = Children.IndexOf(currentPageContainer);
+                Children.Remove(currentPageContainer);
+                currentPageContainer = (ContentPage)page;
+                currentPageContainer.Content = page.GetLayout();
+                currentPageContent = page.GetLayout();
+                Children.Insert(index, currentPageContainer);
+                CurrentPage = currentPageContainer;
+                navigationStack.Add((ContentPage)page, new List<string>());
+                navigationParams.Add((ContentPage)page, new List<List<object>>());*/
+            }
+        }
+
         private void OverwriteRootPage(Page newPage)
         {
+            // Check if a page is already overwritten into the native view. If it is, it must be removed for IOS to prevent going back to an older version of a view
+            // (since new native views are added to subviews)
+            if (IsOnNativeView(navigationStack[currentPageContainer].Last()))
+            {
+                if (Device.RuntimePlatform == Device.iOS)
+                {
+                    PopRootPage();
+                }
+            }
             // offset view from the top of IOS black box 
             if (Device.RuntimePlatform == Device.iOS)
             {
@@ -295,7 +352,13 @@ namespace ZestyKitchenHelper
                 else
                     newPage.AddEffect(new SafeAreaPadding());
             }
+
             ContentManager.SetNativeViewFunction(newPage);
+        }
+
+        private void PopRootPage()
+        {
+            ContentManager.PopNativeViewFunction();
         }
 
 
@@ -340,17 +403,25 @@ namespace ZestyKitchenHelper
             return false;
         }
 
+        private bool IsOnNativeView(string contentString)
+        {
+            return contentString == preference_page_name || contentString == add_view_name || contentString == scan_page_name || contentString == add_page_name;
+        }
         public void ReturnToPrevious()
         {
-            var currentContentString = navigationStack[currentPageContainer].Last();
-            if(currentContentString == preference_page_name || currentContentString == add_view_name || currentContentString == scan_page_name || currentContentString == add_page_name)
+            // If current page overridden native view but next page does not, this page needs to be popped as the next page will not be automatically popped as it would
+            // otherwise with OverwriteRootPage() function.
+            if (IsOnNativeView(navigationStack[currentPageContainer].Last()) && !IsOnNativeView(navigationStack[currentPageContainer][navigationStack[currentPageContainer].Count - 2]))
             {
-                OverwriteRootPage(this);
+                if (Device.RuntimePlatform == Device.iOS)
+                {
+                    PopRootPage();
+                }
             }
-
             var contentString = navigationStack[currentPageContainer][navigationStack[currentPageContainer].Count - 2];
             var parameters = navigationParams[currentPageContainer][navigationParams[currentPageContainer].Count - 2];
 
+            Console.WriteLine("Page Controller 407 content string " + contentString);
             navigationStack[currentPageContainer].RemoveAt(navigationStack[currentPageContainer].Count - 1);
             navigationParams[currentPageContainer].RemoveAt(navigationParams[currentPageContainer].Count - 1);
 

@@ -8,7 +8,7 @@ namespace ZestyKitchenHelper
     {
         private const int font_size = 20;
         private const float button_width_proportional = 0.5f;
-        private const float button_height_proportional = 0.05f;
+        private const float button_height_proportional = 0.07f;
         private const int button_between_margin = 20;
 
         private Button localAccountButton, cloudAccountButton;

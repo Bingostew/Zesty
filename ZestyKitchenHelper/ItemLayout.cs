@@ -246,7 +246,7 @@ namespace ZestyKitchenHelper
         public IconLayout(ImageSource source, params string[] iconNames)
         {
             imageSource = source;
-            imageButton = new ImageButton() { Source = source, BackgroundColor = Color.Transparent, CornerRadius = 2 };
+            imageButton = new ImageButton() { Source = source, BackgroundColor = Color.Transparent, CornerRadius = 2, BorderColor = Color.Black, BorderWidth = 1 };
 
             this.iconNames = iconNames;
             imageButton.Clicked += (obj, args) =>

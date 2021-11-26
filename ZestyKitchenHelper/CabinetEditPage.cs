@@ -40,6 +40,9 @@ namespace ZestyKitchenHelper
         protected abstract string cellImageSource { get; }
         public EditPage(bool newShelf, string storageName = "")
         {
+            BackgroundColor = ContentManager.ThemeColor;
+            ContentManager.AddOnBackgroundChangeListener((c) => BackgroundColor = c);
+
             name = storageName;
             nameLegacy = storageName;
             var nameEntry = new Entry() { Text = "untitled", Margin = new Thickness(side_margin, top_margin, side_margin, 0), HeightRequest = name_height };

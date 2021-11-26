@@ -97,25 +97,20 @@ namespace ZestyKitchenHelper
         {
             return content;
         }
+        public void SetLayout(AbsoluteLayout layout)
+        {
+            content = layout;
+            Content = content;
+        }
         protected override void OnDisappearing()
         {
             base.OnDisappearing();
             GridManager.FilterItemGrid(ContentManager.MetaItemBase.Values, metaGrid, "");
         }
-        public static void UpdateGrid(Item removed)
+        public void UpdateLayout()
         {
-            ItemLayout removedLayout = metaGrid.Children.Where(i => (i as ItemLayout).ItemData.ID == removed.ID).FirstOrDefault() as ItemLayout;
-            GridManager.RemoveGridItem(metaGrid, removedLayout);
-            /*
-            if(removed != null)
-            {
-                var list = unplacedGrid.GetGridChilrenList() as List<View>;
-                var removedLayout = list.Where(l => (l as ItemLayout).ItemData.ID == removed.ID).FirstOrDefault();
-                if(removedLayout != null) list.Remove(removedLayout);
-                unplacedGrid.SetGridChildrenList(list);
-            }
-            AddView.ChangePageUnplacedGrid(unplacedGrid, 0, -1, ""); */
+            metaGrid = GridManager.GetGrid(ContentManager.metaGridName);
+            GridManager.AddGridItem(metaGrid, ContentManager.MetaItemBase.Values, true);
         }
-
-    }
+        }
 }

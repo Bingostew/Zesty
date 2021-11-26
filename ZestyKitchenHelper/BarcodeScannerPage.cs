@@ -35,12 +35,21 @@ namespace ZestyKitchenHelper
                     JsonTextReader jsonTextReader = new JsonTextReader(new System.IO.StringReader(await response.Content.ReadAsStringAsync()));
                     JsonSerializer jsonSerializer = new JsonSerializer();
                     BarcodeItem barcodeItem = jsonSerializer.Deserialize<BarcodeItem>(jsonTextReader);
+
+                    if (barcodeItem == null || barcodeItem.items.Length == 0)
+                    {
+                        Device.BeginInvokeOnMainThread(() =>
+                        {
+                            ContentManager.pageController.ReturnToPrevious();
+                            ContentManager.pageController.ShowAlert("Scan Result", "Unfortunately, the barcode cannot be found in the databse.", "Help Expanding Barcode Database", "Exit", null, null);
+                        });
+                        return;
+                    }
                     Device.BeginInvokeOnMainThread(async () =>
                     {
                         var itemName = barcodeItem.items[0].title;
-                        await ContentManager.pageController.DisplayAlert("Result", barcodeItem.items[0].title, "Cancel");
-                        addView.SetProductName(itemName);
                         ContentManager.pageController.ReturnToPrevious();
+                        ContentManager.pageController.ShowAlert("Scan Result", "Item Name: " + barcodeItem.items[0].title, "Use", "Cancel", () => { addView.SetProductName(itemName); }, null);
                     });
                 }
 

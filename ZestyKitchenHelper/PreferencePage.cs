@@ -31,7 +31,7 @@ namespace ZestyKitchenHelper
             ContentManager.AddOnBackgroundChangeListener(c => BackgroundColor = c);
             // Title section
             var titleGrid = GridManager.InitializeGrid(1, 3, 50, GridLength.Star);
-            var returnButton = new ImageButton() { Source = ContentManager.backButton };
+            var returnButton = new ImageButton() { Source = ContentManager.backButton, BackgroundColor = Color.Transparent };
             var pageTitleLabel = new Label() { Text = "Setting", FontFamily = title_font, FontSize = 30, TextColor = Color.Black, HorizontalTextAlignment = TextAlignment.Center };
             GridManager.AddGridItem(titleGrid, new List<View> { returnButton, pageTitleLabel }, false);
             returnButton.Clicked += (o, a) => ContentManager.pageController.ReturnToPrevious();
@@ -103,9 +103,9 @@ namespace ZestyKitchenHelper
             List<ThemeIcon> themeList = new List<ThemeIcon>()
             {
                 new ThemeIcon(){Color = Color.Wheat, Source = ContentManager.transIcon },
-                new ThemeIcon(){Color = Color.Lavender, Source = ContentManager.transIcon },
+                new ThemeIcon(){Color = Color.PapayaWhip, Source = ContentManager.transIcon },
                 new ThemeIcon(){Color = Color.BurlyWood, Source = ContentManager.transIcon },
-                new ThemeIcon(){Color = Color.AliceBlue, Source = ContentManager.transIcon }
+                new ThemeIcon(){Color = Color.LemonChiffon, Source = ContentManager.transIcon }
             };
             themeCarousel.ItemsSource = themeList;
             int currentThemeIndex = 0;

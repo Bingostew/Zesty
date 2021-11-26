@@ -135,7 +135,6 @@ namespace ZestyKitchenHelper.Droid
 
         private void ToSelectionActivity()
         {
-            ContentManager.InitializeApp();
             StartBackgroundCheck();
             StartActivity(new Intent(this, typeof(SelectionActivity)));
         }

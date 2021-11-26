@@ -14,6 +14,9 @@ namespace Utility
     public interface IMainPage
     {
         AbsoluteLayout GetLayout();
+
+        void SetLayout(AbsoluteLayout absoluteLayout);
+        void UpdateLayout();
     }
     public interface INotificationManager
     {
